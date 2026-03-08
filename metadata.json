@@ -1,0 +1,5 @@
+{
+  "name": "SocialImob Pro",
+  "description": "Sistema guiado para corretores de imóveis criarem campanhas de divulgação estratégica nas redes sociais.",
+  "requestFramePermissions": ["microphone"]
+}
