@@ -18,7 +18,7 @@ export const generateContent = async (prompt: string, systemInstruction?: string
   }
 
   try {
-    const model = "gemini-2.0-flash"; 
+    const model = "gemini-3-flash-preview"; 
     const response = await client.models.generateContent({
       model,
       contents: [{ parts: [{ text: prompt }] }],
@@ -45,7 +45,7 @@ export const generateJSON = async (prompt: string, schema?: any, systemInstructi
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const model = "gemini-2.0-flash";
+        const model = "gemini-3.1-pro-preview";
         
         const contents = [
           {
