@@ -1,20 +1,25 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Initialize the Gemini API client
-// We use a singleton pattern or just export the function to get the client
-// The API key is injected via process.env.GEMINI_API_KEY
+// Initialize the Gemini API client lazily
+let ai: GoogleGenAI | null = null;
 
-const apiKey = process.env.GEMINI_API_KEY;
-const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
+const getAI = () => {
+  if (ai) return ai;
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+  ai = new GoogleGenAI({ apiKey });
+  return ai;
+};
 
 export const generateContent = async (prompt: string, systemInstruction?: string) => {
-  if (!ai) {
-    throw new Error("Gemini API Key is missing. Please configure it in the AI Studio secrets.");
+  const client = getAI();
+  if (!client) {
+    throw new Error("Gemini API Key is missing. Please add GEMINI_API_KEY to your .env file.");
   }
 
   try {
     const model = "gemini-2.0-flash"; 
-    const response = await ai.models.generateContent({
+    const response = await client.models.generateContent({
       model,
       contents: [{ parts: [{ text: prompt }] }],
       config: {
@@ -30,8 +35,9 @@ export const generateContent = async (prompt: string, systemInstruction?: string
 };
 
 export const generateJSON = async (prompt: string, schema?: any, systemInstruction?: string, parts?: any[]) => {
-    if (!ai) {
-      throw new Error("Gemini API Key is missing.");
+    const client = getAI();
+    if (!client) {
+      throw new Error("Gemini API Key is missing. Please add GEMINI_API_KEY to your .env file.");
     }
   
     let lastError: any;
@@ -50,7 +56,7 @@ export const generateJSON = async (prompt: string, schema?: any, systemInstructi
           }
         ];
   
-        const response = await ai.models.generateContent({
+        const response = await client.models.generateContent({
           model,
           contents,
           config: {

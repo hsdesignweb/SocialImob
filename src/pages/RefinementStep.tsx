@@ -207,7 +207,7 @@ export default function RefinementStep() {
       // Check if critical strategy failed
       if (results[0].status === 'rejected') {
         console.error("Strategy generation failed:", results[0].reason);
-        throw new Error("Falha ao gerar estratégia principal. Tente novamente.");
+        throw new Error(`Falha ao gerar estratégia principal: ${results[0].reason?.message || "Erro desconhecido"}`);
       }
 
       const strategyData = results[0].value;
