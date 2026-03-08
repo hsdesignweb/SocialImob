@@ -39,7 +39,7 @@ export const generateJSON = async (prompt: string, schema?: any, systemInstructi
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const model = "gemini-3-flash-preview";
+        const model = "gemini-2.0-flash";
         
         const contents = [
           {
