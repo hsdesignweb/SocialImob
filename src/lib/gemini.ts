@@ -45,7 +45,7 @@ export const generateJSON = async (prompt: string, schema?: any, systemInstructi
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const model = "gemini-3.1-pro-preview";
+        const model = "gemini-3-flash-preview";
         
         const contents = [
           {
@@ -62,8 +62,9 @@ export const generateJSON = async (prompt: string, schema?: any, systemInstructi
           config: {
               responseMimeType: "application/json",
               responseSchema: schema,
-              systemInstruction: systemInstruction,
-              maxOutputTokens: 8192, // Ensure enough tokens for large JSONs
+              systemInstruction: systemInstruction || "Você é um assistente especializado em marketing imobiliário. Responda sempre em Português do Brasil.",
+              maxOutputTokens: 8192,
+              temperature: 0.7, // Lower temperature for more stable JSON and language
           }
         });
     

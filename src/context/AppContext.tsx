@@ -23,7 +23,7 @@ export interface CampaignStrategy {
 
 export interface GeneratedContent {
   reelScript: {
-    hook: string;
+    hooks: string[];
     body: string;
     cta: string;
     scenes: string;
@@ -34,9 +34,9 @@ export interface GeneratedContent {
     body: string;
   }>;
   funnelMessages: {
-    top: string;
-    middle: string;
-    bottom: string;
+    abordagem: string[];
+    followup: string[];
+    encerramento: string[];
   };
   planner: Array<{
     day: number;

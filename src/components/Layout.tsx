@@ -1,7 +1,7 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Menu, Loader2, LogOut, Coins } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppStore } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 
@@ -11,6 +11,28 @@ export default function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isLoading } = useAppStore();
   const { user, logout } = useAuth();
+  const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
+
+  const loadingPhrases = [
+    "Criando sua campanha estratégica...",
+    "Analisando o perfil dos compradores ideais...",
+    "Otimizando sua narrativa de vendas...",
+    "Preparando seu planner semanal...",
+    "Humanizando suas mensagens de WhatsApp...",
+    "Quase pronto! O sucesso começa com estratégia."
+  ];
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isLoading) {
+      interval = setInterval(() => {
+        setLoadingPhraseIndex((prev) => (prev + 1) % loadingPhrases.length);
+      }, 3000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isLoading, loadingPhrases.length]);
 
   const handleLogout = () => {
     logout();
@@ -20,9 +42,17 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col relative">
       {isLoading && (
-        <div className="fixed inset-0 z-[100] bg-white/80 backdrop-blur-sm flex items-center justify-center flex-col gap-4">
+        <div className="fixed inset-0 z-[100] bg-white/80 backdrop-blur-sm flex items-center justify-center flex-col gap-4 p-6 text-center">
           <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
-          <p className="text-indigo-900 font-medium animate-pulse">Criando sua campanha...</p>
+          <motion.p 
+            key={loadingPhraseIndex}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            className="text-indigo-900 font-medium italic"
+          >
+            {loadingPhrases[loadingPhraseIndex]}
+          </motion.p>
         </div>
       )}
       

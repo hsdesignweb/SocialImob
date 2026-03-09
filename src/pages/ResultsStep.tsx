@@ -92,7 +92,7 @@ export default function ResultsStep() {
                   <p>
                     <strong>Por que essa estratégia?</strong><br/>
                     Como você escolheu <u>{propertyData.buyerProfile}</u> com objetivo de <u>{propertyData.goal}</u>, 
-                    focamos em uma abordagem <strong>{strategy.approach}</strong>.
+                    desenvolvemos uma abordagem <strong>{strategy.approach}</strong> totalmente alinhada às suas escolhas.
                   </p>
                 </div>
 
@@ -133,7 +133,7 @@ export default function ResultsStep() {
                       variant="ghost" 
                       className="h-8 text-pink-700 hover:bg-pink-100"
                       onClick={() => copyToClipboard(
-                        `${campaign.reelScript.hook}\n\n${campaign.reelScript.body}\n\n${campaign.reelScript.cta}`, 
+                        `Ganchos:\n${campaign.reelScript.hooks.join("\n")}\n\nRoteiro:\n${campaign.reelScript.body}\n\nCTA:\n${campaign.reelScript.cta}`, 
                         'reel'
                       )}
                     >
@@ -142,11 +142,26 @@ export default function ResultsStep() {
                   </div>
                   <CardContent className="pt-6 space-y-6">
                     <div>
-                      <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">Gancho (3s)</span>
-                      <p className="font-medium text-slate-900 text-lg mt-1">{campaign.reelScript.hook}</p>
+                      <span className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-2 block">Escolha um Gancho Viral (3s)</span>
+                      <div className="space-y-2">
+                        {campaign.reelScript.hooks.map((hook, hIdx) => (
+                          <div key={hIdx} className="flex items-start gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 group relative">
+                            <span className="w-5 h-5 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                              {hIdx + 1}
+                            </span>
+                            <p className="text-sm text-slate-700 leading-tight pr-8">{hook}</p>
+                            <Button 
+                              size="sm" variant="ghost" className="absolute top-1 right-1 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => copyToClipboard(hook, `hook-${hIdx}`)}
+                            >
+                              {copiedId === `hook-${hIdx}` ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3 text-slate-400" />}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                     <div>
-                      <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">Corpo</span>
+                      <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">Corpo do Roteiro</span>
                       <p className="text-slate-700 whitespace-pre-line mt-1 leading-relaxed">{campaign.reelScript.body}</p>
                     </div>
                     <div>
@@ -154,7 +169,7 @@ export default function ResultsStep() {
                       <p className="font-bold text-indigo-600 mt-1">{campaign.reelScript.cta}</p>
                     </div>
                     <div className="bg-slate-50 p-4 rounded-lg text-sm text-slate-500 italic border border-slate-100">
-                      🎥 <strong>Cenas:</strong> {campaign.reelScript.scenes}
+                      🎥 <strong>Sugestão de Cenas:</strong> {campaign.reelScript.scenes}
                     </div>
                   </CardContent>
                 </Card>
@@ -182,8 +197,8 @@ export default function ResultsStep() {
                     <Card key={idx} className="overflow-hidden border-slate-200">
                       <div className="bg-slate-50 p-3 border-b border-slate-100 flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                          <span className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">
-                            {day.day || idx + 1}
+                          <span className="w-12 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold px-2">
+                            Dia {day.day || idx + 1}
                           </span>
                           <span className="font-semibold text-slate-700 text-sm">{day.title || `Dia ${idx + 1}`}</span>
                         </div>
@@ -247,51 +262,38 @@ export default function ResultsStep() {
             )}
 
             {activeSection === "messages" && (
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                    <Target className="w-5 h-5 text-blue-500" /> Topo de Funil (Interesse)
-                  </h3>
-                  <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative">
-                    <Button 
-                      size="sm" variant="ghost" className="absolute top-2 right-2 h-8 w-8 p-0"
-                      onClick={() => copyToClipboard(campaign.funnelMessages.top, 'msg-top')}
-                    >
-                      {copiedId === 'msg-top' ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-400" />}
-                    </Button>
-                    <p className="text-sm text-slate-700 whitespace-pre-line pr-6">{campaign.funnelMessages.top}</p>
-                  </div>
+              <div className="space-y-8 pb-8">
+                <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 text-sm text-indigo-800">
+                  <p>
+                    <strong>Mensagens Humanizadas:</strong><br/>
+                    Gere conexão real com seus leads usando estas abordagens focadas no indivíduo.
+                  </p>
                 </div>
 
-                <div className="space-y-4">
-                  <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                    <Target className="w-5 h-5 text-amber-500" /> Meio de Funil (Consideração)
-                  </h3>
-                  <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative">
-                    <Button 
-                      size="sm" variant="ghost" className="absolute top-2 right-2 h-8 w-8 p-0"
-                      onClick={() => copyToClipboard(campaign.funnelMessages.middle, 'msg-mid')}
-                    >
-                      {copiedId === 'msg-mid' ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-400" />}
-                    </Button>
-                    <p className="text-sm text-slate-700 whitespace-pre-line pr-6">{campaign.funnelMessages.middle}</p>
+                {[
+                  { id: 'abordagem', label: 'Abordagem (Interesse)', color: 'blue', icon: MessageCircle },
+                  { id: 'followup', label: 'Follow-up (Consideração)', color: 'amber', icon: MessageCircle },
+                  { id: 'encerramento', label: 'Encerramento (Decisão/FOMO)', color: 'green', icon: MessageCircle }
+                ].map((stage) => (
+                  <div key={stage.id} className="space-y-4">
+                    <h3 className={`font-bold text-slate-900 flex items-center gap-2`}>
+                      <stage.icon className={`w-5 h-5 text-${stage.color}-500`} /> {stage.label}
+                    </h3>
+                    <div className="space-y-3">
+                      {(campaign.funnelMessages[stage.id as keyof typeof campaign.funnelMessages] || []).map((msg: string, mIdx: number) => (
+                        <div key={mIdx} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative group">
+                          <Button 
+                            size="sm" variant="ghost" className="absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => copyToClipboard(msg, `msg-${stage.id}-${mIdx}`)}
+                          >
+                            {copiedId === `msg-${stage.id}-${mIdx}` ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-400" />}
+                          </Button>
+                          <p className="text-sm text-slate-700 whitespace-pre-line pr-6">{msg}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                    <Target className="w-5 h-5 text-green-500" /> Fundo de Funil (Decisão)
-                  </h3>
-                  <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative">
-                    <Button 
-                      size="sm" variant="ghost" className="absolute top-2 right-2 h-8 w-8 p-0"
-                      onClick={() => copyToClipboard(campaign.funnelMessages.bottom, 'msg-bot')}
-                    >
-                      {copiedId === 'msg-bot' ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-400" />}
-                    </Button>
-                    <p className="text-sm text-slate-700 whitespace-pre-line pr-6">{campaign.funnelMessages.bottom}</p>
-                  </div>
-                </div>
+                ))}
               </div>
             )}
           </motion.div>
