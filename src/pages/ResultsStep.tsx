@@ -2,17 +2,20 @@ import { useState, useRef, useEffect } from "react";
 import { useAppStore } from "@/context/AppContext";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Copy, Check, Video, FileText, MessageCircle, Calendar, Target, ArrowRight, ChevronRight, BookOpen, Lightbulb, Info } from "lucide-react";
+import { Copy, Check, Video, FileText, MessageCircle, Calendar, Target, ArrowRight, ChevronRight, BookOpen, Lightbulb, Info, Download, FileDown, Sparkles } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from "motion/react";
+import { jsPDF } from "jspdf";
 
 const SECTIONS = [
   { id: "strategy", label: "Estratégia", icon: Target },
   { id: "reel", label: "Reel", icon: Video },
-  { id: "planner", label: "Planner", icon: Calendar },
+  { id: "planner", label: "Cronograma", icon: Calendar },
+  { id: "content10", label: "10 Ideias", icon: Lightbulb },
   { id: "traffic", label: "Tráfego", icon: Target },
   { id: "messages", label: "Mensagens", icon: MessageCircle },
-  { id: "guide", label: "Guia", icon: BookOpen },
+  { id: "bonus", label: "Bônus", icon: Sparkles },
+  { id: "pdf", label: "PDF Beta", icon: FileDown },
 ];
 
 export default function ResultsStep() {
@@ -35,6 +38,98 @@ export default function ResultsStep() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    const margin = 20;
+    let y = 20;
+
+    const checkPage = (height: number) => {
+      if (y + height > 280) {
+        doc.addPage();
+        y = 20;
+        return true;
+      }
+      return false;
+    };
+
+    const addTitle = (text: string, size = 16) => {
+      checkPage(15);
+      doc.setFontSize(size);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(79, 70, 229); // indigo-600
+      doc.text(text, margin, y);
+      y += 10;
+    };
+
+    const addSubtitle = (text: string, size = 12) => {
+      checkPage(10);
+      doc.setFontSize(size);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(30, 41, 59); // slate-800
+      doc.text(text, margin, y);
+      y += 7;
+    };
+
+    const addBody = (text: string, size = 10) => {
+      doc.setFontSize(size);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(71, 85, 105); // slate-600
+      const lines = doc.splitTextToSize(text, 160); // Reduced width to ensure no overflow
+      lines.forEach((line: string) => {
+        checkPage(5);
+        doc.text(line, margin, y);
+        y += 5;
+      });
+      y += 5;
+    };
+
+    // Header
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(79, 70, 229);
+    doc.text("SocialImob Pro", margin, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(148, 163, 184);
+    doc.text("Relatório de Campanha Estratégica", margin, y);
+    y += 15;
+
+    // Estratégia
+    addTitle("1. Estratégia");
+    addSubtitle("Ângulo de Venda");
+    addBody(strategy.angle);
+    addSubtitle("Público-alvo");
+    addBody(strategy.persona);
+    addSubtitle("Narrativa");
+    addBody(strategy.narrative);
+
+    // Reel
+    addTitle("2. Roteiro de Reel");
+    addSubtitle("Ganchos Sugeridos");
+    campaign.reelScript.hooks.forEach((h, i) => addBody(`${i + 1}. ${h}`));
+    addSubtitle("Corpo do Roteiro");
+    addBody(campaign.reelScript.body);
+    addSubtitle("Chamada para Ação (CTA)");
+    addBody(campaign.reelScript.cta);
+
+    // Planner
+    addTitle("3. Cronograma Semanal");
+    plannerDays.forEach((day, i) => {
+      addSubtitle(`Dia ${day.day || i + 1}: ${day.title}`);
+      addBody(day.content);
+    });
+
+    // 1 Idea -> 10 Contents
+    addTitle("4. Metodologia 1 Ideia -> 10 Conteúdos");
+    (campaign.derivedContent10 || []).forEach((item) => {
+      addSubtitle(item.type);
+      addBody(item.content);
+    });
+
+    doc.save(`SocialImob-Campanha-${propertyData.location || 'Imovel'}.pdf`);
+  };
+
   const nextSection = () => {
     const idx = SECTIONS.findIndex(s => s.id === activeSection);
     if (idx < SECTIONS.length - 1) {
@@ -54,7 +149,7 @@ export default function ResultsStep() {
           <p className="text-slate-500 text-xs">Pronta para lançamento.</p>
         </div>
         
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           {SECTIONS.map((section) => {
             const Icon = section.icon;
             const isActive = activeSection === section.id;
@@ -89,7 +184,7 @@ export default function ResultsStep() {
           >
             {activeSection === "strategy" && (
               <div className="space-y-4">
-                <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 text-sm text-indigo-800">
+                <div className="bg-white p-4 rounded-xl border border-slate-200 text-sm text-slate-700">
                   <p>
                     <strong>Por que essa estratégia?</strong><br/>
                     Como você escolheu <u>{propertyData.buyerProfile}</u> com objetivo de <u>{propertyData.goal}</u>, 
@@ -98,22 +193,30 @@ export default function ResultsStep() {
                 </div>
 
                 <Card className="border-l-4 border-l-indigo-500">
-                  <CardHeader>
-                    <CardTitle className="text-indigo-900">Ângulo de Venda</CardTitle>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-bold text-indigo-900 uppercase tracking-wider">Ângulo de Venda</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-lg font-medium text-indigo-800">{strategy.angle}</p>
+                    <p className="text-sm text-indigo-800 leading-relaxed">{strategy.angle}</p>
                   </CardContent>
                 </Card>
 
                 <Card>
-                  <CardHeader><CardTitle>Persona</CardTitle></CardHeader>
-                  <CardContent><p className="text-slate-600">{strategy.persona}</p></CardContent>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500">Público-alvo</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-slate-600 leading-relaxed">{strategy.persona}</p>
+                  </CardContent>
                 </Card>
 
                 <Card>
-                  <CardHeader><CardTitle>Narrativa</CardTitle></CardHeader>
-                  <CardContent><p className="text-slate-600">{strategy.narrative}</p></CardContent>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500">Narrativa</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-slate-600 leading-relaxed">{strategy.narrative}</p>
+                  </CardContent>
                 </Card>
 
                 <Button className="w-full mt-4" onClick={nextSection}>
@@ -143,7 +246,7 @@ export default function ResultsStep() {
                   </div>
                   <CardContent className="pt-6 space-y-6">
                     <div>
-                      <span className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-2 block">Escolha um Gancho Viral (3s)</span>
+                      <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2 block">Escolha um Gancho Viral (3s)</span>
                       <div className="space-y-2">
                         {campaign.reelScript.hooks.map((hook, hIdx) => (
                           <div key={hIdx} className="flex items-start gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 group relative">
@@ -162,12 +265,12 @@ export default function ResultsStep() {
                       </div>
                     </div>
                     <div>
-                      <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">Corpo do Roteiro</span>
-                      <p className="text-slate-700 whitespace-pre-line mt-1 leading-relaxed">{campaign.reelScript.body}</p>
+                      <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Corpo do Roteiro</span>
+                      <p className="text-sm text-slate-700 whitespace-pre-line mt-1 leading-relaxed">{campaign.reelScript.body}</p>
                     </div>
                     <div>
-                      <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">CTA</span>
-                      <p className="font-bold text-indigo-600 mt-1">{campaign.reelScript.cta}</p>
+                      <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">CTA</span>
+                      <p className="text-sm font-bold text-indigo-600 mt-1">{campaign.reelScript.cta}</p>
                     </div>
                     <div className="bg-slate-50 p-4 rounded-lg text-sm text-slate-500 italic border border-slate-100">
                       🎥 <strong>Sugestão de Cenas:</strong> {campaign.reelScript.scenes}
@@ -184,14 +287,14 @@ export default function ResultsStep() {
               <div className="space-y-6">
                 <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-sm text-blue-800 mb-4">
                   <p>
-                    <strong>Plano de Conteúdo:</strong><br/>
+                    <strong>Cronograma de Conteúdo:</strong><br/>
                     Um conteúdo estratégico para cada dia da semana, cobrindo Região, Condomínio, Diferenciais e mais.
                   </p>
                 </div>
                 
                 {plannerDays.length === 0 ? (
                   <div className="text-center p-8 text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-300">
-                    Não foi possível carregar o planner. Tente gerar novamente.
+                    Não foi possível carregar o cronograma. Tente gerar novamente.
                   </div>
                 ) : (
                   plannerDays.map((day, idx) => (
@@ -222,6 +325,39 @@ export default function ResultsStep() {
                   ))
                 )}
                 <Button className="w-full mt-4" onClick={nextSection}>
+                  Próximo: 10 Ideias <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            )}
+
+            {activeSection === "content10" && (
+              <div className="space-y-4">
+                <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 text-sm text-indigo-800">
+                  <h3 className="font-bold flex items-center gap-2 mb-1">
+                    <Lightbulb className="w-4 h-4" /> Metodologia 1 Ideia → 10 Conteúdos
+                  </h3>
+                  <p>Transformamos o seu imóvel em 10 abordagens diferentes para você nunca ficar sem o que postar.</p>
+                </div>
+                
+                <div className="space-y-4">
+                  {(campaign.derivedContent10 || []).map((item, iIdx) => (
+                    <Card key={iIdx} className="border-slate-200 group relative">
+                      <div className="bg-slate-50 px-3 py-1.5 border-b border-slate-100 flex justify-between items-center">
+                        <span className="text-[10px] font-bold uppercase text-indigo-600 tracking-wider">{item.type}</span>
+                        <Button 
+                          size="sm" variant="ghost" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => copyToClipboard(item.content, `content10-${iIdx}`)}
+                        >
+                          {copiedId === `content10-${iIdx}` ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3 text-slate-400" />}
+                        </Button>
+                      </div>
+                      <CardContent className="pt-3">
+                        <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{item.content}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                <Button className="w-full mt-4" onClick={nextSection}>
                   Próximo: Tráfego <ChevronRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
@@ -230,29 +366,29 @@ export default function ResultsStep() {
             {activeSection === "traffic" && (
               <div className="space-y-6">
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Segmentação de Público</CardTitle>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-bold">Segmentação de Público</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-slate-700 whitespace-pre-line">{campaign.traffic.segmentation}</p>
+                    <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{campaign.traffic.segmentation}</p>
                   </CardContent>
                 </Card>
 
                 <div className="space-y-4">
-                  <h3 className="font-bold text-slate-900">Sugestão de Criativos</h3>
+                  <h3 className="text-lg font-bold text-slate-900">Sugestão de Criativos</h3>
                   
                   <div className="space-y-3">
                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                      <span className="text-xs font-bold text-blue-600 uppercase mb-1 block">Topo de Funil</span>
-                      <p className="text-sm text-slate-800">{campaign.traffic.creatives.top}</p>
+                      <span className="text-[10px] font-bold text-blue-600 uppercase mb-1 block">Topo de Funil</span>
+                      <p className="text-sm text-slate-800 leading-relaxed">{campaign.traffic.creatives.top}</p>
                     </div>
                     <div className="bg-amber-50 p-4 rounded-lg border border-amber-100">
-                      <span className="text-xs font-bold text-amber-600 uppercase mb-1 block">Meio de Funil</span>
-                      <p className="text-sm text-slate-800">{campaign.traffic.creatives.middle}</p>
+                      <span className="text-[10px] font-bold text-amber-600 uppercase mb-1 block">Meio de Funil</span>
+                      <p className="text-sm text-slate-800 leading-relaxed">{campaign.traffic.creatives.middle}</p>
                     </div>
                     <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-                      <span className="text-xs font-bold text-green-600 uppercase mb-1 block">Fundo de Funil</span>
-                      <p className="text-sm text-slate-800">{campaign.traffic.creatives.bottom}</p>
+                      <span className="text-[10px] font-bold text-green-600 uppercase mb-1 block">Fundo de Funil</span>
+                      <p className="text-sm text-slate-800 leading-relaxed">{campaign.traffic.creatives.bottom}</p>
                     </div>
                   </div>
                 </div>
@@ -277,7 +413,7 @@ export default function ResultsStep() {
                   { id: 'encerramento', label: 'Encerramento (Decisão/FOMO)', color: 'green', icon: MessageCircle }
                 ].map((stage) => (
                   <div key={stage.id} className="space-y-4">
-                    <h3 className={`font-bold text-slate-900 flex items-center gap-2`}>
+                    <h3 className={`text-lg font-bold text-slate-900 flex items-center gap-2`}>
                       <stage.icon className={`w-5 h-5 text-${stage.color}-500`} /> {stage.label}
                     </h3>
                     <div className="space-y-3">
@@ -298,26 +434,64 @@ export default function ResultsStep() {
               </div>
             )}
 
-            {activeSection === "guide" && (
+            {activeSection === "bonus" && (
               <div className="space-y-6 pb-8">
                 <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 text-sm text-emerald-800">
                   <p className="flex items-center gap-2">
-                    <BookOpen className="w-4 h-4" /> 
-                    <strong>Guia de Execução SocialImob:</strong>
+                    <Sparkles className="w-4 h-4" /> 
+                    <strong>Bônus: Dicas de Conteúdo SocialImob</strong>
                   </p>
-                  <p className="mt-1">Aprenda como extrair o máximo de resultado desta campanha seguindo nossa metodologia.</p>
+                  <p className="mt-1 text-xs">Aprenda como extrair o máximo de resultado desta campanha seguindo nossa metodologia.</p>
                 </div>
 
-                <Card className="border-l-4 border-l-amber-500">
+                <div className="grid grid-cols-1 gap-4">
+                  <Card className="border-l-4 border-l-amber-500">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                        <Video className="w-4 h-4 text-amber-500" /> Formatos em Alta
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <p className="text-sm text-slate-700"><strong>Reels Curtos:</strong> Vídeos de 15 a 30 segundos com cortes rápidos são os que mais entregam hoje.</p>
+                      <p className="text-sm text-slate-700"><strong>Carrosséis:</strong> Use para mostrar detalhes técnicos e fotos estáticas de alta qualidade.</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-l-4 border-l-blue-500">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                        <Info className="w-4 h-4 text-blue-500" /> Como Filmar
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <p className="text-sm text-slate-700"><strong>Sempre na Vertical:</strong> Grave tudo em 9:16. O preenchimento total da tela gera mais imersão.</p>
+                      <p className="text-sm text-slate-700"><strong>Luz Natural:</strong> Prefira filmar durante o dia com as janelas abertas para valorizar os ambientes.</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-l-4 border-l-indigo-500">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-indigo-500" /> Dica de Edição (Chroma Key)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <p className="text-sm text-slate-700"><strong>Não está no imóvel?</strong> Use o efeito "Chroma Key" ou "Remover Fundo" em editores gratuitos como o CapCut.</p>
+                      <p className="text-sm text-slate-700">Coloque uma foto bonita do imóvel ao fundo e você falando na frente. É uma forma excelente de humanizar o anúncio mesmo à distância.</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Card className="border-l-4 border-l-emerald-500">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Lightbulb className="w-4 h-4 text-amber-500" /> Dicas Criativas
+                    <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                      <Lightbulb className="w-4 h-4 text-emerald-500" /> Dicas Criativas Extras
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {(campaign.executionGuide?.creativeTips || []).map((tip, tIdx) => (
                       <div key={tIdx} className="flex items-start gap-3 text-sm text-slate-700">
-                        <div className="w-5 h-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                        <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
                           {tIdx + 1}
                         </div>
                         <p>{tip}</p>
@@ -325,36 +499,33 @@ export default function ResultsStep() {
                     ))}
                   </CardContent>
                 </Card>
+              </div>
+            )}
 
-                <Card className="border-l-4 border-l-blue-500">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Info className="w-4 h-4 text-blue-500" /> Como Publicar
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-slate-700 leading-relaxed">
-                      {campaign.executionGuide?.publishingAdvice}
-                    </p>
-                  </CardContent>
-                </Card>
+            {activeSection === "pdf" && (
+              <div className="space-y-6 py-8 text-center">
+                <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FileDown className="w-10 h-10 text-indigo-600" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold text-slate-900">Baixar Relatório Completo</h3>
+                  <p className="text-sm text-slate-500 max-w-xs mx-auto">
+                    Compilamos toda a sua estratégia, roteiros e planner em um único arquivo PDF profissional.
+                  </p>
+                </div>
+                
+                <Button 
+                  size="lg" 
+                  className="w-full max-w-xs mx-auto shadow-xl bg-indigo-600 hover:bg-indigo-700"
+                  onClick={generatePDF}
+                >
+                  <Download className="w-5 h-5 mr-2" />
+                  Gerar PDF Agora
+                </Button>
 
-                <Card className="border-l-4 border-l-indigo-500">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Target className="w-4 h-4 text-indigo-500" /> Estratégia de Engajamento
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-slate-700 leading-relaxed">
-                      {campaign.executionGuide?.engagementStrategy}
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <div className="p-4 bg-slate-100 rounded-xl text-center">
-                  <p className="text-xs text-slate-500 italic">
-                    "O segredo não é apenas o que você publica, mas como você se conecta."
+                <div className="pt-8 border-t border-slate-100">
+                  <p className="text-xs text-slate-400">
+                    Ideal para apresentar ao proprietário ou manter como guia de consulta rápida.
                   </p>
                 </div>
               </div>

@@ -57,6 +57,10 @@ export interface GeneratedContent {
     publishingAdvice: string;
     engagementStrategy: string;
   };
+  derivedContent10: Array<{
+    type: string;
+    content: string;
+  }>;
 }
 
 interface AppState {

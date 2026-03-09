@@ -11,6 +11,7 @@ import Home from "./pages/Home";
 import InputStep from "./pages/InputStep";
 import RefinementStep from "./pages/RefinementStep";
 import ResultsStep from "./pages/ResultsStep";
+import AdminDashboard from "./pages/AdminDashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -18,20 +19,20 @@ import ResetPassword from "./pages/ResetPassword";
 import Payment from "./pages/Payment";
 
 // Protected Route Component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.ReactNode, requireAdmin?: boolean }) => {
   const { isAuthenticated, user } = useAuth();
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
+  if (requireAdmin && !user?.isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
   // If user is authenticated but hasn't paid, redirect to payment
-  // Unless they are already on the payment page (which is handled by the route structure below)
-  // But wait, Payment page is outside this ProtectedRoute wrapper?
-  // No, Payment page should be accessible to authenticated users who haven't paid.
-  // So we need a check here.
-  
-  if (user && user.isPaid === false && user.status !== 'trial') {
+  // Unless they are already on the payment page or they are an admin
+  if (user && !user.isAdmin && user.isPaid === false && user.status !== 'trial') {
       return <Navigate to="/payment" replace />;
   }
 
@@ -76,6 +77,11 @@ export default function App() {
               <Route path="input" element={<InputStep />} />
               <Route path="refinement" element={<RefinementStep />} />
               <Route path="results" element={<ResultsStep />} />
+              <Route path="admin" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } />
             </Route>
           </Routes>
         </BrowserRouter>

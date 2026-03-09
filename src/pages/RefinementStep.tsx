@@ -299,12 +299,55 @@ export default function RefinementStep() {
         required: ["funnelMessages", "traffic", "executionGuide"]
       };
 
+      // Chunk D: 1 Idea -> 10 Contents
+      const content10Prompt = `
+        ${reinforcementText}
+        Dados do Imóvel: ${JSON.stringify(propertyData)}
+        Perfis Compradores: ${buyerProfiles.join(", ")}
+        
+        Aplique a metodologia "1 ideia → 10 conteúdos" para este imóvel.
+        Objetivo: Transformar a ideia central do imóvel em 10 conteúdos diferentes, variando ângulo e formato.
+        
+        Estrutura obrigatória:
+        1. Lista: "5 coisas que você precisa saber sobre..."
+        2. Storytelling: Pequena história ou situação realista.
+        3. Posicionamento: Opinião ou visão forte sobre o tema.
+        4. Explicação técnica: Explicação profissional.
+        5. Motivacional: Mensagem que encoraja ou inspira.
+        6. POV (ponto de vista): Cenário onde o público se identifica.
+        7. Análise: Comparação ou reflexão sobre o tema.
+        8. Tutorial: Passos práticos ou orientações.
+        9. Conexão: Reflexão humana ou emocional.
+        10. Tendência: Visão de futuro ou evolução do tema.
+        
+        Retorne JSON:
+        - derivedContent10: Lista de 10 objetos (type, content)
+      `;
+      const content10Schema = {
+        type: Type.OBJECT,
+        properties: {
+          derivedContent10: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                type: { type: Type.STRING },
+                content: { type: Type.STRING }
+              },
+              required: ["type", "content"]
+            }
+          }
+        },
+        required: ["derivedContent10"]
+      };
+
       // Execute ALL requests in parallel
       const results = await Promise.allSettled([
         generateJSON(strategyPrompt, strategySchema),
         generateJSON(reelPrompt, reelSchema),
         generateJSON(planPrompt, planSchema),
-        generateJSON(trafficPrompt, trafficSchema)
+        generateJSON(trafficPrompt, trafficSchema),
+        generateJSON(content10Prompt, content10Schema)
       ]);
 
       const getValue = (result: PromiseSettledResult<any>, fallback: any) => 
@@ -322,6 +365,7 @@ export default function RefinementStep() {
         traffic: { creatives: { top: "", middle: "", bottom: "" }, segmentation: "" },
         executionGuide: { creativeTips: [], publishingAdvice: "", engagementStrategy: "" }
       });
+      const content10Data = getValue(results[4], { derivedContent10: [] });
       
       setStrategy(strategyData);
       
@@ -331,7 +375,8 @@ export default function RefinementStep() {
         funnelMessages: trafficData.funnelMessages,
         planner: plannerData.planner || [],
         traffic: trafficData.traffic,
-        executionGuide: trafficData.executionGuide
+        executionGuide: trafficData.executionGuide,
+        derivedContent10: content10Data.derivedContent10 || []
       };
       
       setCampaign(contentData);

@@ -1,8 +1,8 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { useAppStore } from "@/context/AppContext";
-import { Mic, FileText, Link as LinkIcon, Upload, ArrowRight, StopCircle, X } from "lucide-react";
+import { FileText, Link as LinkIcon, ArrowRight } from "lucide-react";
 import { generateJSON } from "@/lib/gemini";
 import { Type } from "@google/genai";
 
@@ -11,102 +11,61 @@ export default function InputStep() {
   const { updatePropertyData, setIsLoading } = useAppStore();
   const [inputText, setInputText] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [mediaData, setMediaData] = useState<{ mimeType: string; data: string } | null>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      chunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
-      };
-
-      mediaRecorder.onstop = async () => {
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = () => {
-          const base64data = reader.result as string;
-          setMediaData({
-            mimeType: "audio/webm",
-            data: base64data.split(",")[1],
-          });
-        };
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-    } catch (err) {
-      console.error("Error accessing microphone:", err);
-      alert("Erro ao acessar microfone. Verifique as permissões.");
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64data = reader.result as string;
-      setMediaData({
-        mimeType: file.type,
-        data: base64data.split(",")[1],
-      });
-    };
-    reader.readAsDataURL(file);
-  };
+  const [error, setError] = useState<string | null>(null);
 
   const handleNext = async () => {
-    if (!inputText.trim() && !mediaData) return;
+    if (!inputText.trim()) return;
 
     setIsProcessing(true);
     setIsLoading(true);
+    setError(null);
 
     try {
       const prompt = `
-        Analise o conteúdo fornecido (texto, áudio, imagem/PDF ou LINK) sobre um imóvel e extraia as informações principais.
+        Analise o conteúdo fornecido (texto ou LINK) sobre um imóvel e extraia as informações principais.
+        
+        REGRA CRUCIAL:
+        Verifique se o conteúdo é REALMENTE sobre um imóvel (casa, apartamento, terreno, etc) para venda ou aluguel.
+        Se o conteúdo NÃO for sobre um imóvel (ex: notícias genéricas, outros produtos, texto aleatório, ou algo que não tenha relação com o mercado imobiliário), defina a propriedade "isValidProperty" como FALSE.
+        
         Se houver um link, acesse o conteúdo para garantir que as informações são reais e precisas.
         ${inputText ? `Conteúdo fornecido: "${inputText}"` : ""}
         
         Retorne um JSON com:
+        - isValidProperty: boolean (TRUE se for imóvel, FALSE caso contrário)
         - type: Tipo do imóvel (Casa, Apartamento, Terreno, etc)
         - location: Localização aproximada (Bairro, Cidade)
         - price: Valor (se houver)
         - features: Lista de características principais
         - missingInfo: Lista de informações cruciais que estão faltando para uma boa venda
+        - errorMessage: String (Se isValidProperty for FALSE, explique educadamente por que o conteúdo não é válido para o sistema SocialImob Pro)
       `;
 
       const schema = {
         type: Type.OBJECT,
         properties: {
+          isValidProperty: { type: Type.BOOLEAN },
           type: { type: Type.STRING },
           location: { type: Type.STRING },
           price: { type: Type.STRING },
           features: { type: Type.ARRAY, items: { type: Type.STRING } },
-          missingInfo: { type: Type.ARRAY, items: { type: Type.STRING } }
-        }
+          missingInfo: { type: Type.ARRAY, items: { type: Type.STRING } },
+          errorMessage: { type: Type.STRING }
+        },
+        required: ["isValidProperty"]
       };
 
-      const parts = mediaData ? [{ inlineData: mediaData }] : [];
-      const extractedData = await generateJSON(prompt, schema, undefined, parts);
+      const extractedData = await generateJSON(prompt, schema);
+
+      if (!extractedData.isValidProperty) {
+        setError(extractedData.errorMessage || "O conteúdo enviado não possui relação com o mercado imobiliário. Por favor, forneça informações de um imóvel para prosseguir.");
+        setIsProcessing(false);
+        setIsLoading(false);
+        return;
+      }
 
       updatePropertyData({
-        description: inputText || "Conteúdo multimídia enviado",
+        description: inputText,
         ...extractedData
       });
 
@@ -125,58 +84,28 @@ export default function InputStep() {
     <div className="space-y-6">
       <div className="space-y-2">
         <h2 className="text-2xl font-bold">O que vamos vender?</h2>
-        <p className="text-slate-500">Descreva, grave um áudio ou envie um arquivo.</p>
+        <p className="text-slate-500">Descreva o imóvel ou cole um link.</p>
       </div>
 
       <div className="relative">
         <textarea
-          className="w-full h-48 p-4 rounded-2xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 resize-none text-base"
+          className={`w-full h-48 p-4 rounded-2xl border ${error ? 'border-red-300 bg-red-50' : 'border-slate-200'} focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 resize-none text-base transition-all`}
           placeholder="Ex: Apartamento 3 quartos no Jardins, reformado, vista livre, 2 vagas..."
           value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
+          onChange={(e) => {
+            setInputText(e.target.value);
+            if (error) setError(null);
+          }}
         />
-        <div className="absolute bottom-4 right-4 flex gap-2">
-          {isRecording ? (
-            <button 
-              onClick={stopRecording}
-              className="p-2 bg-red-100 rounded-full hover:bg-red-200 text-red-600 animate-pulse"
-            >
-              <StopCircle className="w-5 h-5" />
-            </button>
-          ) : (
-            <button 
-              onClick={startRecording}
-              className="p-2 bg-slate-100 rounded-full hover:bg-slate-200 text-slate-600"
-            >
-              <Mic className="w-5 h-5" />
-            </button>
-          )}
-        </div>
+        {error && (
+          <div className="mt-2 p-3 bg-red-100 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2 animate-in fade-in slide-in-from-top-1">
+            <div className="w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center shrink-0 font-bold">!</div>
+            <p>{error}</p>
+          </div>
+        )}
       </div>
 
-      {mediaData && (
-        <div className="flex items-center justify-between p-3 bg-indigo-50 rounded-xl border border-indigo-100 text-sm text-indigo-700">
-          <span className="truncate max-w-[200px]">Arquivo anexado ({mediaData.mimeType})</span>
-          <button onClick={() => setMediaData(null)} className="p-1 hover:bg-indigo-100 rounded-full">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
-      <div className="grid grid-cols-3 gap-3">
-        <label className="cursor-pointer">
-          <input 
-            type="file" 
-            accept="image/*,application/pdf" 
-            className="hidden" 
-            onChange={handleFileUpload}
-          />
-          <div className="flex flex-col h-20 gap-1 items-center justify-center text-xs border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-xl transition-colors">
-            <Upload className="w-5 h-5 mb-1" />
-            PDF/Foto
-          </div>
-        </label>
-        
+      <div className="grid grid-cols-2 gap-3">
         <Button variant="outline" className="flex flex-col h-20 gap-1 items-center justify-center text-xs" onClick={() => {
           const url = prompt("Cole o link do imóvel:");
           if (url) setInputText(prev => prev + " " + url);
@@ -195,7 +124,7 @@ export default function InputStep() {
           size="lg" 
           className="w-full shadow-xl" 
           onClick={handleNext}
-          disabled={(!inputText.trim() && !mediaData) || isProcessing || isRecording}
+          disabled={!inputText.trim() || isProcessing}
         >
           {isProcessing ? "Analisando..." : "Continuar"}
           {!isProcessing && <ArrowRight className="ml-2 w-5 h-5" />}

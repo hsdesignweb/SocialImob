@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, Loader2, LogOut, Coins, MessageCircle } from 'lucide-react';
+import { Menu, Loader2, LogOut, Coins, MessageCircle, Target } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAppStore } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
@@ -58,7 +58,7 @@ export default function Layout() {
       
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
-        <div className="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="max-w-md md:max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">
               S
@@ -95,6 +95,15 @@ export default function Layout() {
                     <MessageCircle className="w-4 h-4" />
                     Suporte
                   </a>
+                  {user?.isAdmin && (
+                    <button 
+                      onClick={() => { navigate('/admin'); setIsMenuOpen(false); }}
+                      className="w-full text-left px-4 py-2 text-sm text-indigo-600 hover:bg-indigo-50 flex items-center gap-2"
+                    >
+                      <Target className="w-4 h-4" />
+                      Painel ADM
+                    </button>
+                  )}
                   <button 
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-slate-100"
@@ -110,7 +119,7 @@ export default function Layout() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-md mx-auto w-full p-4 pb-24">
+      <main className="flex-1 max-w-md md:max-w-6xl mx-auto w-full p-4 pb-24">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
@@ -125,7 +134,7 @@ export default function Layout() {
       </main>
 
       {/* Footer Support */}
-      <footer className="max-w-md mx-auto w-full p-6 text-center border-t border-slate-100">
+      <footer className="max-w-md md:max-w-6xl mx-auto w-full p-6 text-center border-t border-slate-100">
         <p className="text-xs text-slate-400 mb-1">SocialImob Pro © 2026</p>
         <a 
           href="mailto:atendimento@arkaconsultoria.com.br" 

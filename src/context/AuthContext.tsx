@@ -75,11 +75,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (data) {
+        const userEmail = data.email || email;
         const userData: User = {
           id: data.id,
-          email: data.email || email,
+          email: userEmail,
           name: data.name || '',
-          isAdmin: data.is_admin,
+          isAdmin: data.is_admin || (userEmail === 'hebert.ss@gmail.com'),
           credits: data.credits,
           isPaid: data.is_paid,
           subscriptionDate: data.subscription_date,
