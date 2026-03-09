@@ -81,10 +81,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           email: userEmail,
           name: data.name || '',
           isAdmin: data.is_admin || (userEmail === 'hebert.ss@gmail.com'),
-          credits: data.credits,
-          isPaid: data.is_paid,
+          credits: userEmail === 'hsdesignweb@gmail.com' ? 60 : data.credits,
+          isPaid: userEmail === 'hsdesignweb@gmail.com' ? true : data.is_paid,
           subscriptionDate: data.subscription_date,
-          status: data.status,
+          status: userEmail === 'hsdesignweb@gmail.com' ? 'active' : data.status,
         };
         checkSubscriptionStatus(userData);
       }

@@ -13,8 +13,9 @@ app.use(cors());
 app.use(express.json());
 
 // Initialize Mercado Pago
-// Using the provided Access Token directly for this demo as requested
-const client = new MercadoPagoConfig({ accessToken: 'APP_USR-4051969126176591-091022-e005a2436640f2156d3b99f273b81e8d-47941751' });
+const client = new MercadoPagoConfig({ 
+  accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN || 'APP_USR-4051969126176591-091022-e005a2436640f2156d3b99f273b81e8d-47941751' 
+});
 
 // API Routes
 app.post('/api/create-preference', async (req, res) => {

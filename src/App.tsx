@@ -20,8 +20,16 @@ import Payment from "./pages/Payment";
 
 // Protected Route Component
 const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.ReactNode, requireAdmin?: boolean }) => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, loading } = useAuth();
   
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
@@ -41,7 +49,16 @@ const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.Re
 
 // Payment Route Guard (Only for authenticated users who need to pay)
 const PaymentRoute = ({ children }: { children: React.ReactNode }) => {
-    const { isAuthenticated, user } = useAuth();
+    const { isAuthenticated, user, loading } = useAuth();
+    
+    if (loading) {
+        return (
+          <div className="min-h-screen flex items-center justify-center bg-slate-50">
+            <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        );
+    }
+
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
     }

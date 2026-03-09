@@ -12,6 +12,7 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const { register } = useAuth();
   const navigate = useNavigate();
 
@@ -19,18 +20,22 @@ export default function Register() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setSuccessMessage('');
 
     try {
       const result = await register(name, email, password);
       if (result.success) {
-        navigate('/');
+        setSuccessMessage('Conta criada com sucesso! Redirecionando...');
+        setTimeout(() => {
+          navigate('/');
+        }, 2000);
       } else {
         setError(result.error || 'Erro ao criar conta.');
       }
     } catch (err) {
       setError('Erro ao criar conta. Tente novamente.');
     } finally {
-      setIsLoading(false);
+      if (!successMessage) setIsLoading(false);
     }
   };
 
@@ -48,6 +53,12 @@ export default function Register() {
         {error && (
           <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg text-center">
             {error}
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="bg-green-50 text-green-600 text-sm p-3 rounded-lg text-center font-medium">
+            {successMessage}
           </div>
         )}
 
