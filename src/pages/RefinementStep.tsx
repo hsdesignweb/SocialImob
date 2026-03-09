@@ -78,15 +78,22 @@ export default function RefinementStep() {
       }
 
       const reinforcementText = `
-        REGRAS OBRIGATÓRIAS:
+        REGRAS OBRIGATÓRIAS (Metodologia SocialImob Pro):
         1. Responda SEMPRE em Português do Brasil (PT-BR).
         2. A estratégia DEVE estar rigorosamente alinhada com os perfis selecionados (${buyerProfiles.join(", ")}) e os objetivos (${goals.join(", ")}).
-        3. NÃO use caixa alta (Caps Lock) desnecessária.
-        4. NÃO use caracteres especiais ou idiomas estrangeiros (como Chinês).
+        3. Premissa Social: As pessoas estão nas redes para entretenimento, informação ou conexão. O conteúdo deve atrair atenção imediata com ganchos poderosos.
+        4. Foco em Benefícios Reais:
+           - Se MCMV/Popular: Foco em sair do aluguel, facilidade de financiamento e subsídios.
+           - Se Praia: Proximidade, vista, lazer e potencial de locação/investimento.
+           - Se Rural: Refúgio, silêncio, contato com a natureza e qualidade de vida.
+           - Se Comercial: Imagem profissional, localização estratégica e ROI.
+           - Se Alto Padrão: Exclusividade, acabamentos de luxo, segurança e status.
+        5. Linguagem: Persuasiva, humanizada e direta. Evite termos técnicos chatos.
+        6. NÃO use caixa alta desnecessária ou caracteres estrangeiros.
       `;
       
       const strategyPrompt = `
-        Atue como um estrategista de marketing imobiliário sênior.
+        Atue como um estrategista de marketing imobiliário sênior seguindo a Metodologia SocialImob.
         ${reinforcementText}
 
         Dados do Imóvel:
@@ -96,10 +103,10 @@ export default function RefinementStep() {
         Objetivos: ${goals.join(", ")}
         
         Defina a estratégia de lançamento. Retorne JSON:
-        - angle: Ângulo principal de venda (uma frase curta e impactante)
-        - persona: Descrição detalhada da persona baseada nos perfis escolhidos
+        - angle: Ângulo principal de venda (uma frase curta e impactante baseada em estilos como "Investimento", "Harmonia" ou "Conforto")
+        - persona: Descrição detalhada da persona baseada nos perfis escolhidos e suas dores reais (ex: medo de perder oportunidade, cansaço do aluguel)
         - approach: Tom de voz e abordagem (ex: Emocional, Técnico, Urgência)
-        - narrative: Sugestão de narrativa (storytelling)
+        - narrative: Sugestão de narrativa (storytelling) que conecte o imóvel ao sonho da persona
         - sequence: Lista de 5 tópicos para sequência de posts
       `;
 
@@ -123,8 +130,43 @@ export default function RefinementStep() {
         Objetivos: ${goals.join(", ")}
         
         Gere um roteiro para Reel de 60s focado no público-alvo. 
+        
+        BIBLIOTECA DE GANCHOS (Use estes padrões ou variações deles para os hooks):
+        - Elimine de vez...
+        - X motivos para...
+        - X coisas que eu faria se eu fosse [persona]...
+        - Esqueça de uma vez por todas...
+        - Por que pessoas de [perfil] estão procurando...
+        - É realmente isso que está te impedindo de [objetivo]?
+        - Eu não acredito que...
+        - Já imaginou se...
+        - Definitivamente essa é a melhor maneira de...
+        - É melhor prevenir do que remediar...
+        - Descubra como...
+        - Você sabia que...
+        - Evite o sofrimento de...
+        - Você já se perguntou por que...?
+        - Já reparou como...?
+        - Você não odeia quando...?
+        - Você já se encontrou [situação]?
+        - Você tem [problema/desejo]?
+        - Sério, como você [situação]?
+        - E se você pudesse...?
+        - Não seria ótimo se...?
+        - Quer saber um segredo...?
+        - Posso ser totalmente honesto com você...?
+        - Você está cansado de...?
+        - Isso soa familiar...?
+        - Imagine como seria...
+        - Pense nisso por um momento...
+        - Preocupado com...?
+        - Você já tentou de tudo...
+        - Eu conheço o sentimento...
+        - Admita...
+        - No fundo, você sabe que...
+
         Retorne JSON:
-        - hooks: Lista com EXATAMENTE 5 opções de ganchos virais (3s cada)
+        - hooks: Lista com EXATAMENTE 5 opções de ganchos virais (3s cada) baseados na biblioteca acima.
         - body: Desenvolvimento completo do roteiro (fala/narração)
         - cta: Chamada para ação impactante
         - scenes: Sugestão visual detalhada de cenas
@@ -147,20 +189,21 @@ export default function RefinementStep() {
         Perfis Compradores: ${buyerProfiles.join(", ")}
         Objetivos: ${goals.join(", ")}
         
-        Gere um Planner de Conteúdo de 7 dias. 
-        IMPORTANTE: O campo "content" deve conter a LEGENDA COMPLETA E PRONTA PARA USO (incluindo emojis e hashtags), não apenas uma sugestão.
+        Gere um Planner de Conteúdo de 7 dias seguindo os estilos de anúncios da Metodologia SocialImob (Conforto, Estilo de Vida, Investimento, Harmonia, Valorização, Momentos Especiais, Relaxamento).
+        
+        IMPORTANTE: O campo "content" deve conter a LEGENDA COMPLETA E PRONTA PARA USO (incluindo emojis e hashtags), focada em gerar conexão emocional e desejo.
         
         Para o campo "day", use apenas o número (1 a 7).
-        Para o campo "title", use o formato "Dia X: [Título]".
+        Para o campo "title", use o formato "Dia X: [Estilo do Anúncio]".
         
         Distribuição sugerida:
-        - Dia 1: Teaser / Impacto
-        - Dia 2: A Região / Localização
-        - Dia 3: O Condomínio / Lazer
-        - Dia 4: Diferenciais do Imóvel
-        - Dia 5: Valorização / Investimento
-        - Dia 6: Estilo de Vida / Social
-        - Dia 7: Convite / CTA Final
+        - Dia 1: Teaser / Impacto (Estilo: Estilo de Vida)
+        - Dia 2: A Região / Localização (Estilo: Harmonia)
+        - Dia 3: O Condomínio / Lazer (Estilo: Momentos Especiais)
+        - Dia 4: Diferenciais do Imóvel (Estilo: Conforto)
+        - Dia 5: Valorização / Investimento (Estilo: Investimento)
+        - Dia 6: Estilo de Vida / Social (Estilo: Relaxamento)
+        - Dia 7: Convite / CTA Final (Estilo: Valorização)
         
         Retorne JSON:
         - planner: Lista de 7 dias (day, title, topic, content)
@@ -195,10 +238,12 @@ export default function RefinementStep() {
         Gere:
         1. Mensagens de Funil Humanizadas (Abordagem, Follow-up, Encerramento) para WhatsApp.
            - Gere EXATAMENTE 3 opções de mensagens para cada estágio.
+           - Siga a Metodologia SocialImob: Menos "vendedor chato" e mais "consultor amigo".
            - Abordagem: Focada em iniciar conversa e gerar curiosidade.
            - Follow-up: Focada em manter o interesse e tirar dúvidas.
            - Encerramento: Focada em urgência, FOMO ("não posso perder") e trazer o cliente de volta.
         2. Estratégia de Tráfego (Sugestão de criativos e Segmentação).
+           - Os criativos devem seguir a premissa de Entretenimento, Informação ou Conexão.
         
         Retorne JSON:
         - funnelMessages: { 
@@ -207,6 +252,11 @@ export default function RefinementStep() {
             encerramento: [string, string, string] 
           }
         - traffic: { creatives: { top, middle, bottom }, segmentation }
+        - executionGuide: {
+            creativeTips: [string, string, string],
+            publishingAdvice: string,
+            engagementStrategy: string
+          }
       `;
       const trafficSchema = {
         type: Type.OBJECT,
@@ -235,9 +285,18 @@ export default function RefinementStep() {
               segmentation: { type: Type.STRING }
             },
             required: ["creatives", "segmentation"]
+          },
+          executionGuide: {
+            type: Type.OBJECT,
+            properties: {
+              creativeTips: { type: Type.ARRAY, items: { type: Type.STRING } },
+              publishingAdvice: { type: Type.STRING },
+              engagementStrategy: { type: Type.STRING }
+            },
+            required: ["creativeTips", "publishingAdvice", "engagementStrategy"]
           }
         },
-        required: ["funnelMessages", "traffic"]
+        required: ["funnelMessages", "traffic", "executionGuide"]
       };
 
       // Execute ALL requests in parallel
@@ -260,7 +319,8 @@ export default function RefinementStep() {
       const plannerData = getValue(results[2], { planner: [] });
       const trafficData = getValue(results[3], { 
         funnelMessages: { abordagem: [], followup: [], encerramento: [] }, 
-        traffic: { creatives: { top: "", middle: "", bottom: "" }, segmentation: "" }
+        traffic: { creatives: { top: "", middle: "", bottom: "" }, segmentation: "" },
+        executionGuide: { creativeTips: [], publishingAdvice: "", engagementStrategy: "" }
       });
       
       setStrategy(strategyData);
@@ -270,7 +330,8 @@ export default function RefinementStep() {
         derivedContent: [],
         funnelMessages: trafficData.funnelMessages,
         planner: plannerData.planner || [],
-        traffic: trafficData.traffic
+        traffic: trafficData.traffic,
+        executionGuide: trafficData.executionGuide
       };
       
       setCampaign(contentData);

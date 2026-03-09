@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, Loader2, LogOut, Coins } from 'lucide-react';
+import { Menu, Loader2, LogOut, Coins, MessageCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAppStore } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
@@ -63,7 +63,10 @@ export default function Layout() {
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">
               S
             </div>
-            <span className="font-semibold text-lg tracking-tight hidden sm:block">SocialImob</span>
+            <div className="flex flex-col">
+              <span className="font-semibold text-lg tracking-tight leading-none">SocialImob</span>
+              <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Beta</span>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -85,9 +88,16 @@ export default function Layout() {
                     <p className="text-sm font-medium text-slate-900 truncate">{user?.name}</p>
                     <p className="text-xs text-slate-500 truncate">{user?.email}</p>
                   </div>
+                  <a 
+                    href="mailto:atendimento@arkaconsultoria.com.br"
+                    className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-2"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Suporte
+                  </a>
                   <button 
                     onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-slate-100"
                   >
                     <LogOut className="w-4 h-4" />
                     Sair
@@ -113,6 +123,17 @@ export default function Layout() {
           </motion.div>
         </AnimatePresence>
       </main>
+
+      {/* Footer Support */}
+      <footer className="max-w-md mx-auto w-full p-6 text-center border-t border-slate-100">
+        <p className="text-xs text-slate-400 mb-1">SocialImob Pro © 2026</p>
+        <a 
+          href="mailto:atendimento@arkaconsultoria.com.br" 
+          className="text-[10px] font-medium text-indigo-400 hover:text-indigo-600 transition-colors"
+        >
+          Suporte: atendimento@arkaconsultoria.com.br
+        </a>
+      </footer>
     </div>
   );
 }

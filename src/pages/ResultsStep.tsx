@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useAppStore } from "@/context/AppContext";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Copy, Check, Video, FileText, MessageCircle, Calendar, Target, ArrowRight, ChevronRight } from "lucide-react";
+import { Copy, Check, Video, FileText, MessageCircle, Calendar, Target, ArrowRight, ChevronRight, BookOpen, Lightbulb, Info } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from "motion/react";
 
@@ -12,6 +12,7 @@ const SECTIONS = [
   { id: "planner", label: "Planner", icon: Calendar },
   { id: "traffic", label: "Tráfego", icon: Target },
   { id: "messages", label: "Mensagens", icon: MessageCircle },
+  { id: "guide", label: "Guia", icon: BookOpen },
 ];
 
 export default function ResultsStep() {
@@ -294,6 +295,68 @@ export default function ResultsStep() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {activeSection === "guide" && (
+              <div className="space-y-6 pb-8">
+                <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 text-sm text-emerald-800">
+                  <p className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4" /> 
+                    <strong>Guia de Execução SocialImob:</strong>
+                  </p>
+                  <p className="mt-1">Aprenda como extrair o máximo de resultado desta campanha seguindo nossa metodologia.</p>
+                </div>
+
+                <Card className="border-l-4 border-l-amber-500">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Lightbulb className="w-4 h-4 text-amber-500" /> Dicas Criativas
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {(campaign.executionGuide?.creativeTips || []).map((tip, tIdx) => (
+                      <div key={tIdx} className="flex items-start gap-3 text-sm text-slate-700">
+                        <div className="w-5 h-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                          {tIdx + 1}
+                        </div>
+                        <p>{tip}</p>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-blue-500">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Info className="w-4 h-4 text-blue-500" /> Como Publicar
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-slate-700 leading-relaxed">
+                      {campaign.executionGuide?.publishingAdvice}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-indigo-500">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Target className="w-4 h-4 text-indigo-500" /> Estratégia de Engajamento
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-slate-700 leading-relaxed">
+                      {campaign.executionGuide?.engagementStrategy}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <div className="p-4 bg-slate-100 rounded-xl text-center">
+                  <p className="text-xs text-slate-500 italic">
+                    "O segredo não é apenas o que você publica, mas como você se conecta."
+                  </p>
+                </div>
               </div>
             )}
           </motion.div>

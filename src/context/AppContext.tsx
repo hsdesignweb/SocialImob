@@ -52,6 +52,11 @@ export interface GeneratedContent {
     };
     segmentation: string;
   };
+  executionGuide: {
+    creativeTips: string[];
+    publishingAdvice: string;
+    engagementStrategy: string;
+  };
 }
 
 interface AppState {

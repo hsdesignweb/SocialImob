@@ -47,6 +47,11 @@ export const generateJSON = async (prompt: string, schema?: any, systemInstructi
       try {
         const model = "gemini-3-flash-preview";
         
+        // Detect URLs in prompt or parts to enable urlContext
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const urlsInPrompt = prompt.match(urlRegex) || [];
+        const hasUrls = urlsInPrompt.length > 0;
+
         const contents = [
           {
             parts: [
@@ -62,9 +67,10 @@ export const generateJSON = async (prompt: string, schema?: any, systemInstructi
           config: {
               responseMimeType: "application/json",
               responseSchema: schema,
-              systemInstruction: systemInstruction || "Você é um assistente especializado em marketing imobiliário. Responda sempre em Português do Brasil.",
+              systemInstruction: systemInstruction || "Você é um assistente especializado em marketing imobiliário. Responda sempre em Português do Brasil. Se um link for fornecido, analise o conteúdo da página para extrair informações reais sobre o imóvel.",
               maxOutputTokens: 8192,
-              temperature: 0.7, // Lower temperature for more stable JSON and language
+              temperature: 0.7,
+              tools: hasUrls ? [{ urlContext: {} }] : undefined
           }
         });
     

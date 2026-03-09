@@ -79,8 +79,9 @@ export default function InputStep() {
 
     try {
       const prompt = `
-        Analise o conteúdo fornecido (texto, áudio ou imagem/PDF) sobre um imóvel e extraia as informações principais.
-        ${inputText ? `Texto complementar: "${inputText}"` : ""}
+        Analise o conteúdo fornecido (texto, áudio, imagem/PDF ou LINK) sobre um imóvel e extraia as informações principais.
+        Se houver um link, acesse o conteúdo para garantir que as informações são reais e precisas.
+        ${inputText ? `Conteúdo fornecido: "${inputText}"` : ""}
         
         Retorne um JSON com:
         - type: Tipo do imóvel (Casa, Apartamento, Terreno, etc)
@@ -176,7 +177,10 @@ export default function InputStep() {
           </div>
         </label>
         
-        <Button variant="outline" className="flex flex-col h-20 gap-1 items-center justify-center text-xs" disabled>
+        <Button variant="outline" className="flex flex-col h-20 gap-1 items-center justify-center text-xs" onClick={() => {
+          const url = prompt("Cole o link do imóvel:");
+          if (url) setInputText(prev => prev + " " + url);
+        }}>
           <LinkIcon className="w-5 h-5 mb-1" />
           Link
         </Button>
