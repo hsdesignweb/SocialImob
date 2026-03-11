@@ -3,6 +3,11 @@ import cors from 'cors';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -68,6 +73,11 @@ async function startServer() {
   } else {
     // In production, serve static files from dist
     app.use(express.static('dist'));
+    
+    // SPA fallback: serve index.html for any unknown routes
+    app.get('*', (req, res) => {
+      res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+    });
   }
 
   app.listen(PORT, '0.0.0.0', () => {
