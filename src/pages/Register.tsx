@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { motion } from 'motion/react';
+import { Mail, Lock, User, UserPlus, Loader2, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
-import { Loader2, UserPlus, ArrowLeft } from 'lucide-react';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -40,85 +39,127 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 space-y-6">
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xl mx-auto">
+    <div className="min-h-screen bg-brand-bg flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-3xl opacity-50" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-3xl opacity-50" />
+      </div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md z-10"
+      >
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 bg-brand-primary rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-brand-primary/20 mx-auto mb-6">
             S
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Crie sua conta</h1>
-          <p className="text-slate-500">Comece a gerar campanhas imobiliárias com IA</p>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Crie sua conta</h1>
+          <p className="text-slate-500 font-medium">Comece sua jornada estratégica com IA</p>
         </div>
 
-        {error && (
-          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg text-center">
-            {error}
-          </div>
-        )}
+        <div className="bg-white p-8 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm font-bold rounded-xl animate-shake">
+                {error}
+              </div>
+            )}
 
-        {successMessage && (
-          <div className="bg-green-50 text-green-600 text-sm p-3 rounded-lg text-center font-medium">
-            {successMessage}
-          </div>
-        )}
+            {successMessage && (
+              <div className="p-4 bg-emerald-50 border border-emerald-100 text-emerald-600 text-sm font-bold rounded-xl">
+                {successMessage}
+              </div>
+            )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Nome Completo</Label>
-            <Input
-              id="name"
-              type="text"
-              placeholder="Seu nome"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="seu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+            <div className="space-y-2">
+              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Nome Completo</label>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
+                  <User className="w-5 h-5" />
+                </div>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full h-14 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                  placeholder="Seu nome"
+                  required
+                />
+              </div>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={4}
-            />
-          </div>
+            <div className="space-y-2">
+              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Email</label>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full h-14 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                  placeholder="seu@email.com"
+                  required
+                />
+              </div>
+            </div>
 
-          <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700" disabled={isLoading}>
-            {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <UserPlus className="w-4 h-4 mr-2" />}
-            Criar conta Grátis
-          </Button>
-        </form>
+            <div className="space-y-2">
+              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Senha</label>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full h-14 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                  placeholder="••••••••"
+                  required
+                  minLength={4}
+                />
+              </div>
+            </div>
 
-        <div className="text-center space-y-4">
-          <div className="text-sm text-slate-500">
-            Já tem uma conta?{' '}
-            <Link to="/login" className="text-indigo-600 font-medium hover:underline">
-              Faça login
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+              className="w-full h-14 bg-brand-primary hover:bg-blue-700 text-white rounded-xl font-black text-lg shadow-lg shadow-brand-primary/20 transition-all active:scale-[0.98]"
+            >
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : 'Criar conta agora'}
+            </Button>
+          </form>
+
+          <div className="mt-8 text-center space-y-4">
+            <p className="text-sm font-medium text-slate-500">
+              Já tem uma conta?{' '}
+              <Link to="/login" className="text-brand-primary font-black hover:underline">Faça login</Link>
+            </p>
+            <Link to="/login" className="text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center gap-2">
+              <ArrowLeft className="w-3 h-3" /> Voltar para o Login
             </Link>
           </div>
-          
-          <Link to="/login" className="text-sm text-slate-500 hover:text-indigo-600 flex items-center justify-center gap-1">
-            <ArrowLeft className="w-3 h-3" /> Voltar para o Login
-          </Link>
         </div>
-      </div>
+      </motion.div>
+
+      {/* Illustration at the bottom */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.2 }}
+        className="mt-12 w-full max-w-lg relative"
+      >
+        <img 
+          src="https://img.freepik.com/free-vector/online-registration-concept-illustration_114360-1238.jpg?w=826" 
+          alt="Illustration" 
+          className="w-full h-auto mix-blend-multiply opacity-80"
+          referrerPolicy="no-referrer"
+        />
+      </motion.div>
     </div>
   );
 }

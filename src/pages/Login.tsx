@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { motion } from 'motion/react';
+import { Mail, Lock, LogIn, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
-import { Loader2, LogIn } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -22,7 +21,6 @@ export default function Login() {
     try {
       const result = await login(email, password);
       if (result.success) {
-        // Check status for redirection
         if (result.status === 'pending_payment') {
              navigate('/payment', { state: { email } });
         } else if (result.status === 'suspended') {
@@ -41,67 +39,103 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 space-y-6">
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xl mx-auto">
+    <div className="min-h-screen bg-brand-bg flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-3xl opacity-50" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-3xl opacity-50" />
+      </div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md z-10"
+      >
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 bg-brand-primary rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-brand-primary/20 mx-auto mb-6">
             S
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Bem-vindo de volta</h1>
-          <p className="text-slate-500">Entre para gerenciar suas campanhas</p>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Bem-vindo de volta</h1>
+          <p className="text-slate-500 font-medium">Entre para gerenciar suas campanhas</p>
         </div>
 
-        {error && (
-          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg text-center">
-            {error}
-          </div>
-        )}
+        <div className="bg-white p-8 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm font-bold rounded-xl animate-shake">
+                {error}
+              </div>
+            )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="seu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Senha</Label>
-              <Link to="/forgot-password" className="text-xs text-indigo-600 hover:underline">
-                Esqueceu a senha?
-              </Link>
+            <div className="space-y-2">
+              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Email</label>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full h-14 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                  placeholder="seu@email.com"
+                  required
+                />
+              </div>
             </div>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
 
-          <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700" disabled={isLoading}>
-            {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <LogIn className="w-4 h-4 mr-2" />}
-            Entrar
-          </Button>
-        </form>
-
-        <div className="space-y-4 text-center">
-            <div className="text-sm text-slate-500">
-                Não tem uma conta?{' '}
-                <Link to="/register" className="text-indigo-600 font-medium hover:underline">
-                    Criar conta
-                </Link>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between ml-1">
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Senha</label>
+                <Link to="#" className="text-xs font-bold text-brand-primary hover:underline">Esqueceu a senha?</Link>
+              </div>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full h-14 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
             </div>
+
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+              className="w-full h-14 bg-brand-primary hover:bg-blue-700 text-white rounded-xl font-black text-lg shadow-lg shadow-brand-primary/20 transition-all active:scale-[0.98]"
+            >
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : 'Acessar agora'}
+            </Button>
+          </form>
+
+          <div className="mt-8 text-center">
+            <p className="text-sm font-medium text-slate-500">
+              Não tem uma conta?{' '}
+              <Link to="/register" className="text-brand-primary font-black hover:underline">Criar conta</Link>
+            </p>
+          </div>
         </div>
-      </div>
+      </motion.div>
+
+      {/* Illustration at the bottom */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.2 }}
+        className="mt-12 w-full max-w-lg relative"
+      >
+        <img 
+          src="https://img.freepik.com/free-vector/sign-up-concept-illustration_114360-7885.jpg?w=826" 
+          alt="Illustration" 
+          className="w-full h-auto mix-blend-multiply opacity-80"
+          referrerPolicy="no-referrer"
+        />
+      </motion.div>
     </div>
   );
 }

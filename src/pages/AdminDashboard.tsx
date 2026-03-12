@@ -113,133 +113,138 @@ export default function AdminDashboard() {
   const activePaidUsers = users.filter(u => u.is_paid).length;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="shrink-0">
+    <div className="space-y-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex items-center gap-6">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate('/')} 
+            className="shrink-0 text-slate-400 hover:text-brand-primary hover:bg-slate-50 rounded-xl"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Painel Administrativo</h1>
-            <p className="text-slate-500 text-sm">Métricas e gestão de usuários do SocialImob Pro.</p>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">Painel Boss</h1>
+            <p className="text-slate-500 font-medium">Gestão estratégica de usuários e métricas.</p>
           </div>
         </div>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input 
             type="text" 
             placeholder="Buscar usuário..." 
-            className="pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-full md:w-64"
+            className="pl-12 pr-6 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none w-full md:w-80 text-slate-900 placeholder:text-slate-400 transition-all shadow-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
-              <Users className="w-6 h-6 text-indigo-600" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="bg-white border-slate-100 rounded-[2rem] shadow-xl shadow-slate-200/50">
+          <CardContent className="p-8 flex items-center gap-6">
+            <div className="w-16 h-16 bg-brand-primary/5 rounded-2xl flex items-center justify-center border border-brand-primary/10">
+              <Users className="w-8 h-8 text-brand-primary" />
             </div>
             <div>
-              <p className="text-xs font-medium text-slate-500 uppercase">Total Usuários</p>
-              <p className="text-2xl font-bold text-slate-900">{users.length}</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Usuários</p>
+              <p className="text-3xl font-black text-slate-900 tracking-tighter">{users.length}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-              <CreditCard className="w-6 h-6 text-green-600" />
+        <Card className="bg-white border-slate-100 rounded-[2rem] shadow-xl shadow-slate-200/50">
+          <CardContent className="p-8 flex items-center gap-6">
+            <div className="w-16 h-16 bg-brand-secondary/5 rounded-2xl flex items-center justify-center border border-brand-secondary/10">
+              <CreditCard className="w-8 h-8 text-brand-secondary" />
             </div>
             <div>
-              <p className="text-xs font-medium text-slate-500 uppercase">Assinantes Ativos</p>
-              <p className="text-2xl font-bold text-slate-900">{activePaidUsers}</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Assinantes Ativos</p>
+              <p className="text-3xl font-black text-slate-900 tracking-tighter">{activePaidUsers}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-              <Activity className="w-6 h-6 text-amber-600" />
+        <Card className="bg-white border-slate-100 rounded-[2rem] shadow-xl shadow-slate-200/50">
+          <CardContent className="p-8 flex items-center gap-6">
+            <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center border border-emerald-100">
+              <Activity className="w-8 h-8 text-emerald-600" />
             </div>
             <div>
-              <p className="text-xs font-medium text-slate-500 uppercase">Créditos Consumidos</p>
-              <p className="text-2xl font-bold text-slate-900">{totalCreditsUsed}</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Créditos Consumidos</p>
+              <p className="text-3xl font-black text-slate-900 tracking-tighter">{totalCreditsUsed}</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="overflow-hidden">
-        <CardHeader className="bg-slate-50 border-b border-slate-100">
-          <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500">Lista de Usuários</CardTitle>
+      <Card className="bg-white border-slate-100 rounded-[2.5rem] overflow-hidden shadow-xl shadow-slate-200/50">
+        <CardHeader className="bg-slate-50 border-b border-slate-100 p-8">
+          <CardTitle className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Lista de Usuários</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Créditos</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Cadastro</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                <TableRow className="border-slate-100 hover:bg-transparent">
+                  <TableHead className="text-slate-400 font-black uppercase text-[10px] tracking-widest p-6">Nome</TableHead>
+                  <TableHead className="text-slate-400 font-black uppercase text-[10px] tracking-widest p-6">Email</TableHead>
+                  <TableHead className="text-slate-400 font-black uppercase text-[10px] tracking-widest p-6">Créditos</TableHead>
+                  <TableHead className="text-slate-400 font-black uppercase text-[10px] tracking-widest p-6">Status</TableHead>
+                  <TableHead className="text-slate-400 font-black uppercase text-[10px] tracking-widest p-6">Cadastro</TableHead>
+                  <TableHead className="text-slate-400 font-black uppercase text-[10px] tracking-widest p-6 text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-slate-500 italic">Carregando dados...</TableCell>
+                    <TableCell colSpan={6} className="text-center py-20 text-slate-400 italic font-medium">Carregando dados do sistema...</TableCell>
                   </TableRow>
                 ) : filteredUsers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-slate-500 italic">Nenhum usuário encontrado.</TableCell>
+                    <TableCell colSpan={6} className="text-center py-20 text-slate-400 italic font-medium">Nenhum usuário encontrado.</TableCell>
                   </TableRow>
                 ) : (
                   filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium text-slate-900">
+                    <TableRow key={user.id} className="border-slate-100 hover:bg-slate-50 transition-colors">
+                      <TableCell className="p-6">
                         {editingId === user.id ? (
                           <Input 
-                            className="h-8 text-sm" 
+                            className="h-10 bg-white border-slate-200 text-slate-900 rounded-xl" 
                             value={editForm.name} 
                             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                           />
                         ) : (
-                          user.name || 'Sem nome'
+                          <span className="text-slate-900 font-bold">{user.name || 'Sem nome'}</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-slate-600">{user.email}</TableCell>
-                      <TableCell>
+                      <TableCell className="p-6 text-slate-500 font-medium">{user.email}</TableCell>
+                      <TableCell className="p-6">
                         {editingId === user.id ? (
                           <Input 
                             type="number" 
-                            className="w-20 h-8" 
+                            className="w-24 h-10 bg-white border-slate-200 text-slate-900 rounded-xl" 
                             value={editForm.credits} 
                             onChange={(e) => setEditForm({ ...editForm, credits: parseInt(e.target.value) || 0 })}
                           />
                         ) : (
-                          <div className="flex items-center gap-2">
-                            <div className="w-16 h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="flex items-center gap-3">
+                            <div className="w-20 h-2 bg-slate-100 rounded-full overflow-hidden">
                               <div 
-                                className="h-full bg-indigo-500" 
+                                className="h-full bg-brand-primary shadow-lg shadow-brand-primary/20" 
                                 style={{ width: `${Math.min(100, Math.max(0, ((user.credits || 0) / 100) * 100))}%` }}
                               />
                             </div>
-                            <span className="text-xs font-bold text-slate-700">{user.credits || 0}</span>
+                            <span className="text-xs font-black text-slate-900">{user.credits || 0}</span>
                           </div>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="p-6">
                         {editingId === user.id ? (
                           <select 
-                            className="text-xs border border-slate-200 rounded p-1 outline-none"
+                            className="text-xs bg-white border border-slate-200 text-slate-900 rounded-xl p-2 outline-none focus:border-brand-primary"
                             value={editForm.status}
                             onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
                           >
@@ -249,28 +254,30 @@ export default function AdminDashboard() {
                             <option value="expired">Expirado</option>
                           </select>
                         ) : (
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                            user.is_paid ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"
+                          <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                            user.is_paid 
+                              ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
+                              : "bg-slate-50 text-slate-500 border-slate-100"
                           }`}>
                             {user.status}
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="text-xs text-slate-500">
+                      <TableCell className="p-6 text-xs text-slate-400 font-bold">
                         {user.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : 'N/A'}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="p-6 text-right">
                         {editingId === user.id ? (
                           <div className="flex justify-end gap-2">
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600" onClick={() => handleSave(user.id)} disabled={isSaving}>
-                              <Check className="w-4 h-4" />
+                            <Button size="icon" variant="ghost" className="h-10 w-10 text-emerald-600 hover:bg-emerald-50 rounded-xl" onClick={() => handleSave(user.id)} disabled={isSaving}>
+                              <Check className="w-5 h-5" />
                             </Button>
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-red-600" onClick={() => setEditingId(null)} disabled={isSaving}>
-                              <X className="w-4 h-4" />
+                            <Button size="icon" variant="ghost" className="h-10 w-10 text-red-500 hover:bg-red-50 rounded-xl" onClick={() => setEditingId(null)} disabled={isSaving}>
+                              <X className="w-5 h-5" />
                             </Button>
                           </div>
                         ) : (
-                          <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400" onClick={() => handleEdit(user)}>
+                          <Button size="icon" variant="ghost" className="h-10 w-10 text-slate-400 hover:text-brand-primary hover:bg-slate-50 rounded-xl" onClick={() => handleEdit(user)}>
                             <Edit2 className="w-4 h-4" />
                           </Button>
                         )}

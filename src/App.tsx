@@ -9,7 +9,6 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import InputStep from "./pages/InputStep";
-import RefinementStep from "./pages/RefinementStep";
 import ResultsStep from "./pages/ResultsStep";
 import AdminDashboard from "./pages/AdminDashboard";
 import Login from "./pages/Login";
@@ -92,7 +91,6 @@ export default function App() {
             }>
               <Route index element={<Home />} />
               <Route path="input" element={<InputStep />} />
-              <Route path="refinement" element={<RefinementStep />} />
               <Route path="results" element={<ResultsStep />} />
               <Route path="admin" element={
                 <ProtectedRoute requireAdmin={true}>

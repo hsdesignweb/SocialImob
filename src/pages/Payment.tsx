@@ -76,69 +76,81 @@ export default function Payment() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loader2 className="w-12 h-12 animate-spin text-indigo-600 mx-auto" />
-          <p className="text-slate-600 font-medium">Processando pagamento...</p>
+      <div className="min-h-screen bg-brand-bg flex items-center justify-center">
+        <div className="text-center space-y-6">
+          <div className="relative">
+            <div className="absolute inset-0 bg-brand-primary/10 blur-3xl rounded-full" />
+            <Loader2 className="w-16 h-16 animate-spin text-brand-primary mx-auto relative z-10" />
+          </div>
+          <p className="text-slate-400 font-black uppercase tracking-widest text-xs">Processando pagamento...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div className="bg-indigo-600 p-6 text-white text-center">
-          <h1 className="text-2xl font-bold mb-2">
+    <div className="min-h-screen bg-brand-bg flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white border border-slate-100 rounded-[2.5rem] shadow-2xl overflow-hidden relative">
+        {/* Decorative background element */}
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-brand-primary/5 blur-[80px] rounded-full" />
+        
+        <div className="bg-slate-50 p-10 text-center border-b border-slate-100 relative z-10">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase mb-2">
             {user?.status === 'suspended' ? 'Renovar Assinatura' : 
-             user?.status === 'trial' ? 'Assine o SocialImob Pro' : 'Finalize sua Assinatura'}
+             user?.status === 'trial' ? 'Acesso Pro' : 'Finalize sua Assinatura'}
           </h1>
-          <p className="text-indigo-100">
+          <p className="text-slate-500 font-medium text-sm">
             {user?.status === 'suspended' ? 'Reative seu acesso ao SocialImob Pro' : 
              user?.status === 'trial' ? 'Desbloqueie acesso ilimitado e recursos PRO' : 'Libere seu acesso ao SocialImob Pro'}
           </p>
         </div>
 
-        <div className="p-8 space-y-6">
+        <div className="p-10 space-y-8 relative z-10">
           {error && (
-            <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="bg-red-50 border border-red-100 text-red-600 text-sm p-4 rounded-2xl flex items-center gap-3 font-bold">
+              <AlertCircle className="w-5 h-5 shrink-0" />
               {error}
             </div>
           )}
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-slate-100">
               <div>
-                <h3 className="font-semibold text-slate-900">Plano Mensal</h3>
-                <p className="text-sm text-slate-500">100 Créditos / mês</p>
+                <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">Plano Mensal</h3>
+                <p className="text-xs text-slate-500 font-medium">100 Créditos / mês</p>
               </div>
               <div className="text-right">
-                <span className="text-2xl font-bold text-slate-900">R$ 97</span>
-                <span className="text-xs text-slate-500 block">/mês</span>
+                <span className="text-3xl font-black text-slate-900 tracking-tighter">R$ 97</span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">/mês</span>
               </div>
             </div>
 
-            <ul className="space-y-3">
-              <li className="flex items-center gap-3 text-sm text-slate-600">
-                <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-                Geração de campanhas ilimitada (até 100 créditos)
+            <ul className="space-y-4">
+              <li className="flex items-center gap-4 text-sm text-slate-600 font-medium">
+                <div className="w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                  <CheckCircle className="w-3 h-3 text-emerald-600 shrink-0" />
+                </div>
+                Geração de campanhas ilimitada
               </li>
-              <li className="flex items-center gap-3 text-sm text-slate-600">
-                <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-                Inteligência Artificial avançada (Gemini 2.0)
+              <li className="flex items-center gap-4 text-sm text-slate-600 font-medium">
+                <div className="w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                  <CheckCircle className="w-3 h-3 text-emerald-600 shrink-0" />
+                </div>
+                Inteligência Artificial avançada
               </li>
-              <li className="flex items-center gap-3 text-sm text-slate-600">
-                <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
+              <li className="flex items-center gap-4 text-sm text-slate-600 font-medium">
+                <div className="w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                  <CheckCircle className="w-3 h-3 text-emerald-600 shrink-0" />
+                </div>
                 Suporte prioritário
               </li>
             </ul>
           </div>
 
-          <div className="pt-4 border-t border-slate-100">
+          <div className="pt-6 border-t border-slate-100">
             <Button 
               onClick={handlePayment} 
-              className="w-full bg-[#009EE3] hover:bg-[#008CC9] h-12 text-lg shadow-lg shadow-blue-500/20 text-white font-semibold"
+              className="w-full bg-[#009EE3] hover:bg-[#008CC9] h-14 text-white font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98]"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -148,18 +160,18 @@ export default function Payment() {
               )}
               Pagar com Mercado Pago
             </Button>
-            <p className="text-xs text-center text-slate-400 mt-4 flex items-center justify-center gap-1">
+            <p className="text-[10px] text-center text-slate-400 mt-6 flex items-center justify-center gap-2 font-black uppercase tracking-widest">
               <ShieldCheck className="w-3 h-3" />
-              Ambiente seguro
+              Ambiente 100% seguro
             </p>
             
-            <div className="mt-6 text-center">
+            <div className="mt-8 text-center">
               <button 
                 onClick={() => {
                   logout();
                   navigate('/login');
                 }}
-                className="text-sm text-slate-500 hover:text-indigo-600 flex items-center justify-center gap-1 mx-auto"
+                className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-brand-primary transition-colors flex items-center justify-center gap-2 mx-auto"
               >
                 <ArrowLeft className="w-3 h-3" /> Voltar para o Login
               </button>
