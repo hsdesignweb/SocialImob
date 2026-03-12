@@ -51,11 +51,11 @@ export default function Home() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <motion.div 
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
-          className="md:col-span-3"
+          className="md:col-span-2"
         >
           <Button 
             size="lg" 
@@ -71,12 +71,12 @@ export default function Home() {
           <Button 
             variant="outline"
             size="lg" 
-            className="w-full h-28 text-lg border-slate-100 bg-white text-slate-400 cursor-not-allowed transition-all rounded-[2rem] relative overflow-hidden shadow-sm"
-            disabled
+            className="w-full h-28 text-lg border-slate-200 bg-white text-slate-500 transition-all rounded-[2rem] relative overflow-hidden shadow-sm hover:border-brand-primary/30"
+            onClick={() => navigate('/input')}
           >
             <div className="flex flex-col items-center gap-1">
-              <Sparkles className="w-6 h-6 mb-1 opacity-20" />
-              <span className="font-black uppercase text-[10px] tracking-widest opacity-40">Gerar Imagens AI</span>
+              <Sparkles className="w-6 h-6 mb-1 text-brand-primary opacity-40" />
+              <span className="font-black uppercase text-[10px] tracking-widest">Gerar Imagens AI</span>
             </div>
           </Button>
           <span className="absolute top-4 right-4 px-2 py-1 bg-slate-100 text-slate-400 text-[8px] font-black rounded-lg uppercase tracking-widest border border-slate-200">Em breve</span>
@@ -86,27 +86,12 @@ export default function Home() {
           <Button 
             variant="outline"
             size="lg" 
-            className="w-full h-28 text-lg border-slate-100 bg-white text-slate-400 cursor-not-allowed transition-all rounded-[2rem] relative overflow-hidden shadow-sm"
-            disabled
+            className="w-full h-28 text-lg border-slate-200 bg-white text-slate-500 transition-all rounded-[2rem] relative overflow-hidden shadow-sm hover:border-brand-primary/30"
+            onClick={() => navigate('/input')}
           >
             <div className="flex flex-col items-center gap-1">
-              <FileText className="w-6 h-6 mb-1 opacity-20" />
-              <span className="font-black uppercase text-[10px] tracking-widest opacity-40">Página de Venda</span>
-            </div>
-          </Button>
-          <span className="absolute top-4 right-4 px-2 py-1 bg-slate-100 text-slate-400 text-[8px] font-black rounded-lg uppercase tracking-widest border border-slate-200">Em breve</span>
-        </div>
-
-        <div className="relative group">
-          <Button 
-            variant="outline"
-            size="lg" 
-            className="w-full h-28 text-lg border-slate-100 bg-white text-slate-400 cursor-not-allowed transition-all rounded-[2rem] relative overflow-hidden shadow-sm"
-            disabled
-          >
-            <div className="flex flex-col items-center gap-1">
-              <History className="w-6 h-6 mb-1 opacity-20" />
-              <span className="font-black uppercase text-[10px] tracking-widest opacity-40">Histórico</span>
+              <FileText className="w-6 h-6 mb-1 text-brand-primary opacity-40" />
+              <span className="font-black uppercase text-[10px] tracking-widest">Página de Venda</span>
             </div>
           </Button>
           <span className="absolute top-4 right-4 px-2 py-1 bg-slate-100 text-slate-400 text-[8px] font-black rounded-lg uppercase tracking-widest border border-slate-200">Em breve</span>

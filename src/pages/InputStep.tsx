@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/Button";
 import { motion } from "motion/react";
 import { useAppStore } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
-import { FileText, Link as LinkIcon, ArrowRight, CheckCircle2, AlertCircle, Coins, Sparkles, Target } from "lucide-react";
+import { FileText, Link as LinkIcon, ArrowRight, CheckCircle2, AlertCircle, Coins, Sparkles, Target, History, Clock } from "lucide-react";
 import { generateJSON } from "@/lib/gemini";
 import { Type } from "@google/genai";
 
 export default function InputStep() {
   const navigate = useNavigate();
-  const { updatePropertyData, setIsLoading, setCampaign, setStrategy } = useAppStore();
+  const { updatePropertyData, setIsLoading, setCampaign, setStrategy, history, addToHistory, loadFromHistory } = useAppStore();
   const { user, consumeCredit } = useAuth();
   const [inputText, setInputText] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -128,6 +128,20 @@ export default function InputStep() {
         2. A estratégia DEVE estar rigorosamente alinhada com os perfis selecionados (${buyerProfiles.join(", ")}) e os objetivos (${goals.join(", ")}).
         3. Premissa Social: As pessoas estão nas redes para entretenimento, informação ou conexão.
         4. Linguagem: Persuasiva, humanizada e direta.
+        5. Headlines/Ganchos: Use como base principal estes ganchos de alta conversão:
+           - "Você já imaginou morar em..."
+           - "O segredo que ninguém te conta sobre..."
+           - "3 motivos para você se apaixonar por este imóvel..."
+           - "Pare de procurar! O imóvel dos seus sonhos está aqui."
+           - "Oportunidade única: luxo e conforto em um só lugar."
+           - "A vista que você sempre quis, agora ao seu alcance."
+           - "Espaço, lazer e segurança: tudo o que sua família merece."
+           - "Investimento inteligente: alta valorização garantida."
+           - "Sinta a experiência de viver em..."
+           - "O imóvel que define o seu novo estilo de vida."
+        6. Conteúdo do Planner: Crie conteúdos COMPLETOS (textos prontos para postar), não apenas resumos.
+        7. Metodologia 10 Ideias: Siga rigorosamente "1 ideia central -> 10 formatos diferentes". Use texto normal (não tudo em maiúsculo) e formatação limpa.
+        8. Mensagens: Devem ser escritas de maneira INDIVIDUAL e PERSONALIZADA, focada no indivíduo, evitando textos genéricos.
       `;
 
       const strategyPrompt = `
@@ -170,7 +184,16 @@ export default function InputStep() {
       const planPrompt = `
         ${reinforcementText}
         Dados do Imóvel: ${JSON.stringify(propertyData)}
-        Gere um Planner de Conteúdo de 7 dias. Retorne JSON:
+        Gere um Planner de Conteúdo de 7 dias com TEXTOS COMPLETOS seguindo estes temas:
+        Dia 1 - Foco na Região: [Vantagens de morar na região + Imóvel + CTA]
+        Dia 2 - Estilo de Vida: [Estilo de vida da região + Imóvel + CTA]
+        Dia 3 - O Condomínio: [Headline sobre condomínio/lazer + Imóvel + CTA]
+        Dia 4 - Merecimento: [Texto focado em conquista/merecimento + Imóvel + CTA]
+        Dia 5 - O Imóvel: [Curiosidades/Detalhes técnicos do imóvel + CTA]
+        Dia 6 - Oportunidade: [Destaque de preço ou exclusividade única + CTA]
+        Dia 7 - POV: [Sensação de já morar lá + Imóvel + CTA]
+        
+        Retorne JSON:
         - planner: Lista de 7 dias (day, title, topic, content)
       `;
       const planSchema = {
@@ -218,7 +241,10 @@ export default function InputStep() {
       const content10Prompt = `
         ${reinforcementText}
         Dados do Imóvel: ${JSON.stringify(propertyData)}
-        Aplique a metodologia "1 ideia → 10 conteúdos". Retorne JSON:
+        Aplique a metodologia "1 ideia central do imóvel → 10 conteúdos diferentes". 
+        Ex: 1 Reel, 1 Story interativo, 1 Post carrossel técnico, 1 Post lifestyle, 1 Tweet style, 1 Checklist, 1 Comparativo, 1 FAQ, 1 Depoimento fictício/narrativo, 1 CTA direta.
+        Use capitalização normal (não tudo em maiúsculo).
+        Retorne JSON:
         - derivedContent10: Lista de 10 objetos (type, content)
       `;
       const content10Schema = {
@@ -241,8 +267,8 @@ export default function InputStep() {
 
       if (results[0].status === 'rejected') throw new Error("Falha na estratégia principal.");
 
-      setStrategy(results[0].value);
-      setCampaign({
+      const finalStrategy = results[0].value;
+      const finalCampaign = {
         reelScript: getValue(results[1], { hooks: [], body: "", cta: "", scenes: "" }),
         derivedContent: [],
         funnelMessages: getValue(results[3], { funnelMessages: { abordagem: [], followup: [], encerramento: [] } }).funnelMessages,
@@ -250,6 +276,16 @@ export default function InputStep() {
         traffic: getValue(results[3], { traffic: { creatives: {}, segmentation: "" } }).traffic,
         executionGuide: getValue(results[3], { executionGuide: { creativeTips: [], publishingAdvice: "", engagementStrategy: "" } }).executionGuide,
         derivedContent10: getValue(results[4], { derivedContent10: [] }).derivedContent10
+      };
+
+      setStrategy(finalStrategy);
+      setCampaign(finalCampaign);
+
+      // Save to history
+      addToHistory({
+        propertyData,
+        strategy: finalStrategy,
+        campaign: finalCampaign
       });
 
       navigate("/results");
@@ -266,7 +302,7 @@ export default function InputStep() {
     <div className="space-y-8 pb-32">
       <div className="space-y-2">
         <h2 className="text-3xl font-black text-slate-900 tracking-tight">O que vamos vender?</h2>
-        <p className="text-slate-500 font-medium">Descreva o imóvel ou cole um link para começar.</p>
+        <p className="text-slate-500 font-medium">Você pode descrever seu imóvel ou colar o link do site ou portal</p>
       </div>
 
       <div className="space-y-8">
@@ -311,7 +347,7 @@ export default function InputStep() {
           <div className="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 space-y-6">
             <div className="flex justify-between items-end">
               <h3 className="font-black text-slate-900 text-xl flex items-center gap-3">
-                <Target className="w-6 h-6 text-brand-primary" /> Quem é o comprador?
+                <Target className="w-6 h-6 text-brand-primary" /> Comprador Ideal
               </h3>
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{buyerProfiles.length}/3</span>
             </div>
@@ -342,7 +378,7 @@ export default function InputStep() {
           {/* Goals Selection */}
           <div className="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 space-y-6">
             <h3 className="font-black text-slate-900 text-xl flex items-center gap-3">
-              <Sparkles className="w-6 h-6 text-brand-secondary" /> Qual o objetivo?
+              <Sparkles className="w-6 h-6 text-brand-secondary" /> Principal Objetivo
             </h3>
             <div className="grid grid-cols-1 gap-3">
               {availableGoals.map((g) => {

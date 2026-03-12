@@ -11,6 +11,7 @@ import Home from "./pages/Home";
 import InputStep from "./pages/InputStep";
 import ResultsStep from "./pages/ResultsStep";
 import AdminDashboard from "./pages/AdminDashboard";
+import History from "./pages/History";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -92,6 +93,7 @@ export default function App() {
               <Route index element={<Home />} />
               <Route path="input" element={<InputStep />} />
               <Route path="results" element={<ResultsStep />} />
+              <Route path="history" element={<History />} />
               <Route path="admin" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminDashboard />

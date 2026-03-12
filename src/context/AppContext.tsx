@@ -63,6 +63,14 @@ export interface GeneratedContent {
   }>;
 }
 
+export interface HistoryItem {
+  id: string;
+  timestamp: number;
+  propertyData: PropertyData;
+  strategy: CampaignStrategy;
+  campaign: GeneratedContent;
+}
+
 interface AppState {
   propertyData: PropertyData;
   setPropertyData: (data: PropertyData) => void;
@@ -73,6 +81,10 @@ interface AppState {
   setStrategy: (strategy: CampaignStrategy) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
+  history: HistoryItem[];
+  setHistory: (history: HistoryItem[]) => void;
+  addToHistory: (item: Omit<HistoryItem, 'id' | 'timestamp'>) => void;
+  loadFromHistory: (item: HistoryItem) => void;
 }
 
 const AppContext = createContext<AppState | undefined>(undefined);
@@ -82,9 +94,30 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [campaign, setCampaign] = useState<GeneratedContent | null>(null);
   const [strategy, setStrategy] = useState<CampaignStrategy | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [history, setHistory] = useState<HistoryItem[]>(() => {
+    const saved = localStorage.getItem('socialimob_history');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const updatePropertyData = (updates: Partial<PropertyData>) => {
     setPropertyData(prev => ({ ...prev, ...updates }));
+  };
+
+  const addToHistory = (item: Omit<HistoryItem, 'id' | 'timestamp'>) => {
+    const newItem: HistoryItem = {
+      ...item,
+      id: Math.random().toString(36).substring(7),
+      timestamp: Date.now()
+    };
+    const newHistory = [newItem, ...history].slice(0, 3); // Keep only last 3
+    setHistory(newHistory);
+    localStorage.setItem('socialimob_history', JSON.stringify(newHistory));
+  };
+
+  const loadFromHistory = (item: HistoryItem) => {
+    setPropertyData(item.propertyData);
+    setStrategy(item.strategy);
+    setCampaign(item.campaign);
   };
 
   return (
@@ -97,7 +130,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       strategy,
       setStrategy,
       isLoading,
-      setIsLoading
+      setIsLoading,
+      history,
+      setHistory,
+      addToHistory,
+      loadFromHistory
     }}>
       {children}
     </AppContext.Provider>

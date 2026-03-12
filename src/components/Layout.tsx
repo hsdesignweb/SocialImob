@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, Loader2, LogOut, Coins, MessageCircle, Target, Sparkles, Home as HomeIcon, Rocket } from 'lucide-react';
+import { Menu, Loader2, LogOut, Coins, MessageCircle, Target, Sparkles, Home as HomeIcon, Rocket, History } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAppStore } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
@@ -132,6 +132,13 @@ export default function Layout() {
                     <MessageCircle className="w-4 h-4 text-slate-400" />
                     Suporte Técnico
                   </a>
+                  <button 
+                    onClick={() => { navigate('/history'); setIsMenuOpen(false); }}
+                    className="w-full text-left px-5 py-4 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
+                  >
+                    <History className="w-4 h-4 text-slate-400" />
+                    Histórico de Campanhas
+                  </button>
                   {user?.isAdmin && (
                     <button 
                       onClick={() => { navigate('/admin'); setIsMenuOpen(false); }}
