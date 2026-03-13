@@ -34,66 +34,83 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 space-y-6">
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xl mx-auto">
+    <div className="min-h-screen bg-brand-bg flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-3xl opacity-50" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-3xl opacity-50" />
+      </div>
+
+      <div className="w-full max-w-md z-10">
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 bg-brand-primary rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-sm mx-auto mb-6">
             S
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Recuperar Senha</h1>
-          <p className="text-slate-500">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Recuperar Senha</h1>
+          <p className="text-slate-500 font-medium">
             {isSubmitted 
               ? 'Verifique seu email' 
               : 'Digite seu email para receber as instruções'}
           </p>
         </div>
 
-        {error && (
-          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg text-center">
-            {error}
-          </div>
-        )}
-
-        {isSubmitted ? (
-          <div className="space-y-6">
-            <div className="bg-green-50 text-green-700 p-4 rounded-lg text-sm text-center">
-              Enviamos um link de recuperação para <strong>{email}</strong>. 
-              Verifique sua caixa de entrada e spam.
+        <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100">
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-sm font-bold rounded-2xl text-center animate-shake">
+              {error}
             </div>
+          )}
 
-            <Button 
-              onClick={() => navigate('/login')} 
-              className="w-full bg-indigo-600 hover:bg-indigo-700"
-            >
-              Voltar para o Login
-            </Button>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
+          {isSubmitted ? (
+            <div className="space-y-6">
+              <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 p-6 rounded-2xl text-sm text-center font-medium">
+                Enviamos um link de recuperação para <strong className="font-black">{email}</strong>. 
+                Verifique sua caixa de entrada e spam.
+              </div>
 
-            <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700" disabled={isLoading}>
-              {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Mail className="w-4 h-4 mr-2" />}
-              Enviar Link
-            </Button>
-            
-            <div className="text-center">
-              <Link to="/login" className="text-sm text-slate-500 hover:text-indigo-600 flex items-center justify-center gap-1">
-                <ArrowLeft className="w-3 h-3" /> Voltar para o Login
-              </Link>
+              <Button 
+                onClick={() => navigate('/login')} 
+                className="w-full h-14 bg-brand-primary hover:bg-blue-700 text-white rounded-2xl font-black text-lg shadow-lg shadow-brand-primary/20 transition-all active:scale-[0.98]"
+              >
+                Voltar para o Login
+              </Button>
             </div>
-          </form>
-        )}
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Email</label>
+                <div className="relative group">
+                  <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full h-14 pl-14 pr-6 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                    placeholder="seu@email.com"
+                    required
+                  />
+                </div>
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full h-14 bg-brand-primary hover:bg-blue-700 text-white rounded-2xl font-black text-lg shadow-lg shadow-brand-primary/20 transition-all active:scale-[0.98]" 
+                disabled={isLoading}
+              >
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Mail className="w-5 h-5 mr-2" />}
+                Enviar Link
+              </Button>
+              
+              <div className="text-center">
+                <Link to="/login" className="text-sm font-bold text-slate-400 hover:text-brand-primary transition-colors flex items-center justify-center gap-2">
+                  <ArrowLeft className="w-3 h-3" /> Voltar para o Login
+                </Link>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );

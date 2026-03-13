@@ -9,10 +9,8 @@ export default function History() {
   const { history, loadFromHistory, setHistory } = useAppStore();
 
   const handleClearHistory = () => {
-    if (window.confirm("Deseja realmente limpar todo o histórico?")) {
-      setHistory([]);
-      localStorage.removeItem('socialimob_history');
-    }
+    setHistory([]);
+    localStorage.removeItem('socialimob_history');
   };
 
   return (
@@ -22,7 +20,7 @@ export default function History() {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="rounded-xl text-slate-500 hover:bg-slate-100"
+            className="rounded-full text-slate-500 hover:bg-slate-100"
             onClick={() => navigate(-1)}
           >
             <ArrowLeft className="w-5 h-5" />
@@ -103,7 +101,7 @@ export default function History() {
             </p>
           </div>
           <Button 
-            className="bg-brand-primary hover:bg-blue-700 text-white font-black px-8 h-12 rounded-xl"
+            className="bg-brand-primary hover:bg-blue-700 text-white font-black px-8 h-12 rounded-2xl"
             onClick={() => navigate('/input')}
           >
             Começar agora

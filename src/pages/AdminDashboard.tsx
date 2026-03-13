@@ -120,7 +120,7 @@ export default function AdminDashboard() {
             variant="ghost" 
             size="sm" 
             onClick={() => navigate('/')} 
-            className="shrink-0 text-slate-400 hover:text-brand-primary hover:bg-slate-50 rounded-xl"
+            className="shrink-0 text-slate-400 hover:text-brand-primary hover:bg-slate-50 rounded-2xl"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
@@ -212,7 +212,7 @@ export default function AdminDashboard() {
                       <TableCell className="p-6">
                         {editingId === user.id ? (
                           <Input 
-                            className="h-10 bg-white border-slate-200 text-slate-900 rounded-xl" 
+                            className="h-10 bg-white border-slate-200 text-slate-900 rounded-2xl px-6" 
                             value={editForm.name} 
                             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                           />
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
                         {editingId === user.id ? (
                           <Input 
                             type="number" 
-                            className="w-24 h-10 bg-white border-slate-200 text-slate-900 rounded-xl" 
+                            className="w-24 h-10 bg-white border-slate-200 text-slate-900 rounded-2xl px-4" 
                             value={editForm.credits} 
                             onChange={(e) => setEditForm({ ...editForm, credits: parseInt(e.target.value) || 0 })}
                           />
@@ -244,7 +244,7 @@ export default function AdminDashboard() {
                       <TableCell className="p-6">
                         {editingId === user.id ? (
                           <select 
-                            className="text-xs bg-white border border-slate-200 text-slate-900 rounded-xl p-2 outline-none focus:border-brand-primary"
+                            className="text-xs bg-white border border-slate-200 text-slate-900 rounded-2xl p-2 px-4 outline-none focus:border-brand-primary"
                             value={editForm.status}
                             onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
                           >
@@ -254,7 +254,7 @@ export default function AdminDashboard() {
                             <option value="expired">Expirado</option>
                           </select>
                         ) : (
-                          <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                          <span className={`px-4 py-1 rounded-2xl text-[9px] font-black uppercase tracking-widest border ${
                             user.is_paid 
                               ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
                               : "bg-slate-50 text-slate-500 border-slate-100"
@@ -269,15 +269,15 @@ export default function AdminDashboard() {
                       <TableCell className="p-6 text-right">
                         {editingId === user.id ? (
                           <div className="flex justify-end gap-2">
-                            <Button size="icon" variant="ghost" className="h-10 w-10 text-emerald-600 hover:bg-emerald-50 rounded-xl" onClick={() => handleSave(user.id)} disabled={isSaving}>
+                            <Button size="icon" variant="ghost" className="h-10 w-10 text-emerald-600 hover:bg-emerald-50 rounded-2xl" onClick={() => handleSave(user.id)} disabled={isSaving}>
                               <Check className="w-5 h-5" />
                             </Button>
-                            <Button size="icon" variant="ghost" className="h-10 w-10 text-red-500 hover:bg-red-50 rounded-xl" onClick={() => setEditingId(null)} disabled={isSaving}>
+                            <Button size="icon" variant="ghost" className="h-10 w-10 text-red-500 hover:bg-red-50 rounded-2xl" onClick={() => setEditingId(null)} disabled={isSaving}>
                               <X className="w-5 h-5" />
                             </Button>
                           </div>
                         ) : (
-                          <Button size="icon" variant="ghost" className="h-10 w-10 text-slate-400 hover:text-brand-primary hover:bg-slate-50 rounded-xl" onClick={() => handleEdit(user)}>
+                          <Button size="icon" variant="ghost" className="h-10 w-10 text-slate-400 hover:text-brand-primary hover:bg-slate-50 rounded-2xl" onClick={() => handleEdit(user)}>
                             <Edit2 className="w-4 h-4" />
                           </Button>
                         )}

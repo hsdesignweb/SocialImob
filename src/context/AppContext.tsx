@@ -28,11 +28,6 @@ export interface GeneratedContent {
     cta: string;
     scenes: string;
   };
-  derivedContent: Array<{
-    title: string;
-    category: string;
-    body: string;
-  }>;
   funnelMessages: {
     abordagem: string[];
     followup: string[];

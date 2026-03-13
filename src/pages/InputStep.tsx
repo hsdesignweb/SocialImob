@@ -8,6 +8,27 @@ import { FileText, Link as LinkIcon, ArrowRight, CheckCircle2, AlertCircle, Coin
 import { generateJSON } from "@/lib/gemini";
 import { Type } from "@google/genai";
 
+const fixCase = (text: string) => {
+  if (!text) return "";
+  
+  // Count letters and uppercase letters (including accented ones)
+  const allLetters = text.match(/[a-zA-ZÀ-ÿ]/g) || [];
+  if (allLetters.length === 0) return text;
+  
+  const upperLetters = text.match(/[A-ZÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕÇ]/g) || [];
+  const ratio = upperLetters.length / allLetters.length;
+  
+  // If more than 50% is uppercase, it's likely a capslock issue
+  if (ratio > 0.5) {
+    const lowered = text.toLowerCase();
+    // Capitalize first letter of the string and letters after . ! ?
+    return lowered.replace(/(^\s*|[.!?]\s+)([a-zà-ÿ])/g, (match, p1, p2) => {
+      return p1 + p2.toUpperCase();
+    });
+  }
+  return text;
+};
+
 export default function InputStep() {
   const navigate = useNavigate();
   const { updatePropertyData, setIsLoading, setCampaign, setStrategy, history, addToHistory, loadFromHistory } = useAppStore();
@@ -64,141 +85,83 @@ export default function InputStep() {
     setError(null);
 
     try {
-      // 1. Extract property data first
-      const extractPrompt = `
-        Analise o conteúdo fornecido (texto ou LINK) sobre um imóvel e extraia as informações principais.
-        Verifique se o conteúdo é REALMENTE sobre um imóvel.
-        Conteúdo fornecido: "${inputText}"
+      // 1. Generate EVERYTHING in exactly ONE single call (Validation + Strategy + Campaign)
+      const unifiedPrompt = `
+        Atue como um estrategista de marketing imobiliário sênior seguindo a Metodologia SocialImob Pro.
         
-        Retorne um JSON com:
-        - isValidProperty: boolean
-        - type: Tipo do imóvel
-        - location: Localização aproximada
-        - price: Valor
-        - features: Lista de características principais
-        - missingInfo: Lista de informações cruciais faltando
-        - errorMessage: String (se inválido)
+        TAREFA INICIAL DE VALIDAÇÃO:
+        Analise se o conteúdo fornecido abaixo é REALMENTE sobre um imóvel ou mercado imobiliário.
+        Se NÃO for um imóvel, defina "isValidProperty" como false e explique o motivo em "errorMessage".
+        Se FOR um imóvel, defina "isValidProperty" como true e complete todas as outras tarefas.
+
+        DADOS DO IMÓVEL (Texto ou Link): "${inputText}"
+        PERFIS SELECIONADOS: ${buyerProfiles.join(", ")}
+        OBJETIVOS: ${goals.join(", ")}
+
+        TAREFAS DE GERAÇÃO (Apenas se isValidProperty for true):
+        1. EXTRAÇÃO: Extraia tipo, localização, preço e características.
+        2. ESTRATÉGIA: Defina ângulo de venda, persona, abordagem e narrativa.
+        3. REEL: Crie um roteiro viral (5 ganchos curtos e impactantes, corpo do texto com quebras de linha, CTA e direção de cenas).
+        4. PLANNER: Crie um plano de 7 dias com TEXTOS COMPLETOS e humanizados.
+        5. TRÁFEGO E FUNIL: Gere 3 mensagens de abordagem, 3 de follow-up e 3 de encerramento. Devem ser textos naturais, sem parecer robótico.
+        6. MULTIPLICADOR 10x (Metodologia 1 Ideia → 10 Conteúdos): 
+           Objetivo: Transformar uma única ideia central em 10 conteúdos diferentes, mantendo o mesmo tema, mas variando ângulo, narrativa e formato.
+           A lógica é NÃO mudar o assunto, apenas mudar a forma de comunicar para que a mensagem seja repetida sem parecer repetitiva.
+           Gere EXATAMENTE 10 itens no array "derivedContent10", um para cada formato abaixo:
+           - Lista: 5 pontos cruciais ou curiosidades sobre o imóvel.
+           - Storytelling: Uma pequena narrativa realista sobre o dia a dia ou a conquista deste imóvel.
+           - Posicionamento: Uma opinião forte e profissional sobre por que este imóvel é a melhor escolha.
+           - Explicação técnica: Visão de especialista sobre acabamento, localização ou potencial de valorização.
+           - Motivacional: Mensagem inspiradora sobre mudança de vida e realização de sonhos.
+           - POV (Ponto de Vista): Texto que coloca o leitor na cena (Ex: "POV: Você recebendo os amigos nesse terraço...").
+           - Análise: Reflexão estratégica sobre o custo-benefício ou o momento do mercado para este imóvel.
+           - Tutorial: Guia prático (Ex: 3 passos para visitar, como garantir essa unidade).
+           - Conexão: Foco no lado emocional, bem-estar, família e segurança.
+           - Tendência: Por que este imóvel representa o futuro do morar ou investir na região.
+
+        REGRAS CRÍTICAS DE FORMATAÇÃO:
+        - Responda SEMPRE em Português do Brasil (PT-BR).
+        - NUNCA use CAPSLOCK (exceto em siglas). Use capitalização normal (Sentença ou Título).
+        - É PROIBIDO gerar textos inteiros em letras maiúsculas.
+        - Use quebras de linha (\n) no corpo do script do Reel e no Planner para legibilidade.
+        - Nos GANCHOS do Reel, NÃO use quebras de linha, mantenha em uma única linha.
+        - Use negrito (**texto**) para enfatizar pontos cruciais.
+        - Linguagem persuasiva, humanizada e estratégica.
       `;
 
-      const extractSchema = {
+      const unifiedSchema = {
         type: Type.OBJECT,
         properties: {
           isValidProperty: { type: Type.BOOLEAN },
-          type: { type: Type.STRING },
-          location: { type: Type.STRING },
-          price: { type: Type.STRING },
-          features: { type: Type.ARRAY, items: { type: Type.STRING } },
-          missingInfo: { type: Type.ARRAY, items: { type: Type.STRING } },
-          errorMessage: { type: Type.STRING }
-        },
-        required: ["isValidProperty"]
-      };
-
-      const extractedData = await generateJSON(extractPrompt, extractSchema);
-
-      if (!extractedData.isValidProperty) {
-        setError(extractedData.errorMessage || "O conteúdo enviado não possui relação com o mercado imobiliário.");
-        setIsProcessing(false);
-        setIsLoading(false);
-        return;
-      }
-
-      // 2. Consume credit
-      const creditConsumed = consumeCredit();
-      if (!creditConsumed) {
-        if (user?.status === 'trial' && user.credits <= 0) {
-           navigate('/payment?reason=trial_ended');
-           return;
-        }
-        throw new Error("Erro ao processar créditos.");
-      }
-
-      // 3. Generate Strategy and Campaign
-      const propertyData = {
-        description: inputText,
-        ...extractedData,
-        buyerProfile: buyerProfiles.join(", "),
-        goal: goals.join(", ")
-      };
-      updatePropertyData(propertyData);
-
-      const reinforcementText = `
-        REGRAS OBRIGATÓRIAS (Metodologia SocialImob Pro):
-        1. Responda SEMPRE em Português do Brasil (PT-BR).
-        2. A estratégia DEVE estar rigorosamente alinhada com os perfis selecionados (${buyerProfiles.join(", ")}) e os objetivos (${goals.join(", ")}).
-        3. Premissa Social: As pessoas estão nas redes para entretenimento, informação ou conexão.
-        4. Linguagem: Persuasiva, humanizada e direta.
-        5. Headlines/Ganchos: Use como base principal estes ganchos de alta conversão:
-           - "Você já imaginou morar em..."
-           - "O segredo que ninguém te conta sobre..."
-           - "3 motivos para você se apaixonar por este imóvel..."
-           - "Pare de procurar! O imóvel dos seus sonhos está aqui."
-           - "Oportunidade única: luxo e conforto em um só lugar."
-           - "A vista que você sempre quis, agora ao seu alcance."
-           - "Espaço, lazer e segurança: tudo o que sua família merece."
-           - "Investimento inteligente: alta valorização garantida."
-           - "Sinta a experiência de viver em..."
-           - "O imóvel que define o seu novo estilo de vida."
-        6. Conteúdo do Planner: Crie conteúdos COMPLETOS (textos prontos para postar), não apenas resumos.
-        7. Metodologia 10 Ideias: Siga rigorosamente "1 ideia central -> 10 formatos diferentes". Use texto normal (não tudo em maiúsculo) e formatação limpa.
-        8. Mensagens: Devem ser escritas de maneira INDIVIDUAL e PERSONALIZADA, focada no indivíduo, evitando textos genéricos.
-      `;
-
-      const strategyPrompt = `
-        Atue como um estrategista de marketing imobiliário sênior seguindo a Metodologia SocialImob.
-        ${reinforcementText}
-        Dados do Imóvel: ${JSON.stringify(propertyData)}
-        Defina a estratégia de lançamento. Retorne JSON:
-        - angle, persona, approach, narrative, sequence (array)
-      `;
-
-      const strategySchema = {
-        type: Type.OBJECT,
-        properties: {
-          angle: { type: Type.STRING },
-          persona: { type: Type.STRING },
-          approach: { type: Type.STRING },
-          narrative: { type: Type.STRING },
-          sequence: { type: Type.ARRAY, items: { type: Type.STRING } }
-        },
-        required: ["angle", "persona", "approach", "narrative", "sequence"]
-      };
-
-      const reelPrompt = `
-        ${reinforcementText}
-        Dados do Imóvel: ${JSON.stringify(propertyData)}
-        Gere um roteiro para Reel de 60s. Retorne JSON:
-        - hooks (5 opções), body, cta, scenes
-      `;
-      const reelSchema = {
-        type: Type.OBJECT,
-        properties: {
-          hooks: { type: Type.ARRAY, items: { type: Type.STRING } },
-          body: { type: Type.STRING },
-          cta: { type: Type.STRING },
-          scenes: { type: Type.STRING }
-        },
-        required: ["hooks", "body", "cta", "scenes"]
-      };
-
-      const planPrompt = `
-        ${reinforcementText}
-        Dados do Imóvel: ${JSON.stringify(propertyData)}
-        Gere um Planner de Conteúdo de 7 dias com TEXTOS COMPLETOS seguindo estes temas:
-        Dia 1 - Foco na Região: [Vantagens de morar na região + Imóvel + CTA]
-        Dia 2 - Estilo de Vida: [Estilo de vida da região + Imóvel + CTA]
-        Dia 3 - O Condomínio: [Headline sobre condomínio/lazer + Imóvel + CTA]
-        Dia 4 - Merecimento: [Texto focado em conquista/merecimento + Imóvel + CTA]
-        Dia 5 - O Imóvel: [Curiosidades/Detalhes técnicos do imóvel + CTA]
-        Dia 6 - Oportunidade: [Destaque de preço ou exclusividade única + CTA]
-        Dia 7 - POV: [Sensação de já morar lá + Imóvel + CTA]
-        
-        Retorne JSON:
-        - planner: Lista de 7 dias (day, title, topic, content)
-      `;
-      const planSchema = {
-        type: Type.OBJECT,
-        properties: {
+          errorMessage: { type: Type.STRING },
+          extractedData: {
+            type: Type.OBJECT,
+            properties: {
+              type: { type: Type.STRING },
+              location: { type: Type.STRING },
+              price: { type: Type.STRING },
+              features: { type: Type.ARRAY, items: { type: Type.STRING } }
+            }
+          },
+          strategy: {
+            type: Type.OBJECT,
+            properties: {
+              angle: { type: Type.STRING },
+              persona: { type: Type.STRING },
+              approach: { type: Type.STRING },
+              narrative: { type: Type.STRING },
+              sequence: { type: Type.ARRAY, items: { type: Type.STRING } }
+            }
+          },
+          reel: {
+            type: Type.OBJECT,
+            properties: {
+              hooks: { type: Type.ARRAY, items: { type: Type.STRING } },
+              body: { type: Type.STRING },
+              cta: { type: Type.STRING },
+              scenes: { type: Type.STRING }
+            }
+          },
           planner: {
             type: Type.ARRAY,
             items: {
@@ -208,23 +171,9 @@ export default function InputStep() {
                 title: { type: Type.STRING },
                 topic: { type: Type.STRING },
                 content: { type: Type.STRING }
-              },
-              required: ["day", "title", "topic", "content"]
+              }
             }
-          }
-        },
-        required: ["planner"]
-      };
-
-      const trafficPrompt = `
-        ${reinforcementText}
-        Dados do Imóvel: ${JSON.stringify(propertyData)}
-        Gere Mensagens de Funil e Estratégia de Tráfego. Retorne JSON:
-        - funnelMessages: { abordagem, followup, encerramento }, traffic, executionGuide
-      `;
-      const trafficSchema = {
-        type: Type.OBJECT,
-        properties: {
+          },
           funnelMessages: {
             type: Type.OBJECT,
             properties: {
@@ -233,49 +182,92 @@ export default function InputStep() {
               encerramento: { type: Type.ARRAY, items: { type: Type.STRING } }
             }
           },
-          traffic: { type: Type.OBJECT, properties: { creatives: { type: Type.OBJECT }, segmentation: { type: Type.STRING } } },
-          executionGuide: { type: Type.OBJECT, properties: { creativeTips: { type: Type.ARRAY, items: { type: Type.STRING } }, publishingAdvice: { type: Type.STRING }, engagementStrategy: { type: Type.STRING } } }
-        }
+          traffic: {
+            type: Type.OBJECT,
+            properties: {
+              segmentation: { type: Type.STRING },
+              creativeAdvice: { type: Type.STRING }
+            }
+          },
+          derivedContent10: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                type: { type: Type.STRING },
+                content: { type: Type.STRING }
+              }
+            }
+          }
+        },
+        required: ["isValidProperty", "extractedData", "strategy", "reel", "planner", "funnelMessages", "derivedContent10", "traffic"]
       };
 
-      const content10Prompt = `
-        ${reinforcementText}
-        Dados do Imóvel: ${JSON.stringify(propertyData)}
-        Aplique a metodologia "1 ideia central do imóvel → 10 conteúdos diferentes". 
-        Ex: 1 Reel, 1 Story interativo, 1 Post carrossel técnico, 1 Post lifestyle, 1 Tweet style, 1 Checklist, 1 Comparativo, 1 FAQ, 1 Depoimento fictício/narrativo, 1 CTA direta.
-        Use capitalização normal (não tudo em maiúsculo).
-        Retorne JSON:
-        - derivedContent10: Lista de 10 objetos (type, content)
-      `;
-      const content10Schema = {
-        type: Type.OBJECT,
-        properties: {
-          derivedContent10: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { type: { type: Type.STRING }, content: { type: Type.STRING } } } }
+      const fullResult = await generateJSON(unifiedPrompt, unifiedSchema);
+
+      // 2. Check Validation
+      if (!fullResult.isValidProperty) {
+        setError(fullResult.errorMessage || "O conteúdo enviado não possui relação com o mercado imobiliário.");
+        setIsProcessing(false);
+        setIsLoading(false);
+        return;
+      }
+
+      // 3. Consume credit ONLY after successful validation and generation
+      const creditConsumed = consumeCredit();
+      if (!creditConsumed) {
+        if (user?.status === 'trial' && user.credits <= 0) {
+           navigate('/payment?reason=trial_ended');
+           return;
         }
+        throw new Error("Erro ao processar créditos.");
+      }
+
+      // 4. Process and Save Results
+      const propertyData = {
+        description: inputText,
+        ...fullResult.extractedData,
+        buyerProfile: buyerProfiles.join(", "),
+        goal: goals.join(", ")
+      };
+      updatePropertyData(propertyData);
+
+      const finalStrategy = {
+        angle: fixCase(fullResult.strategy?.angle || ""),
+        persona: fixCase(fullResult.strategy?.persona || ""),
+        approach: fixCase(fullResult.strategy?.approach || ""),
+        narrative: fixCase(fullResult.strategy?.narrative || ""),
+        sequence: (fullResult.strategy?.sequence || []).map(fixCase)
       };
 
-      const results = await Promise.allSettled([
-        generateJSON(strategyPrompt, strategySchema),
-        generateJSON(reelPrompt, reelSchema),
-        generateJSON(planPrompt, planSchema),
-        generateJSON(trafficPrompt, trafficSchema),
-        generateJSON(content10Prompt, content10Schema)
-      ]);
-
-      const getValue = (result: PromiseSettledResult<any>, fallback: any) => 
-        result.status === 'fulfilled' ? result.value : fallback;
-
-      if (results[0].status === 'rejected') throw new Error("Falha na estratégia principal.");
-
-      const finalStrategy = results[0].value;
       const finalCampaign = {
-        reelScript: getValue(results[1], { hooks: [], body: "", cta: "", scenes: "" }),
-        derivedContent: [],
-        funnelMessages: getValue(results[3], { funnelMessages: { abordagem: [], followup: [], encerramento: [] } }).funnelMessages,
-        planner: getValue(results[2], { planner: [] }).planner,
-        traffic: getValue(results[3], { traffic: { creatives: {}, segmentation: "" } }).traffic,
-        executionGuide: getValue(results[3], { executionGuide: { creativeTips: [], publishingAdvice: "", engagementStrategy: "" } }).executionGuide,
-        derivedContent10: getValue(results[4], { derivedContent10: [] }).derivedContent10
+        reelScript: {
+          hooks: (fullResult.reel?.hooks || []).map((h: string) => fixCase(h.replace(/\n/g, " ").trim())),
+          body: fixCase(fullResult.reel?.body || ""),
+          cta: fixCase(fullResult.reel?.cta || ""),
+          scenes: fixCase(fullResult.reel?.scenes || "")
+        },
+        funnelMessages: {
+          abordagem: (fullResult.funnelMessages?.abordagem || []).map(fixCase),
+          followup: (fullResult.funnelMessages?.followup || []).map(fixCase),
+          encerramento: (fullResult.funnelMessages?.encerramento || []).map(fixCase)
+        },
+        planner: (fullResult.planner || []).map((p: any) => ({
+          ...p,
+          title: fixCase(p.title || ""),
+          topic: fixCase(p.topic || ""),
+          content: fixCase(p.content || "")
+        })),
+        traffic: fullResult.traffic || { creatives: {}, segmentation: "" },
+        executionGuide: { 
+          creativeTips: [fixCase(fullResult.traffic?.creativeAdvice || "")], 
+          publishingAdvice: "Siga o cronograma de 7 dias.", 
+          engagementStrategy: "Responda todos os comentários nos primeiros 30 minutos." 
+        },
+        derivedContent10: (fullResult.derivedContent10 || []).map((d: any) => ({
+          type: fixCase(d.type || ""),
+          content: fixCase(d.content || "")
+        }))
       };
 
       setStrategy(finalStrategy);
@@ -308,9 +300,8 @@ export default function InputStep() {
       <div className="space-y-8">
         {/* Main Input Area - Now at the top */}
         <div className="relative group">
-          <div className="absolute inset-0 bg-brand-primary/5 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
           <textarea
-            className={`w-full h-48 p-8 rounded-3xl border-2 ${error ? 'border-red-500/50 bg-red-50' : 'border-slate-100 bg-white'} focus:border-brand-primary focus:ring-8 focus:ring-brand-primary/5 resize-none text-lg transition-all shadow-xl shadow-slate-200/50 text-slate-900 placeholder:text-slate-400 font-medium relative z-10`}
+            className={`w-full h-48 p-6 rounded-xl border-2 ${error ? 'border-red-500/50 bg-red-50' : 'border-slate-100 bg-white'} focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/5 resize-none text-base transition-all shadow-sm text-slate-900 placeholder:text-slate-400 font-medium relative z-10`}
             placeholder="Ex: Apartamento 3 quartos no Jardins, reformado, vista livre, 2 vagas..."
             value={inputText}
             onChange={(e) => {
@@ -344,10 +335,10 @@ export default function InputStep() {
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Buyer Profile Selection */}
-          <div className="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 space-y-6">
+          <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 space-y-6">
             <div className="flex justify-between items-end">
-              <h3 className="font-black text-slate-900 text-xl flex items-center gap-3">
-                <Target className="w-6 h-6 text-brand-primary" /> Comprador Ideal
+              <h3 className="font-black text-slate-900 text-lg flex items-center gap-3">
+                <Target className="w-5 h-5 text-brand-primary" /> Comprador Ideal
               </h3>
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{buyerProfiles.length}/3</span>
             </div>
@@ -359,9 +350,9 @@ export default function InputStep() {
                     key={p}
                     onClick={() => toggleProfile(p)}
                     className={`
-                      flex items-center gap-4 p-4 rounded-xl border-2 text-sm font-bold transition-all
+                      flex items-center gap-4 p-4 rounded-2xl border-2 text-sm font-bold transition-all
                       ${isSelected 
-                        ? "bg-brand-primary border-brand-primary text-white shadow-lg shadow-brand-primary/20 scale-[1.02]" 
+                        ? "bg-brand-primary border-brand-primary text-white shadow-lg shadow-brand-primary/20" 
                         : "bg-slate-50 border-slate-100 text-slate-500 hover:border-brand-primary/30 hover:bg-white"}
                     `}
                   >
@@ -376,9 +367,9 @@ export default function InputStep() {
           </div>
 
           {/* Goals Selection */}
-          <div className="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 space-y-6">
-            <h3 className="font-black text-slate-900 text-xl flex items-center gap-3">
-              <Sparkles className="w-6 h-6 text-brand-secondary" /> Principal Objetivo
+          <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 space-y-6">
+            <h3 className="font-black text-slate-900 text-lg flex items-center gap-3">
+              <Sparkles className="w-5 h-5 text-brand-secondary" /> Principal Objetivo
             </h3>
             <div className="grid grid-cols-1 gap-3">
               {availableGoals.map((g) => {
@@ -388,9 +379,9 @@ export default function InputStep() {
                     key={g}
                     onClick={() => toggleGoal(g)}
                     className={`
-                      flex items-center gap-4 p-4 rounded-xl border-2 text-sm font-bold transition-all
+                      flex items-center gap-4 p-4 rounded-2xl border-2 text-sm font-bold transition-all
                       ${isSelected 
-                        ? "bg-brand-secondary border-brand-secondary text-white shadow-lg shadow-brand-secondary/20 scale-[1.02]" 
+                        ? "bg-brand-secondary border-brand-secondary text-white shadow-lg shadow-brand-secondary/20" 
                         : "bg-slate-50 border-slate-100 text-slate-500 hover:border-brand-secondary/30 hover:bg-white"}
                     `}
                   >
@@ -415,12 +406,12 @@ export default function InputStep() {
           )}
           <Button 
             size="lg" 
-            className="w-full h-16 text-xl font-black shadow-xl shadow-brand-primary/20 bg-brand-primary hover:bg-blue-700 transition-all rounded-2xl" 
+            className="w-full h-14 md:h-16 text-lg md:text-xl font-black bg-brand-primary hover:bg-blue-700 transition-all rounded-2xl shadow-xl shadow-brand-primary/20" 
             onClick={handleGenerate}
             disabled={!inputText.trim() || buyerProfiles.length === 0 || goals.length === 0 || isProcessing || (!user?.isAdmin && (user?.credits || 0) <= 0)}
           >
             {isProcessing ? "Criando Estratégia..." : "Gerar Campanha Agora"}
-            {!isProcessing && <ArrowRight className="ml-3 w-7 h-7" />}
+            {!isProcessing && <ArrowRight className="ml-3 w-6 h-6" />}
           </Button>
         </div>
       </div>

@@ -59,31 +59,31 @@ export default function Register() {
           <p className="text-slate-500 font-medium">Comece sua jornada estratégica com IA</p>
         </div>
 
-        <div className="bg-white p-8 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
-          <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm font-bold rounded-xl animate-shake">
+              <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm font-bold rounded-2xl text-center animate-shake">
                 {error}
               </div>
             )}
 
             {successMessage && (
-              <div className="p-4 bg-emerald-50 border border-emerald-100 text-emerald-600 text-sm font-bold rounded-xl">
+              <div className="p-4 bg-emerald-50 border border-emerald-100 text-emerald-600 text-sm font-bold rounded-2xl text-center">
                 {successMessage}
               </div>
             )}
 
             <div className="space-y-2">
-              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Nome Completo</label>
+              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Nome Completo</label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
+                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
                   <User className="w-5 h-5" />
                 </div>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full h-14 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                  className="w-full h-14 pl-14 pr-6 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
                   placeholder="Seu nome"
                   required
                 />
@@ -91,16 +91,16 @@ export default function Register() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Email</label>
+              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Email</label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
+                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
                   <Mail className="w-5 h-5" />
                 </div>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-14 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                  className="w-full h-14 pl-14 pr-6 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
                   placeholder="seu@email.com"
                   required
                 />
@@ -108,16 +108,16 @@ export default function Register() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Senha</label>
+              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Senha</label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
+                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
                   <Lock className="w-5 h-5" />
                 </div>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-14 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                  className="w-full h-14 pl-14 pr-6 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
                   placeholder="••••••••"
                   required
                   minLength={4}
@@ -128,7 +128,7 @@ export default function Register() {
             <Button 
               type="submit" 
               disabled={isLoading}
-              className="w-full h-14 bg-brand-primary hover:bg-blue-700 text-white rounded-xl font-black text-lg shadow-lg shadow-brand-primary/20 transition-all active:scale-[0.98]"
+              className="w-full h-14 bg-brand-primary hover:bg-blue-700 text-white rounded-2xl font-black text-lg shadow-lg shadow-brand-primary/20 transition-all active:scale-[0.98]"
             >
               {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : 'Criar conta agora'}
             </Button>
@@ -144,21 +144,6 @@ export default function Register() {
             </Link>
           </div>
         </div>
-      </motion.div>
-
-      {/* Illustration at the bottom */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.2 }}
-        className="mt-12 w-full max-w-lg relative"
-      >
-        <img 
-          src="https://img.freepik.com/free-vector/online-registration-concept-illustration_114360-1238.jpg?w=826" 
-          alt="Illustration" 
-          className="w-full h-auto mix-blend-multiply opacity-80"
-          referrerPolicy="no-referrer"
-        />
       </motion.div>
     </div>
   );

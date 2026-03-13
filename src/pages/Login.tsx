@@ -52,32 +52,32 @@ export default function Login() {
         className="w-full max-w-md z-10"
       >
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-brand-primary rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-brand-primary/20 mx-auto mb-6">
+          <div className="w-12 h-12 bg-brand-primary rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-sm mx-auto mb-6">
             S
           </div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Bem-vindo de volta</h1>
           <p className="text-slate-500 font-medium">Entre para gerenciar suas campanhas</p>
         </div>
 
-        <div className="bg-white p-8 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
+        <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm font-bold rounded-xl animate-shake">
+              <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm font-bold rounded-2xl text-center animate-shake">
                 {error}
               </div>
             )}
 
             <div className="space-y-2">
-              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Email</label>
+              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Email</label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
+                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
                   <Mail className="w-5 h-5" />
                 </div>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-14 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                  className="w-full h-14 pl-14 pr-6 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
                   placeholder="seu@email.com"
                   required
                 />
@@ -85,19 +85,19 @@ export default function Login() {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between ml-1">
+              <div className="flex items-center justify-between ml-4">
                 <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Senha</label>
                 <Link to="#" className="text-xs font-bold text-brand-primary hover:underline">Esqueceu a senha?</Link>
               </div>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
+                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
                   <Lock className="w-5 h-5" />
                 </div>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-14 pl-12 pr-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                  className="w-full h-14 pl-14 pr-6 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
                   placeholder="••••••••"
                   required
                 />
@@ -107,7 +107,7 @@ export default function Login() {
             <Button 
               type="submit" 
               disabled={isLoading}
-              className="w-full h-14 bg-brand-primary hover:bg-blue-700 text-white rounded-xl font-black text-lg shadow-lg shadow-brand-primary/20 transition-all active:scale-[0.98]"
+              className="w-full h-14 bg-brand-primary hover:bg-blue-700 text-white rounded-2xl font-black text-lg shadow-lg shadow-brand-primary/20 transition-all active:scale-[0.98]"
             >
               {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : 'Acessar agora'}
             </Button>
@@ -120,21 +120,6 @@ export default function Login() {
             </p>
           </div>
         </div>
-      </motion.div>
-
-      {/* Illustration at the bottom */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.2 }}
-        className="mt-12 w-full max-w-lg relative"
-      >
-        <img 
-          src="https://img.freepik.com/free-vector/sign-up-concept-illustration_114360-7885.jpg?w=826" 
-          alt="Illustration" 
-          className="w-full h-auto mix-blend-multiply opacity-80"
-          referrerPolicy="no-referrer"
-        />
       </motion.div>
     </div>
   );

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { 
   Copy, Check, Video, FileText, MessageCircle, Calendar, 
-  Target, ArrowRight, ChevronRight, BookOpen, Lightbulb, 
+  Target, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, BookOpen, Lightbulb, 
   Info, Sparkles, Home, Plus, LayoutDashboard,
   Zap, Shield, Star, Users, TrendingUp, Share2
 } from "lucide-react";
@@ -14,18 +14,42 @@ import { useNavigate } from "react-router-dom";
 
 const SECTIONS = [
   { id: "strategy", label: "Estratégia", icon: Target, description: "O plano mestre para sua venda" },
-  { id: "reel", label: "Roteiro Reel", icon: Video, description: "Script viral para redes sociais" },
-  { id: "planner", label: "Cronograma", icon: Calendar, description: "Seus próximos 7 dias" },
-  { id: "content10", label: "10 Ideias", icon: Lightbulb, description: "Multiplicação de conteúdo" },
-  { id: "messages", label: "Scripts Zap", icon: MessageCircle, description: "Fechamento no WhatsApp" },
-  { id: "bonus", label: "Dicas Pro", icon: Sparkles, description: "Segredos de performance" },
+  { id: "audience", label: "Público-Alvo", icon: Users, description: "Quem é o seu comprador ideal" },
+  { id: "reel", label: "Reel", icon: Video, description: "Script viral para redes sociais" },
+  { id: "planner", label: "Conteúdos", icon: Calendar, description: "Dicas de como falar sobre seu imóvel" },
+  { id: "content10", label: "Multiplicador de Formato", icon: Lightbulb, description: "Transformando 1 em 10" },
+  { id: "messages", label: "Abordagens", icon: MessageCircle, description: "Abordar, Acompanhar, Encerrar" },
 ];
 
 export default function ResultsStep() {
   const { campaign, strategy, propertyData } = useAppStore();
   const [activeSection, setActiveSection] = useState("strategy");
+  const [isNavOpen, setIsNavOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const navRef = useRef<HTMLDivElement>(null);
+
+  const handlePrevSection = () => {
+    const currentIndex = SECTIONS.findIndex(s => s.id === activeSection);
+    const prevIndex = (currentIndex - 1 + SECTIONS.length) % SECTIONS.length;
+    setActiveSection(SECTIONS[prevIndex].id);
+  };
+
+  const handleNextSection = () => {
+    const currentIndex = SECTIONS.findIndex(s => s.id === activeSection);
+    const nextIndex = (currentIndex + 1) % SECTIONS.length;
+    setActiveSection(SECTIONS[nextIndex].id);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setIsNavOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   if (!campaign || !strategy) {
     return (
@@ -61,7 +85,7 @@ export default function ResultsStep() {
       <header className="bg-white border-b border-slate-100 p-4 md:p-6 sticky top-0 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-brand-primary/10 rounded-xl flex items-center justify-center border border-brand-primary/20">
+            <div className="w-10 h-10 bg-brand-primary/10 rounded-full flex items-center justify-center border border-brand-primary/20">
               <Target className="w-6 h-6 text-brand-primary" />
             </div>
             <div>
@@ -71,46 +95,109 @@ export default function ResultsStep() {
           </div>
 
           <div className="flex items-center gap-2 md:gap-3">
-            <Button 
-              variant="outline" 
-              className="rounded-xl border-slate-200 bg-white text-slate-600 hover:bg-slate-50 h-10 md:h-12 px-4 md:px-6 font-bold shadow-sm text-sm"
+            <button 
               onClick={() => navigate('/')}
+              className="w-10 h-10 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 transition-colors shadow-sm"
             >
-              <Plus className="w-4 h-4 md:mr-2" /> <span className="hidden md:inline">Novo Imóvel</span>
-            </Button>
+              <Plus className="w-6 h-6" />
+            </button>
           </div>
         </div>
       </header>
 
-      {/* Navigation Bar - Editorial Style */}
-      <nav className="bg-white border-b border-slate-100 sticky top-[73px] md:top-[89px] z-20 overflow-x-auto no-scrollbar">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 flex items-center gap-8 py-0 h-16">
-          {SECTIONS.map((section) => {
-            const Icon = section.icon;
-            const isActive = activeSection === section.id;
-            return (
-              <button
-                key={section.id}
-                onClick={() => setActiveSection(section.id)}
-                className={`
-                  flex items-center gap-2 h-full px-1 border-b-2 transition-all shrink-0 text-sm font-black uppercase tracking-widest
-                  ${isActive 
-                    ? "border-brand-primary text-brand-primary" 
-                    : "border-transparent text-slate-400 hover:text-slate-600"}
-                `}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? "text-brand-primary" : "text-slate-300"}`} />
-                {section.label}
-              </button>
-            );
-          })}
+      {/* Navigation Bar - Dropdown Style with Arrows */}
+      <nav className="bg-white border-b border-slate-100 sticky top-[73px] md:top-[89px] z-40 px-4 py-3" ref={navRef}>
+        <div className="max-w-7xl mx-auto flex items-center gap-2">
+          <button
+            onClick={handlePrevSection}
+            className="w-12 h-14 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center text-slate-400 hover:text-brand-primary hover:bg-slate-100 transition-all shrink-0"
+            title="Seção Anterior"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+
+          <div className="flex-1 relative">
+            <button
+              onClick={() => setIsNavOpen(!isNavOpen)}
+              className="w-full h-14 px-6 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between hover:bg-slate-100 transition-all group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center text-white shadow-sm">
+                  {(() => {
+                    const Icon = SECTIONS.find(s => s.id === activeSection)?.icon || Target;
+                    return <Icon className="w-4 h-4" />;
+                  })()}
+                </div>
+                <div className="text-left">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Seção Atual</p>
+                  <p className="text-sm font-black text-slate-900 uppercase tracking-tight">
+                    {SECTIONS.find(s => s.id === activeSection)?.label}
+                  </p>
+                </div>
+              </div>
+              <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${isNavOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            <AnimatePresence>
+              {isNavOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-[2rem] shadow-2xl shadow-slate-200/50 overflow-hidden z-50 p-2"
+                >
+                  <div className="grid grid-cols-1 gap-1">
+                    {SECTIONS.map((section) => {
+                      const Icon = section.icon;
+                      const isActive = activeSection === section.id;
+                      return (
+                        <button
+                          key={section.id}
+                          onClick={() => {
+                            setActiveSection(section.id);
+                            setIsNavOpen(false);
+                          }}
+                          className={`
+                            flex items-center gap-4 p-4 rounded-2xl transition-all text-left group
+                            ${isActive 
+                              ? "bg-brand-primary text-white" 
+                              : "hover:bg-slate-50 text-slate-600"}
+                          `}
+                        >
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isActive ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-white'}`}>
+                            <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-brand-primary'}`} />
+                          </div>
+                          <div>
+                            <p className={`text-xs font-black uppercase tracking-widest ${isActive ? 'text-white' : 'text-slate-900'}`}>
+                              {section.label}
+                            </p>
+                            <p className={`text-[10px] font-medium ${isActive ? 'text-white/70' : 'text-slate-400'}`}>
+                              {section.description}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <button
+            onClick={handleNextSection}
+            className="w-12 h-14 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center text-slate-400 hover:text-brand-primary hover:bg-slate-100 transition-all shrink-0"
+            title="Próxima Seção"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
         </div>
       </nav>
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto custom-scrollbar">
         {/* Content Scrollable Area */}
-        <div className="p-4 md:p-8 lg:p-12">
+        <div className="p-4 md:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div
@@ -121,243 +208,213 @@ export default function ResultsStep() {
                 transition={{ duration: 0.3, ease: "easeOut" }}
               >
                 {/* Section Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-brand-primary/10 rounded-2xl flex items-center justify-center border border-brand-primary/20">
-                        {(() => {
-                          const Icon = SECTIONS.find(s => s.id === activeSection)?.icon || Target;
-                          return <Icon className="w-6 h-6 text-brand-primary" />;
-                        })()}
-                      </div>
-                      <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter uppercase">
-                        {SECTIONS.find(s => s.id === activeSection)?.label}
-                      </h2>
-                    </div>
-                    <p className="text-slate-500 font-medium text-lg">
-                      {SECTIONS.find(s => s.id === activeSection)?.description}
-                    </p>
-                  </div>
+                <div className="mb-4">
+                  <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-1">
+                    {SECTIONS.find(s => s.id === activeSection)?.description}
+                  </p>
+                  <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter uppercase">
+                    {SECTIONS.find(s => s.id === activeSection)?.label}
+                  </h2>
                 </div>
 
                 {/* Section Content */}
-                <div className="space-y-8">
+                <div className="space-y-6">
                   {activeSection === "strategy" && (
-                    <div className="grid lg:grid-cols-3 gap-8">
-                      <div className="lg:col-span-2 space-y-8">
-                        <Card className="bg-white border-slate-100 rounded-2xl overflow-hidden shadow-xl shadow-slate-200/50">
-                          <CardContent className="p-10 space-y-12">
-                            <div className="space-y-6">
-                              <div className="flex items-center gap-3">
-                                <Zap className="w-5 h-5 text-brand-secondary" />
-                                <h4 className="text-xs font-black text-brand-secondary uppercase tracking-[0.3em]">Ângulo de Venda Principal</h4>
-                              </div>
-                              <p className="text-2xl md:text-3xl font-black text-slate-900 leading-tight tracking-tight">
-                                {strategy.angle}
-                              </p>
-                            </div>
-
-                            <div className="h-px bg-slate-100" />
-
-                            <div className="grid md:grid-cols-2 gap-12">
-                              <div className="space-y-4">
-                                <div className="flex items-center gap-3">
-                                  <Users className="w-4 h-4 text-brand-primary" />
-                                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Persona Alvo</h4>
-                                </div>
-                                <p className="text-slate-600 font-medium leading-relaxed">{strategy.persona}</p>
-                              </div>
-                              <div className="space-y-4">
-                                <div className="flex items-center gap-3">
-                                  <TrendingUp className="w-4 h-4 text-brand-primary" />
-                                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Abordagem Sugerida</h4>
-                                </div>
-                                <p className="text-slate-600 font-medium leading-relaxed">{strategy.approach}</p>
-                              </div>
-                            </div>
-
-                            <div className="h-px bg-slate-100" />
-
-                            <div className="space-y-6">
-                              <div className="flex items-center gap-3">
-                                <BookOpen className="w-4 h-4 text-brand-primary" />
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Narrativa de Venda</h4>
-                              </div>
-                              <p className="text-slate-600 font-medium leading-relaxed text-lg italic">
-                                "{strategy.narrative}"
-                              </p>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </div>
-
+                    <div className="max-w-4xl space-y-8">
                       <div className="space-y-8">
-                        <div className="bg-brand-primary/5 rounded-2xl p-8 border border-brand-primary/10 relative overflow-hidden group">
-                          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                            <Sparkles className="w-24 h-24 text-brand-primary" />
-                          </div>
-                          <h3 className="text-slate-900 font-black text-xl mb-4 flex items-center gap-2">
-                            <Shield className="w-5 h-5 text-brand-primary" /> Dica Estratégica
-                          </h3>
-                          <p className="text-slate-600 text-sm leading-relaxed font-medium relative z-10">
-                            Focamos no perfil <strong>{propertyData.buyerProfile}</strong> para maximizar seu ROI. 
-                            Use a narrativa sugerida em todos os seus pontos de contato para criar uma marca forte.
+                        <div className="bg-slate-50/50 p-6 md:p-8 rounded-[2rem] border border-slate-100">
+                          <p className="text-slate-700 font-medium text-lg md:text-xl leading-relaxed">
+                            Você enviou um <span className="font-bold text-brand-primary">{propertyData.type}</span> localizado em <span className="font-bold text-brand-primary">{propertyData.location}</span> e no valor de <span className="font-bold text-brand-primary">{propertyData.price}</span>.
                           </p>
                         </div>
 
-                        <Card className="bg-white border-slate-100 rounded-2xl overflow-hidden shadow-xl shadow-slate-200/50">
-                          <CardContent className="p-8 space-y-6">
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Dados do Ativo</h4>
-                            <div className="space-y-6">
-                              <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center shrink-0">
-                                  <Home className="w-6 h-6 text-brand-primary" />
-                                </div>
-                                <div>
-                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tipo</p>
-                                  <p className="text-slate-900 font-bold">{propertyData.type}</p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center shrink-0">
-                                  <Target className="w-6 h-6 text-brand-primary" />
-                                </div>
-                                <div>
-                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Localização</p>
-                                  <p className="text-slate-900 font-bold">{propertyData.location}</p>
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            <Zap className="w-5 h-5 text-brand-secondary" />
+                            <h4 className="text-xs font-black text-brand-secondary uppercase tracking-widest">Ângulo de Venda Principal</h4>
+                          </div>
+                          <p className="text-xl md:text-2xl font-black text-slate-900 leading-tight">
+                            {strategy.angle}
+                          </p>
+                        </div>
+
+                        <div className="h-px bg-slate-100" />
+
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            <BookOpen className="w-4 h-4 text-brand-primary" />
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Narrativa de Venda</h4>
+                          </div>
+                          <p className="text-slate-600 font-medium leading-relaxed italic text-base md:text-lg">
+                            "{strategy.narrative}"
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeSection === "audience" && (
+                    <div className="max-w-4xl space-y-8">
+                      <div className="space-y-8">
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            <Users className="w-5 h-5 text-brand-primary" />
+                            <h4 className="text-xs font-black text-brand-primary uppercase tracking-widest">Perfil do Comprador</h4>
+                          </div>
+                          <div className="bg-slate-50/50 p-6 md:p-8 rounded-[2rem] border border-slate-100">
+                            <p className="text-slate-700 font-medium text-lg md:text-xl leading-relaxed">
+                              O público-alvo deste tipo de imóvel gosta de <span className="font-bold text-brand-primary">{strategy.persona}</span>.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            <TrendingUp className="w-4 h-4 text-brand-primary" />
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Abordagem Sugerida</h4>
+                          </div>
+                          <p className="text-slate-600 font-medium leading-relaxed text-base md:text-lg">
+                            {strategy.approach}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   )}
 
                   {activeSection === "reel" && (
-                    <div className="max-w-4xl mx-auto space-y-8">
-                      <Card className="bg-white border-slate-100 rounded-2xl overflow-hidden shadow-xl shadow-slate-200/50">
-                        <CardHeader className="p-10 border-b border-slate-50 flex flex-row items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
-                              <Video className="w-6 h-6 text-brand-primary" />
+                    <div className="max-w-4xl space-y-6">
+                      <div className="bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/40 p-6 md:p-10 space-y-10">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-4 md:gap-6">
+                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                              <Video className="w-6 h-6 md:w-8 md:h-8 text-brand-primary" />
                             </div>
-                            <CardTitle className="text-2xl font-black text-slate-900 tracking-tight">Roteiro Viral</CardTitle>
+                            <div>
+                              <h2 className="text-xl md:text-3xl font-black text-slate-900 leading-tight uppercase tracking-tighter">
+                                Roteiro Viral
+                              </h2>
+                            </div>
                           </div>
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="text-brand-primary hover:bg-blue-50 font-bold rounded-xl"
-                            onClick={() => copyToClipboard(campaign.reelScript.body, 'reel')}
+                            className="text-brand-primary hover:bg-blue-50 font-bold rounded-full px-4 h-10 flex items-center gap-2"
+                            onClick={() => copyToClipboard(campaign.reelScript?.body || "", 'reel')}
                           >
-                            {copiedId === 'reel' ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
+                            {copiedId === 'reel' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                             Copiar
                           </Button>
-                        </CardHeader>
-                        <CardContent className="p-10 space-y-12">
-                          <div className="space-y-6">
-                            <h4 className="text-xs font-black text-brand-secondary uppercase tracking-[0.3em]">Ganchos de Atenção (Primeiros 3s)</h4>
-                            <div className="grid gap-4">
-                              {campaign.reelScript.hooks.map((hook, hIdx) => (
-                                <div key={hIdx} className="flex items-center gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-100 group relative hover:bg-white transition-all">
-                                  <div className="w-10 h-10 rounded-xl bg-brand-primary text-white flex items-center justify-center text-sm font-black shrink-0 shadow-lg shadow-brand-primary/20">
+                        </div>
+
+                        <div className="space-y-8">
+                          <h4 className="text-base md:text-lg font-black text-slate-900 uppercase tracking-tight border-b border-slate-50 pb-4">
+                            Ganchos de Atenção (Primeiros 3s)
+                          </h4>
+                          <div className="space-y-4">
+                            {(campaign.reelScript?.hooks || []).length > 0 ? (
+                              (campaign.reelScript?.hooks || []).map((hook, hIdx) => (
+                                <div key={hIdx} className="flex items-start gap-4 md:gap-6 group relative">
+                                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-brand-primary text-white flex items-center justify-center text-sm md:text-lg font-black shrink-0 shadow-lg shadow-brand-primary/20">
                                     {hIdx + 1}
                                   </div>
-                                  <p className="text-slate-900 font-bold text-xl leading-tight pr-12 break-words">{hook}</p>
+                                  <div className="pt-1 flex-1">
+                                    <p className="text-slate-700 font-bold text-base md:text-xl leading-snug pr-10">{hook}</p>
+                                  </div>
                                   <Button 
-                                    size="sm" variant="ghost" className="absolute top-1/2 -translate-y-1/2 right-6 h-12 w-12 p-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"
+                                    size="sm" variant="ghost" className="absolute top-0 right-0 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-full"
                                     onClick={() => copyToClipboard(hook, `hook-${hIdx}`)}
                                   >
-                                    {copiedId === `hook-${hIdx}` ? <Check className="w-5 h-5 text-green-500" /> : <Copy className="w-5 h-5 text-slate-400" />}
+                                    {copiedId === `hook-${hIdx}` ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-slate-400" />}
                                   </Button>
                                 </div>
-                              ))}
+                              ))
+                            ) : (
+                              <p className="text-slate-400 italic">Nenhum gancho gerado.</p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="h-px bg-slate-100" />
+
+                        <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+                          <div className="space-y-6">
+                            <h4 className="text-xs font-black text-brand-secondary uppercase tracking-widest">O Script</h4>
+                            <div className="bg-slate-50/50 p-6 md:p-8 rounded-[2rem] border border-slate-100 text-slate-700 font-medium leading-relaxed italic text-base md:text-lg relative whitespace-pre-wrap min-h-[150px]">
+                              "{campaign.reelScript?.body || "Script não gerado."}"
                             </div>
                           </div>
-
-                          <div className="h-px bg-slate-100" />
-
-                          <div className="grid md:grid-cols-2 gap-12">
-                            <div className="space-y-6">
-                              <h4 className="text-xs font-black text-brand-secondary uppercase tracking-[0.3em]">O Script</h4>
-                              <div className="bg-slate-50 p-8 rounded-2xl border border-slate-100 text-slate-700 font-medium leading-relaxed italic text-xl relative break-words">
-                                <div className="absolute -top-4 -left-4 w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center text-white font-black">“</div>
-                                "{campaign.reelScript.body}"
-                              </div>
+                          <div className="space-y-8">
+                            <div>
+                              <h4 className="text-xs font-black text-brand-secondary uppercase tracking-widest mb-3">CTA de Alto Impacto</h4>
+                              <p className="text-brand-primary text-xl md:text-2xl font-black tracking-tighter leading-tight">{campaign.reelScript?.cta || "CTA não gerada."}</p>
                             </div>
-                            <div className="space-y-10">
-                              <div>
-                                <h4 className="text-xs font-black text-brand-secondary uppercase tracking-[0.3em] mb-4">CTA de Alto Impacto</h4>
-                                <p className="text-brand-primary text-3xl font-black tracking-tighter leading-none break-words">{campaign.reelScript.cta}</p>
-                              </div>
-                              <div className="bg-brand-primary/5 p-8 rounded-2xl border border-brand-primary/10">
-                                <h4 className="text-slate-900 font-black text-sm mb-4 flex items-center gap-2">
-                                  <Video className="w-4 h-4 text-brand-primary" /> Direção de Cenas
-                                </h4>
-                                <p className="text-slate-600 text-sm leading-relaxed font-medium">{campaign.reelScript.scenes}</p>
-                              </div>
+                            <div className="bg-brand-primary/5 p-6 md:p-8 rounded-[2rem] border border-brand-primary/10">
+                              <h4 className="text-slate-900 font-black text-xs mb-3 flex items-center gap-2">
+                                <Video className="w-4 h-4 text-brand-primary" /> Direção de Cenas
+                              </h4>
+                              <p className="text-slate-600 text-sm md:text-base leading-relaxed font-medium">{campaign.reelScript?.scenes || "Direção não gerada."}</p>
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     </div>
                   )}
 
                   {activeSection === "planner" && (
                     <div className="max-w-4xl mx-auto space-y-8">
-                      <div className="space-y-6">
-                        {plannerDays.map((day, idx) => (
-                          <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: idx * 0.1 }}
-                          >
-                            <Card className="bg-white border-slate-100 rounded-2xl overflow-hidden shadow-xl shadow-slate-200/50 group">
-                              <div className="bg-slate-50 p-8 border-b border-slate-100 flex justify-between items-center group-hover:bg-white transition-colors">
-                                <div className="flex items-center gap-6">
-                                  <div className="w-20 h-10 rounded-full bg-brand-primary text-white flex items-center justify-center text-xs font-black uppercase tracking-widest shadow-lg shadow-brand-primary/20">
-                                    DIA {day.day || idx + 1}
-                                  </div>
-                                  <span className="font-black text-slate-900 text-2xl tracking-tighter">{day.title || `Dia ${idx + 1}`}</span>
-                                </div>
-                                <Button 
-                                  size="sm" 
-                                  variant="ghost" 
-                                  className="h-12 w-12 p-0 text-slate-400 hover:text-brand-primary rounded-xl"
-                                  onClick={() => copyToClipboard(day.content || "", `day-${idx}`)}
-                                >
-                                  {copiedId === `day-${idx}` ? <Check className="w-6 h-6 text-green-500" /> : <Copy className="w-6 h-6" />}
-                                </Button>
-                              </div>
-                              <CardContent className="p-10 space-y-6">
-                                <div className="flex items-center gap-2">
-                                  <Star className="w-4 h-4 text-brand-secondary" />
-                                  <span className="text-xs font-black text-brand-secondary uppercase tracking-[0.3em]">{day.topic || "Foco Estratégico"}</span>
-                                </div>
-                                <div className="text-slate-600 font-medium leading-relaxed text-xl prose max-w-none break-words overflow-hidden">
-                                  <ReactMarkdown>{day.content || "Conteúdo não gerado."}</ReactMarkdown>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          </motion.div>
-                        ))}
+                      <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 mb-8">
+                        <p className="text-slate-600 font-medium text-lg">
+                          Foque em entregar a dica de como falar sobre o tema, ao invés de apenas entregar o conteúdo pronto. Isso gera autoridade e conexão.
+                        </p>
                       </div>
+                      {plannerDays.map((day, idx) => (
+                        <motion.div
+                          key={idx}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: idx * 0.1 }}
+                        >
+                          <Card className="bg-white border-slate-100 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200/50 group">
+                            <div className="bg-slate-50 p-8 border-b border-slate-100 flex justify-between items-center group-hover:bg-white transition-colors">
+                              <div className="flex items-center gap-4">
+                                <div className="w-20 h-10 rounded-full bg-brand-primary text-white flex items-center justify-center text-[10px] font-black uppercase tracking-widest">
+                                  DIA {day.day || idx + 1}
+                                </div>
+                                <span className="font-black text-slate-900 text-xl tracking-tighter">{day.title || `Dia ${idx + 1}`}</span>
+                              </div>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-12 w-12 p-0 text-slate-400 hover:text-brand-primary rounded-full"
+                                onClick={() => copyToClipboard(day.content || "", `day-${idx}`)}
+                              >
+                                {copiedId === `day-${idx}` ? <Check className="w-6 h-6 text-green-500" /> : <Copy className="w-6 h-6" />}
+                              </Button>
+                            </div>
+                            <CardContent className="p-10 space-y-6">
+                              <div className="flex items-center gap-2">
+                                <Star className="w-4 h-4 text-brand-secondary" />
+                                <span className="text-[10px] font-black text-brand-secondary tracking-widest">Dica de abordagem: {day.topic || "Foco Estratégico"}</span>
+                              </div>
+                              <div className="text-slate-600 font-medium leading-relaxed text-lg prose max-w-none">
+                                <ReactMarkdown>{day.content || "Conteúdo não gerado."}</ReactMarkdown>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      ))}
                     </div>
                   )}
 
                   {activeSection === "content10" && (
                     <div className="max-w-4xl mx-auto space-y-8">
-                      <div className="bg-brand-primary/5 p-10 rounded-2xl border border-brand-primary/10 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
-                        <div className="absolute -right-10 -bottom-10 opacity-5">
-                          <Lightbulb className="w-64 h-64 text-brand-primary" />
-                        </div>
-                        <div className="w-20 h-20 bg-brand-primary rounded-2xl flex items-center justify-center shrink-0 shadow-2xl shadow-brand-primary/40">
+                      <div className="bg-brand-primary/5 p-10 rounded-[2.5rem] border border-brand-primary/10 flex items-center gap-8">
+                        <div className="w-20 h-20 bg-brand-primary rounded-[1.5rem] flex items-center justify-center shrink-0">
                           <Lightbulb className="w-10 h-10 text-white" />
                         </div>
-                        <div className="text-center md:text-left">
+                        <div>
                           <h3 className="text-slate-900 font-black text-2xl mb-2 tracking-tight">Metodologia 1 → 10</h3>
-                          <p className="text-slate-600 font-medium text-lg">Multiplicamos sua ideia central em 10 formatos diferentes para dominar o algoritmo.</p>
+                          <p className="text-slate-600 font-medium text-lg">Vamos transformar seu anúncio em 10 formatos de conteúdo para dominar o algoritmo.</p>
                         </div>
                       </div>
                       
@@ -368,23 +425,23 @@ export default function ResultsStep() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: iIdx * 0.05 }}
-                            className="bg-white p-8 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 group relative hover:bg-slate-50 transition-all"
+                            className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 group relative hover:bg-slate-50 transition-all"
                           >
                             <div className="flex justify-between items-center mb-6">
                               <div className="flex items-center gap-3">
-                                <div className="w-2 h-2 rounded-full bg-brand-secondary" />
-                                <span className="text-[10px] font-black text-brand-secondary uppercase tracking-[0.3em]">
+                                <div className="w-3 h-3 rounded-full bg-brand-secondary" />
+                                <span className="text-xs font-black text-brand-secondary tracking-widest">
                                   {item.type}
                                 </span>
                               </div>
                               <Button 
-                                size="sm" variant="ghost" className="h-10 w-10 p-0 text-slate-400 hover:text-brand-primary rounded-xl"
+                                size="sm" variant="ghost" className="h-10 w-10 p-0 text-slate-400 hover:text-brand-primary rounded-full"
                                 onClick={() => copyToClipboard(item.content, `content10-${iIdx}`)}
                               >
                                 {copiedId === `content10-${iIdx}` ? <Check className="w-5 h-5 text-green-500" /> : <Copy className="w-5 h-5" />}
                               </Button>
                             </div>
-                            <p className="text-slate-900 font-bold text-xl leading-relaxed pr-8 break-words">{item.content}</p>
+                            <p className="text-slate-900 font-bold text-xl leading-relaxed pr-8 whitespace-pre-wrap">{item.content}</p>
                           </motion.div>
                         ))}
                       </div>
@@ -394,30 +451,30 @@ export default function ResultsStep() {
                   {activeSection === "messages" && (
                     <div className="max-w-4xl mx-auto space-y-16">
                       {[
-                        { id: 'abordagem', label: 'Fase 1: Atração', color: 'brand-primary', desc: 'Primeiro contato e despertar de interesse' },
-                        { id: 'followup', label: 'Fase 2: Nutrição', color: 'brand-secondary', desc: 'Quebra de objeções e manutenção do desejo' },
-                        { id: 'encerramento', label: 'Fase 3: Conversão', color: 'emerald-600', desc: 'Fechamento e agendamento de visita' }
+                        { id: 'abordagem', label: 'Abordar', color: 'brand-primary', desc: 'Primeiro contato e despertar de interesse' },
+                        { id: 'followup', label: 'Acompanhar', color: 'brand-secondary', desc: 'Quebra de objeções e manutenção do desejo' },
+                        { id: 'encerramento', label: 'Encerrar', color: 'emerald-600', desc: 'Fechamento e agendamento de visita' }
                       ].map((stage) => (
                         <div key={stage.id} className="space-y-8">
-                          <div className="flex items-center gap-6 px-4">
-                            <div className={`w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100`}>
+                          <div className="flex items-center gap-5 px-4">
+                            <div className={`w-14 h-14 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm`}>
                               <MessageCircle className={`w-7 h-7 text-brand-primary`} />
                             </div>
                             <div>
-                              <h3 className="text-3xl font-black text-slate-900 tracking-tighter uppercase">{stage.label}</h3>
-                              <p className="text-slate-500 font-medium">{stage.desc}</p>
+                              <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase">{stage.label}</h3>
+                              <p className="text-slate-500 text-base font-medium">{stage.desc}</p>
                             </div>
                           </div>
                           <div className="grid gap-6">
                             {(campaign.funnelMessages[stage.id as keyof typeof campaign.funnelMessages] || []).map((msg: string, mIdx: number) => (
-                              <div key={mIdx} className="bg-white p-10 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 relative group hover:bg-slate-50 transition-all">
+                              <div key={mIdx} className="bg-white p-10 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 relative group hover:bg-slate-50 transition-all">
                                 <Button 
-                                  size="sm" variant="ghost" className="absolute top-8 right-8 h-12 w-12 p-0 text-slate-400 hover:text-brand-primary rounded-xl"
+                                  size="sm" variant="ghost" className="absolute top-8 right-8 h-12 w-12 p-0 text-slate-400 hover:text-brand-primary rounded-full"
                                   onClick={() => copyToClipboard(msg, `msg-${stage.id}-${mIdx}`)}
                                 >
                                   {copiedId === `msg-${stage.id}-${mIdx}` ? <Check className="w-6 h-6 text-green-500" /> : <Copy className="w-6 h-6" />}
                                 </Button>
-                                <p className="text-slate-700 font-medium text-xl leading-relaxed pr-16 italic break-words">
+                                <p className="text-slate-700 font-medium text-xl leading-relaxed pr-16 italic whitespace-pre-wrap">
                                   "{msg}"
                                 </p>
                               </div>
@@ -428,61 +485,28 @@ export default function ResultsStep() {
                     </div>
                   )}
 
+                  {/* Navigation Buttons at the bottom */}
+                  <div className="mt-12 pt-8 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <Button
+                      variant="ghost"
+                      onClick={handlePrevSection}
+                      className="w-full md:w-auto rounded-2xl h-14 px-8 font-bold text-slate-500 hover:text-brand-primary"
+                    >
+                      <ChevronLeft className="w-5 h-5 mr-2" /> Seção Anterior
+                    </Button>
+                    
+                    <Button
+                      onClick={handleNextSection}
+                      className="w-full md:w-auto rounded-2xl h-14 px-8 font-bold bg-brand-primary hover:bg-blue-700 shadow-lg shadow-brand-primary/20"
+                    >
+                      {activeSection === SECTIONS[SECTIONS.length - 1].id ? "Voltar ao Início" : "Próxima Seção"}
+                      <ChevronRight className="w-5 h-5 ml-2" />
+                    </Button>
+                  </div>
+
                   {activeSection === "bonus" && (
                     <div className="max-w-4xl mx-auto space-y-12">
-                      <div className="bg-brand-secondary/5 p-10 rounded-2xl border border-brand-secondary/10 flex flex-col md:flex-row items-center gap-8">
-                        <div className="w-20 h-20 bg-brand-secondary rounded-2xl flex items-center justify-center shrink-0 shadow-2xl shadow-brand-secondary/40">
-                          <Sparkles className="w-10 h-10 text-white" />
-                        </div>
-                        <div className="text-center md:text-left">
-                          <h3 className="text-slate-900 font-black text-2xl mb-2 tracking-tight uppercase">Segredos Estratégicos</h3>
-                          <p className="text-slate-600 font-medium text-lg">Domine o algoritmo e transforme seguidores em compradores reais.</p>
-                        </div>
-                      </div>
-
-                      <div className="grid md:grid-cols-2 gap-8">
-                        <Card className="bg-white border-slate-100 rounded-2xl overflow-hidden shadow-xl shadow-slate-200/50">
-                          <CardContent className="p-10 space-y-8">
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-xl bg-brand-primary/5 flex items-center justify-center">
-                                <TrendingUp className="w-6 h-6 text-brand-primary" />
-                              </div>
-                              <h4 className="text-slate-900 font-black uppercase tracking-widest text-sm">O Desafio do Instagram</h4>
-                            </div>
-                            <div className="space-y-6">
-                              <div className="space-y-2">
-                                <p className="text-slate-900 font-black text-lg">Venda sem Vender</p>
-                                <p className="text-slate-500 font-medium leading-relaxed">O maior erro é transformar seu perfil em um classificado. O Instagram é uma rede de atenção. Primeiro você atrai pelo estilo de vida, depois apresenta a solução (o imóvel).</p>
-                              </div>
-                              <div className="space-y-2">
-                                <p className="text-slate-900 font-black text-lg">O Algoritmo Imobiliário</p>
-                                <p className="text-slate-500 font-medium leading-relaxed">O algoritmo prioriza RETENÇÃO. Vídeos curtos com ganchos fortes nos primeiros 3 segundos são a chave para o Reels entregar seu imóvel para quem ainda não te segue.</p>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-
-                        <Card className="bg-white border-slate-100 rounded-2xl overflow-hidden shadow-xl shadow-slate-200/50">
-                          <CardContent className="p-10 space-y-8">
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-xl bg-brand-secondary/5 flex items-center justify-center">
-                                <Zap className="w-6 h-6 text-brand-secondary" />
-                              </div>
-                              <h4 className="text-slate-900 font-black uppercase tracking-widest text-sm">Acelere seus Resultados</h4>
-                            </div>
-                            <div className="space-y-6">
-                              <div className="space-y-2">
-                                <p className="text-slate-900 font-black text-lg">Consistência Estratégica</p>
-                                <p className="text-slate-500 font-medium leading-relaxed">Não adianta postar muito sem estratégia. Use o Planner gerado aqui para manter uma narrativa que conduz o lead do desejo até o agendamento da visita.</p>
-                              </div>
-                              <div className="space-y-2">
-                                <p className="text-slate-900 font-black text-lg">Pitch de Especialista</p>
-                                <p className="text-slate-500 font-medium leading-relaxed italic">"Marketing imobiliário de alto nível não é sorte, é método. Se você quer escalar suas vendas com estratégias personalizadas como esta, vamos conversar sobre como posso levar seu posicionamento para o próximo nível."</p>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </div>
+                      {/* Bonus section removed as per user request for structured results */}
                     </div>
                   )}
                 </div>

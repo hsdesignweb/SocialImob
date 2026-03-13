@@ -20,81 +20,62 @@ export default function Home() {
   };
 
   return (
-    <div className="space-y-10 pt-10">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-        <div className="space-y-4">
-          <motion.span 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="inline-block px-4 py-1.5 rounded-full bg-brand-primary/10 text-brand-primary text-xs font-black tracking-widest uppercase border border-brand-primary/20"
-          >
-            SocialImob Pro
-          </motion.span>
-          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 leading-tight uppercase">
-            Sua agência de bolso <br/>
-            <span className="text-brand-secondary">inteligente.</span>
-          </h1>
-          <p className="text-slate-500 text-lg font-medium max-w-lg">
-            Transforme qualquer imóvel em uma campanha de marketing de alto padrão em segundos.
-          </p>
-        </div>
-        
-        {!user?.isPaid && !user?.isAdmin && (
-          <Button 
-            variant="outline" 
-            className="border-brand-secondary/30 bg-white text-brand-secondary hover:bg-brand-secondary hover:text-white font-black transition-all px-8 h-14 rounded-2xl shadow-sm"
-            onClick={() => navigate('/payment')}
-          >
-            <CreditCard className="w-5 h-5 mr-3" />
-            Assinar Plano Boss
-          </Button>
-        )}
-      </div>
+    <div className="space-y-12 pt-6">
+      {/* Welcome Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-2"
+      >
+        <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">
+          Olá, {user?.name?.split(' ')[0] || "Corretor"}
+        </h1>
+        <p className="text-slate-500 font-medium text-lg md:text-xl">O que vamos vender hoje?</p>
+      </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <motion.div 
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
-          className="md:col-span-2"
-        >
+      {/* Main Actions */}
+      <div className="grid gap-8">
+        <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
           <Button 
             size="lg" 
-            className="w-full h-32 text-xl font-black shadow-xl shadow-brand-primary/20 bg-brand-primary hover:bg-blue-700 flex flex-col items-center justify-center gap-2 rounded-[2rem] transition-all"
+            className="w-full h-14 md:h-16 text-lg md:text-xl font-black bg-brand-primary hover:bg-blue-700 transition-all rounded-2xl shadow-xl shadow-brand-primary/20 group"
             onClick={handleNewCampaign}
           >
-            <Plus className="h-8 w-8" />
-            <span>Divulgar Novo Imóvel</span>
+            <Plus className="w-5 h-5 md:w-6 md:h-6 mr-3 group-hover:rotate-90 transition-transform" />
+            DIVULGAR NOVO IMÓVEL
           </Button>
         </motion.div>
 
-        <div className="relative group">
-          <Button 
-            variant="outline"
-            size="lg" 
-            className="w-full h-28 text-lg border-slate-200 bg-white text-slate-500 transition-all rounded-[2rem] relative overflow-hidden shadow-sm hover:border-brand-primary/30"
-            onClick={() => navigate('/input')}
-          >
-            <div className="flex flex-col items-center gap-1">
-              <Sparkles className="w-6 h-6 mb-1 text-brand-primary opacity-40" />
-              <span className="font-black uppercase text-[10px] tracking-widest">Gerar Imagens AI</span>
-            </div>
-          </Button>
-          <span className="absolute top-4 right-4 px-2 py-1 bg-slate-100 text-slate-400 text-[8px] font-black rounded-lg uppercase tracking-widest border border-slate-200">Em breve</span>
-        </div>
+        <div className="grid md:grid-cols-2 gap-8">
+          <div className="relative group">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="w-full h-16 md:h-20 text-base md:text-lg font-black border-2 border-slate-100 text-slate-300 bg-white rounded-2xl opacity-60 cursor-not-allowed"
+              disabled
+            >
+              <div className="flex items-center gap-4">
+                <Sparkles className="w-5 h-5" />
+                GERAR IMAGENS AI
+              </div>
+            </Button>
+            <span className="absolute top-1/2 -translate-y-1/2 right-6 px-3 py-1 bg-slate-50 text-slate-400 text-[10px] font-black rounded-xl uppercase tracking-widest border border-slate-100">Em breve</span>
+          </div>
 
-        <div className="relative group">
-          <Button 
-            variant="outline"
-            size="lg" 
-            className="w-full h-28 text-lg border-slate-200 bg-white text-slate-500 transition-all rounded-[2rem] relative overflow-hidden shadow-sm hover:border-brand-primary/30"
-            onClick={() => navigate('/input')}
-          >
-            <div className="flex flex-col items-center gap-1">
-              <FileText className="w-6 h-6 mb-1 text-brand-primary opacity-40" />
-              <span className="font-black uppercase text-[10px] tracking-widest">Página de Venda</span>
-            </div>
-          </Button>
-          <span className="absolute top-4 right-4 px-2 py-1 bg-slate-100 text-slate-400 text-[8px] font-black rounded-lg uppercase tracking-widest border border-slate-200">Em breve</span>
+          <div className="relative group">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="w-full h-16 md:h-20 text-base md:text-lg font-black border-2 border-slate-100 text-slate-300 bg-white rounded-2xl opacity-60 cursor-not-allowed"
+              disabled
+            >
+              <div className="flex items-center gap-4">
+                <FileText className="w-5 h-5" />
+                PÁGINA DE VENDA
+              </div>
+            </Button>
+            <span className="absolute top-1/2 -translate-y-1/2 right-6 px-3 py-1 bg-slate-50 text-slate-400 text-[10px] font-black rounded-xl uppercase tracking-widest border border-slate-100">Em breve</span>
+          </div>
         </div>
       </div>
     </div>
