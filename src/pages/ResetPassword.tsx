@@ -95,7 +95,7 @@ export default function ResetPassword() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Nova Senha</label>
+              <label className="text-xs font-black text-slate-500 tracking-widest ml-4">Nova Senha</label>
               <div className="relative group">
                 <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
                   <Lock className="w-5 h-5" />
@@ -113,7 +113,7 @@ export default function ResetPassword() {
             </div>
             
             <div className="space-y-2">
-              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Confirmar Senha</label>
+              <label className="text-xs font-black text-slate-500 tracking-widest ml-4">Confirmar Senha</label>
               <div className="relative group">
                 <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
                   <Lock className="w-5 h-5" />

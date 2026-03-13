@@ -6,7 +6,7 @@ import {
   Copy, Check, Video, FileText, MessageCircle, Calendar, 
   Target, ArrowRight, ChevronLeft, ChevronRight, ChevronDown, BookOpen, Lightbulb, 
   Info, Sparkles, Home, Plus, LayoutDashboard,
-  Zap, Shield, Star, Users, TrendingUp, Share2
+  Zap, Shield, Star, Share2
 } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from "motion/react";
@@ -14,7 +14,6 @@ import { useNavigate } from "react-router-dom";
 
 const SECTIONS = [
   { id: "strategy", label: "Estratégia", icon: Target, description: "O plano mestre para sua venda" },
-  { id: "audience", label: "Público-Alvo", icon: Users, description: "Quem é o seu comprador ideal" },
   { id: "reel", label: "Reel", icon: Video, description: "Script viral para redes sociais" },
   { id: "planner", label: "Conteúdos", icon: Calendar, description: "Dicas de como falar sobre seu imóvel" },
   { id: "content10", label: "Multiplicador de Formato", icon: Lightbulb, description: "Transformando 1 em 10" },
@@ -62,7 +61,7 @@ export default function ResultsStep() {
           <p className="text-slate-400">Parece que você ainda não gerou sua estratégia Boss.</p>
         </div>
         <Button 
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/app')}
           className="rounded-2xl bg-brand-primary hover:bg-indigo-600 px-8 h-12 font-bold"
         >
           Começar Agora
@@ -89,14 +88,14 @@ export default function ResultsStep() {
               <Target className="w-6 h-6 text-brand-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-black text-slate-900 tracking-tighter uppercase leading-none">Sua Estratégia</h1>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 hidden md:block">Gerado por Inteligência Artificial</p>
+              <h1 className="text-xl font-black text-slate-900 tracking-tighter leading-none">Sua Estratégia</h1>
+              <p className="text-[10px] font-bold text-slate-400 tracking-widest mt-1 hidden md:block">Gerado por Inteligência Artificial</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 md:gap-3">
             <button 
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/app')}
               className="w-10 h-10 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-600 transition-colors shadow-sm"
             >
               <Plus className="w-6 h-6" />
@@ -129,8 +128,8 @@ export default function ResultsStep() {
                   })()}
                 </div>
                 <div className="text-left">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Seção Atual</p>
-                  <p className="text-sm font-black text-slate-900 uppercase tracking-tight">
+                  <p className="text-[10px] font-black text-slate-400 tracking-widest leading-none mb-1">Seção Atual</p>
+                  <p className="text-sm font-black text-slate-900 tracking-tight">
                     {SECTIONS.find(s => s.id === activeSection)?.label}
                   </p>
                 </div>
@@ -168,7 +167,7 @@ export default function ResultsStep() {
                             <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-brand-primary'}`} />
                           </div>
                           <div>
-                            <p className={`text-xs font-black uppercase tracking-widest ${isActive ? 'text-white' : 'text-slate-900'}`}>
+                            <p className={`text-xs font-black tracking-widest ${isActive ? 'text-white' : 'text-slate-900'}`}>
                               {section.label}
                             </p>
                             <p className={`text-[10px] font-medium ${isActive ? 'text-white/70' : 'text-slate-400'}`}>
@@ -209,10 +208,10 @@ export default function ResultsStep() {
               >
                 {/* Section Header */}
                 <div className="mb-4">
-                  <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-1">
+                  <p className="text-xs font-black text-slate-400 tracking-widest mb-1">
                     {SECTIONS.find(s => s.id === activeSection)?.description}
                   </p>
-                  <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter uppercase">
+                  <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter">
                     {SECTIONS.find(s => s.id === activeSection)?.label}
                   </h2>
                 </div>
@@ -220,9 +219,21 @@ export default function ResultsStep() {
                 {/* Section Content */}
                 <div className="space-y-6">
                   {activeSection === "strategy" && (
-                    <div className="max-w-4xl space-y-8">
-                      <div className="space-y-8">
-                        <div className="bg-slate-50/50 p-6 md:p-8 rounded-[2rem] border border-slate-100">
+                    <div className="max-w-4xl mx-auto space-y-8">
+                      <div className="bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/40 p-6 md:p-10 space-y-10">
+                        <div className="flex items-center gap-6">
+                          <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                            <Target className="w-8 h-8 text-brand-primary" />
+                          </div>
+                          <div>
+                            <h2 className="text-xl md:text-3xl font-black text-slate-900 leading-tight tracking-tighter">
+                              Estratégia de Venda
+                            </h2>
+                            <p className="text-slate-500 font-medium text-sm md:text-base mt-1">O plano mestre para sua venda</p>
+                          </div>
+                        </div>
+
+                        <div className="bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100">
                           <p className="text-slate-700 font-medium text-lg md:text-xl leading-relaxed">
                             Você enviou um <span className="font-bold text-brand-primary">{propertyData.type}</span> localizado em <span className="font-bold text-brand-primary">{propertyData.location}</span> e no valor de <span className="font-bold text-brand-primary">{propertyData.price}</span>.
                           </p>
@@ -231,7 +242,7 @@ export default function ResultsStep() {
                         <div className="space-y-4">
                           <div className="flex items-center gap-3">
                             <Zap className="w-5 h-5 text-brand-secondary" />
-                            <h4 className="text-xs font-black text-brand-secondary uppercase tracking-widest">Ângulo de Venda Principal</h4>
+                            <h4 className="text-xs font-black text-brand-secondary tracking-widest">Ângulo de Venda Principal</h4>
                           </div>
                           <p className="text-xl md:text-2xl font-black text-slate-900 leading-tight">
                             {strategy.angle}
@@ -243,9 +254,9 @@ export default function ResultsStep() {
                         <div className="space-y-4">
                           <div className="flex items-center gap-3">
                             <BookOpen className="w-4 h-4 text-brand-primary" />
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Narrativa de Venda</h4>
+                            <h4 className="text-xs font-black text-slate-400 tracking-widest">Narrativa de Venda</h4>
                           </div>
-                          <p className="text-slate-600 font-medium leading-relaxed italic text-base md:text-lg">
+                          <p className="text-slate-700 font-medium leading-relaxed italic text-lg md:text-xl">
                             "{strategy.narrative}"
                           </p>
                         </div>
@@ -253,46 +264,21 @@ export default function ResultsStep() {
                     </div>
                   )}
 
-                  {activeSection === "audience" && (
-                    <div className="max-w-4xl space-y-8">
-                      <div className="space-y-8">
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-3">
-                            <Users className="w-5 h-5 text-brand-primary" />
-                            <h4 className="text-xs font-black text-brand-primary uppercase tracking-widest">Perfil do Comprador</h4>
-                          </div>
-                          <div className="bg-slate-50/50 p-6 md:p-8 rounded-[2rem] border border-slate-100">
-                            <p className="text-slate-700 font-medium text-lg md:text-xl leading-relaxed">
-                              O público-alvo deste tipo de imóvel gosta de <span className="font-bold text-brand-primary">{strategy.persona}</span>.
-                            </p>
-                          </div>
-                        </div>
 
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-3">
-                            <TrendingUp className="w-4 h-4 text-brand-primary" />
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Abordagem Sugerida</h4>
-                          </div>
-                          <p className="text-slate-600 font-medium leading-relaxed text-base md:text-lg">
-                            {strategy.approach}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
 
                   {activeSection === "reel" && (
-                    <div className="max-w-4xl space-y-6">
+                    <div className="max-w-4xl mx-auto space-y-8">
                       <div className="bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/40 p-6 md:p-10 space-y-10">
                         <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-4 md:gap-6">
-                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                              <Video className="w-6 h-6 md:w-8 md:h-8 text-brand-primary" />
+                          <div className="flex items-center gap-6">
+                            <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                              <Video className="w-8 h-8 text-brand-primary" />
                             </div>
                             <div>
-                              <h2 className="text-xl md:text-3xl font-black text-slate-900 leading-tight uppercase tracking-tighter">
+                              <h2 className="text-xl md:text-3xl font-black text-slate-900 leading-tight tracking-tighter">
                                 Roteiro Viral
                               </h2>
+                              <p className="text-slate-500 font-medium text-sm md:text-base mt-1">Script viral para redes sociais</p>
                             </div>
                           </div>
                           <Button 
@@ -307,9 +293,10 @@ export default function ResultsStep() {
                         </div>
 
                         <div className="space-y-8">
-                          <h4 className="text-base md:text-lg font-black text-slate-900 uppercase tracking-tight border-b border-slate-50 pb-4">
-                            Ganchos de Atenção (Primeiros 3s)
-                          </h4>
+                          <div className="flex items-center gap-3">
+                            <Sparkles className="w-4 h-4 text-brand-secondary" />
+                            <h4 className="text-xs font-black text-brand-secondary tracking-widest">Ganchos de Atenção (Primeiros 3s)</h4>
+                          </div>
                           <div className="space-y-4">
                             {(campaign.reelScript?.hooks || []).length > 0 ? (
                               (campaign.reelScript?.hooks || []).map((hook, hIdx) => (
@@ -338,21 +325,27 @@ export default function ResultsStep() {
 
                         <div className="grid md:grid-cols-2 gap-8 md:gap-12">
                           <div className="space-y-6">
-                            <h4 className="text-xs font-black text-brand-secondary uppercase tracking-widest">O Script</h4>
-                            <div className="bg-slate-50/50 p-6 md:p-8 rounded-[2rem] border border-slate-100 text-slate-700 font-medium leading-relaxed italic text-base md:text-lg relative whitespace-pre-wrap min-h-[150px]">
+                            <div className="flex items-center gap-3">
+                              <FileText className="w-4 h-4 text-brand-secondary" />
+                              <h4 className="text-xs font-black text-brand-secondary tracking-widest">O Script</h4>
+                            </div>
+                            <div className="bg-slate-50/50 p-6 md:p-8 rounded-[2rem] border border-slate-100 text-slate-700 font-medium leading-relaxed italic text-lg md:text-xl relative whitespace-pre-wrap min-h-[150px]">
                               "{campaign.reelScript?.body || "Script não gerado."}"
                             </div>
                           </div>
                           <div className="space-y-8">
                             <div>
-                              <h4 className="text-xs font-black text-brand-secondary uppercase tracking-widest mb-3">CTA de Alto Impacto</h4>
+                              <div className="flex items-center gap-3 mb-3">
+                                <Zap className="w-4 h-4 text-brand-secondary" />
+                                <h4 className="text-xs font-black text-brand-secondary tracking-widest">CTA de Alto Impacto</h4>
+                              </div>
                               <p className="text-brand-primary text-xl md:text-2xl font-black tracking-tighter leading-tight">{campaign.reelScript?.cta || "CTA não gerada."}</p>
                             </div>
                             <div className="bg-brand-primary/5 p-6 md:p-8 rounded-[2rem] border border-brand-primary/10">
-                              <h4 className="text-slate-900 font-black text-xs mb-3 flex items-center gap-2">
+                              <h4 className="text-slate-900 font-black text-xs mb-3 flex items-center gap-2 tracking-widest">
                                 <Video className="w-4 h-4 text-brand-primary" /> Direção de Cenas
                               </h4>
-                              <p className="text-slate-600 text-sm md:text-base leading-relaxed font-medium">{campaign.reelScript?.scenes || "Direção não gerada."}</p>
+                              <p className="text-slate-700 text-sm md:text-base leading-relaxed font-medium">{campaign.reelScript?.scenes || "Direção não gerada."}</p>
                             </div>
                           </div>
                         </div>
@@ -362,126 +355,166 @@ export default function ResultsStep() {
 
                   {activeSection === "planner" && (
                     <div className="max-w-4xl mx-auto space-y-8">
-                      <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 mb-8">
-                        <p className="text-slate-600 font-medium text-lg">
-                          Foque em entregar a dica de como falar sobre o tema, ao invés de apenas entregar o conteúdo pronto. Isso gera autoridade e conexão.
-                        </p>
-                      </div>
-                      {plannerDays.map((day, idx) => (
-                        <motion.div
-                          key={idx}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.1 }}
-                        >
-                          <Card className="bg-white border-slate-100 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200/50 group">
-                            <div className="bg-slate-50 p-8 border-b border-slate-100 flex justify-between items-center group-hover:bg-white transition-colors">
-                              <div className="flex items-center gap-4">
-                                <div className="w-20 h-10 rounded-full bg-brand-primary text-white flex items-center justify-center text-[10px] font-black uppercase tracking-widest">
-                                  DIA {day.day || idx + 1}
+                      <div className="bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/40 p-6 md:p-10 space-y-10">
+                        <div className="flex items-center gap-6">
+                          <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                            <Calendar className="w-8 h-8 text-brand-primary" />
+                          </div>
+                          <div>
+                            <h2 className="text-xl md:text-3xl font-black text-slate-900 leading-tight tracking-tighter">
+                              Planner de Conteúdo
+                            </h2>
+                            <p className="text-slate-500 font-medium text-sm md:text-base mt-1">Sua semana de autoridade no mercado imobiliário</p>
+                          </div>
+                        </div>
+
+                        <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100">
+                          <p className="text-slate-700 font-medium text-lg">
+                            Foque em entregar a dica de como falar sobre o tema, ao invés de apenas entregar o conteúdo pronto. Isso gera autoridade e conexão.
+                          </p>
+                        </div>
+
+                        <div className="space-y-8">
+                          {plannerDays.map((day, idx) => (
+                            <motion.div
+                              key={idx}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: idx * 0.1 }}
+                              className="bg-white border border-slate-100 rounded-[2rem] overflow-hidden shadow-sm group"
+                            >
+                              <div className="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center group-hover:bg-white transition-colors">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-20 h-10 rounded-full bg-brand-primary text-white flex items-center justify-center text-[10px] font-black tracking-widest">
+                                    DIA {day.day || idx + 1}
+                                  </div>
+                                  <span className="text-xl font-black text-slate-900 tracking-tighter">{day.title || `Dia ${idx + 1}`}</span>
                                 </div>
-                                <span className="font-black text-slate-900 text-xl tracking-tighter">{day.title || `Dia ${idx + 1}`}</span>
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost" 
+                                  className="h-10 w-10 p-0 text-slate-400 hover:text-brand-primary rounded-full"
+                                  onClick={() => copyToClipboard(day.content || "", `day-${idx}`)}
+                                >
+                                  {copiedId === `day-${idx}` ? <Check className="w-5 h-5 text-green-500" /> : <Copy className="w-5 h-5" />}
+                                </Button>
                               </div>
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
-                                className="h-12 w-12 p-0 text-slate-400 hover:text-brand-primary rounded-full"
-                                onClick={() => copyToClipboard(day.content || "", `day-${idx}`)}
-                              >
-                                {copiedId === `day-${idx}` ? <Check className="w-6 h-6 text-green-500" /> : <Copy className="w-6 h-6" />}
-                              </Button>
-                            </div>
-                            <CardContent className="p-10 space-y-6">
-                              <div className="flex items-center gap-2">
-                                <Star className="w-4 h-4 text-brand-secondary" />
-                                <span className="text-[10px] font-black text-brand-secondary tracking-widest">Dica de abordagem: {day.topic || "Foco Estratégico"}</span>
+                              <div className="p-8 space-y-4">
+                                <div className="flex items-center gap-2">
+                                  <Star className="w-4 h-4 text-brand-secondary" />
+                                  <span className="text-xs font-black text-brand-secondary tracking-widest">Dica de abordagem: {day.topic || "Foco Estratégico"}</span>
+                                </div>
+                                <div className="text-slate-700 font-medium leading-relaxed text-lg prose max-w-none">
+                                  <ReactMarkdown>{day.content || "Conteúdo não gerado."}</ReactMarkdown>
+                                </div>
                               </div>
-                              <div className="text-slate-600 font-medium leading-relaxed text-lg prose max-w-none">
-                                <ReactMarkdown>{day.content || "Conteúdo não gerado."}</ReactMarkdown>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </motion.div>
-                      ))}
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   )}
 
                   {activeSection === "content10" && (
                     <div className="max-w-4xl mx-auto space-y-8">
-                      <div className="bg-brand-primary/5 p-10 rounded-[2.5rem] border border-brand-primary/10 flex items-center gap-8">
-                        <div className="w-20 h-20 bg-brand-primary rounded-[1.5rem] flex items-center justify-center shrink-0">
-                          <Lightbulb className="w-10 h-10 text-white" />
+                      <div className="bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/40 p-6 md:p-10 space-y-10">
+                        <div className="flex items-center gap-6">
+                          <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                            <Lightbulb className="w-8 h-8 text-brand-primary" />
+                          </div>
+                          <div>
+                            <h2 className="text-xl md:text-3xl font-black text-slate-900 leading-tight tracking-tighter">
+                              Multiplicador 10x
+                            </h2>
+                            <p className="text-slate-500 font-medium text-sm md:text-base mt-1">1 Ideia transformada em 10 conteúdos</p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="text-slate-900 font-black text-2xl mb-2 tracking-tight">Metodologia 1 → 10</h3>
-                          <p className="text-slate-600 font-medium text-lg">Vamos transformar seu anúncio em 10 formatos de conteúdo para dominar o algoritmo.</p>
+
+                        <div className="bg-brand-primary/5 p-8 rounded-[2rem] border border-brand-primary/10">
+                          <p className="text-slate-700 font-medium text-lg">
+                            Vamos transformar seu anúncio em 10 formatos de conteúdo para dominar o algoritmo.
+                          </p>
                         </div>
-                      </div>
-                      
-                      <div className="grid gap-6">
-                        {(campaign.derivedContent10 || []).map((item, iIdx) => (
-                          <motion.div
-                            key={iIdx}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: iIdx * 0.05 }}
-                            className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 group relative hover:bg-slate-50 transition-all"
-                          >
-                            <div className="flex justify-between items-center mb-6">
-                              <div className="flex items-center gap-3">
-                                <div className="w-3 h-3 rounded-full bg-brand-secondary" />
-                                <span className="text-xs font-black text-brand-secondary tracking-widest">
-                                  {item.type}
-                                </span>
+                        
+                        <div className="grid gap-6">
+                          {(campaign.derivedContent10 || []).map((item, iIdx) => (
+                            <motion.div
+                              key={iIdx}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: iIdx * 0.05 }}
+                              className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm group relative hover:bg-slate-50 transition-all"
+                            >
+                              <div className="flex justify-between items-center mb-6">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-3 h-3 rounded-full bg-brand-secondary" />
+                                  <span className="text-xs font-black text-brand-secondary tracking-widest">
+                                    {item.type}
+                                  </span>
+                                </div>
+                                <Button 
+                                  size="sm" variant="ghost" className="h-10 w-10 p-0 text-slate-400 hover:text-brand-primary rounded-full"
+                                  onClick={() => copyToClipboard(item.content, `content10-${iIdx}`)}
+                                >
+                                  {copiedId === `content10-${iIdx}` ? <Check className="w-5 h-5 text-green-500" /> : <Copy className="w-5 h-5" />}
+                                </Button>
                               </div>
-                              <Button 
-                                size="sm" variant="ghost" className="h-10 w-10 p-0 text-slate-400 hover:text-brand-primary rounded-full"
-                                onClick={() => copyToClipboard(item.content, `content10-${iIdx}`)}
-                              >
-                                {copiedId === `content10-${iIdx}` ? <Check className="w-5 h-5 text-green-500" /> : <Copy className="w-5 h-5" />}
-                              </Button>
-                            </div>
-                            <p className="text-slate-900 font-bold text-xl leading-relaxed pr-8 whitespace-pre-wrap">{item.content}</p>
-                          </motion.div>
-                        ))}
+                              <p className="text-slate-700 font-medium text-lg leading-relaxed pr-8 whitespace-pre-wrap">{item.content}</p>
+                            </motion.div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
 
                   {activeSection === "messages" && (
-                    <div className="max-w-4xl mx-auto space-y-16">
-                      {[
-                        { id: 'abordagem', label: 'Abordar', color: 'brand-primary', desc: 'Primeiro contato e despertar de interesse' },
-                        { id: 'followup', label: 'Acompanhar', color: 'brand-secondary', desc: 'Quebra de objeções e manutenção do desejo' },
-                        { id: 'encerramento', label: 'Encerrar', color: 'emerald-600', desc: 'Fechamento e agendamento de visita' }
-                      ].map((stage) => (
-                        <div key={stage.id} className="space-y-8">
-                          <div className="flex items-center gap-5 px-4">
-                            <div className={`w-14 h-14 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm`}>
-                              <MessageCircle className={`w-7 h-7 text-brand-primary`} />
-                            </div>
-                            <div>
-                              <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase">{stage.label}</h3>
-                              <p className="text-slate-500 text-base font-medium">{stage.desc}</p>
-                            </div>
+                    <div className="max-w-4xl mx-auto space-y-8">
+                      <div className="bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/40 p-6 md:p-10 space-y-12">
+                        <div className="flex items-center gap-6">
+                          <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                            <MessageCircle className="w-8 h-8 text-brand-primary" />
                           </div>
-                          <div className="grid gap-6">
-                            {(campaign.funnelMessages[stage.id as keyof typeof campaign.funnelMessages] || []).map((msg: string, mIdx: number) => (
-                              <div key={mIdx} className="bg-white p-10 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 relative group hover:bg-slate-50 transition-all">
-                                <Button 
-                                  size="sm" variant="ghost" className="absolute top-8 right-8 h-12 w-12 p-0 text-slate-400 hover:text-brand-primary rounded-full"
-                                  onClick={() => copyToClipboard(msg, `msg-${stage.id}-${mIdx}`)}
-                                >
-                                  {copiedId === `msg-${stage.id}-${mIdx}` ? <Check className="w-6 h-6 text-green-500" /> : <Copy className="w-6 h-6" />}
-                                </Button>
-                                <p className="text-slate-700 font-medium text-xl leading-relaxed pr-16 italic whitespace-pre-wrap">
-                                  "{msg}"
-                                </p>
-                              </div>
-                            ))}
+                          <div>
+                            <h2 className="text-xl md:text-3xl font-black text-slate-900 leading-tight tracking-tighter">
+                              Abordagens de Funil
+                            </h2>
+                            <p className="text-slate-500 font-medium text-sm md:text-base mt-1">Scripts persuasivos para cada etapa da venda</p>
                           </div>
                         </div>
-                      ))}
+
+                        {[
+                          { id: 'abordagem', label: 'Abordar', color: 'brand-primary', desc: 'Primeiro contato e despertar de interesse' },
+                          { id: 'followup', label: 'Acompanhar', color: 'brand-secondary', desc: 'Quebra de objeções e manutenção do desejo' },
+                          { id: 'encerramento', label: 'Encerrar', color: 'emerald-600', desc: 'Fechamento e agendamento de visita' }
+                        ].map((stage) => (
+                          <div key={stage.id} className="space-y-8">
+                            <div className="flex items-center gap-5 px-4">
+                              <div className={`w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm`}>
+                                <MessageCircle className={`w-6 h-6 text-brand-primary`} />
+                              </div>
+                              <div>
+                                <h3 className="text-xl font-black text-slate-900 tracking-tighter">{stage.label}</h3>
+                                <p className="text-slate-500 text-sm font-medium">{stage.desc}</p>
+                              </div>
+                            </div>
+                            <div className="grid gap-6">
+                              {(campaign.funnelMessages[stage.id as keyof typeof campaign.funnelMessages] || []).map((msg: string, mIdx: number) => (
+                                <div key={mIdx} className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm relative group hover:bg-slate-50 transition-all">
+                                  <Button 
+                                    size="sm" variant="ghost" className="absolute top-6 right-6 h-10 w-10 p-0 text-slate-400 hover:text-brand-primary rounded-full"
+                                    onClick={() => copyToClipboard(msg, `msg-${stage.id}-${mIdx}`)}
+                                  >
+                                    {copiedId === `msg-${stage.id}-${mIdx}` ? <Check className="w-5 h-5 text-green-500" /> : <Copy className="w-5 h-5" />}
+                                  </Button>
+                                  <p className="text-slate-700 font-medium text-lg leading-relaxed pr-16 italic whitespace-pre-wrap">
+                                    "{msg}"
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
 

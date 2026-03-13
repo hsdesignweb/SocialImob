@@ -116,7 +116,7 @@ export default function Layout() {
                   className="h-full w-full bg-brand-secondary"
                 />
               </div>
-              <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">Lapidando sua estratégia de alta performance</p>
+              <p className="text-slate-500 text-[10px] font-black tracking-[0.3em]">Lapidando sua estratégia de alta performance</p>
             </div>
           </div>
         </div>
@@ -125,13 +125,13 @@ export default function Layout() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/app')}>
             <div className="w-12 h-12 bg-brand-primary rounded-full flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-brand-primary/20">
               S
             </div>
             <div className="flex flex-col">
-              <span className="font-black text-2xl tracking-tighter leading-none text-slate-900 uppercase">SocialImob</span>
-              <span className="text-[10px] font-black text-brand-secondary uppercase tracking-[0.2em]">{user?.name || "Corretor"}</span>
+              <span className="font-black text-2xl tracking-tighter leading-none text-slate-900">SocialImob</span>
+              <span className="text-[10px] font-black text-brand-secondary tracking-[0.2em]">{user?.name || "Corretor"}</span>
             </div>
           </div>
 
@@ -162,7 +162,7 @@ export default function Layout() {
                     Suporte Técnico
                   </a>
                   <button 
-                    onClick={() => { navigate('/history'); setIsMenuOpen(false); }}
+                    onClick={() => { navigate('/app/history'); setIsMenuOpen(false); }}
                     className="w-full text-left px-5 py-4 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
                   >
                     <History className="w-4 h-4 text-slate-400" />
@@ -170,7 +170,7 @@ export default function Layout() {
                   </button>
                   {user?.isAdmin && (
                     <button 
-                      onClick={() => { navigate('/admin'); setIsMenuOpen(false); }}
+                      onClick={() => { navigate('/app/admin'); setIsMenuOpen(false); }}
                       className="w-full text-left px-5 py-4 text-sm text-brand-primary font-bold hover:bg-slate-50 flex items-center gap-3 transition-colors"
                     >
                       <Target className="w-4 h-4" />
@@ -210,10 +210,10 @@ export default function Layout() {
 
       {/* Footer Support */}
       <footer className="max-w-6xl mx-auto w-full p-10 text-center border-t border-slate-100">
-        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-3">SocialImob - Hebert Silva © 2026</p>
+        <p className="text-xs text-slate-400 font-bold tracking-widest mb-3">SocialImob - Hebert Silva © 2026</p>
         <a 
           href="mailto:atendimento@arkaconsultoria.com.br" 
-          className="text-[10px] font-bold text-brand-secondary hover:text-brand-primary transition-colors uppercase tracking-wider"
+          className="text-[10px] font-bold text-brand-secondary hover:text-brand-primary transition-colors tracking-wider"
         >
           Suporte: atendimento@arkaconsultoria.com.br
         </a>

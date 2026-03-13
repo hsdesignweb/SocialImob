@@ -34,7 +34,7 @@ export default function Payment() {
     try {
       await completePayment();
       // Clear query params
-      navigate('/', { replace: true });
+      navigate('/app', { replace: true });
     } catch (error) {
       console.error("Payment completion failed", error);
       setError("Erro ao confirmar pagamento. Entre em contato com o suporte.");
@@ -82,7 +82,7 @@ export default function Payment() {
             <div className="absolute inset-0 bg-brand-primary/10 blur-3xl rounded-full" />
             <Loader2 className="w-16 h-16 animate-spin text-brand-primary mx-auto relative z-10" />
           </div>
-          <p className="text-slate-400 font-black uppercase tracking-widest text-xs">Processando pagamento...</p>
+          <p className="text-slate-400 font-black tracking-widest text-xs">Processando pagamento...</p>
         </div>
       </div>
     );
@@ -95,7 +95,7 @@ export default function Payment() {
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-brand-primary/5 blur-[80px] rounded-full" />
         
         <div className="bg-slate-50 p-10 text-center border-b border-slate-100 relative z-10">
-          <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase mb-2">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tighter mb-2">
             {user?.status === 'suspended' ? 'Renovar Assinatura' : 
              user?.status === 'trial' ? 'Acesso Pro' : 'Finalize sua Assinatura'}
           </h1>
@@ -116,12 +116,12 @@ export default function Payment() {
           <div className="space-y-6">
             <div className="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-slate-100">
               <div>
-                <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">Plano Mensal</h3>
+                <h3 className="font-black text-slate-900 tracking-widest text-xs">Plano Mensal</h3>
                 <p className="text-xs text-slate-500 font-medium">100 Créditos / mês</p>
               </div>
               <div className="text-right">
                 <span className="text-3xl font-black text-slate-900 tracking-tighter">R$ 97</span>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">/mês</span>
+                <span className="text-[10px] font-black text-slate-400 tracking-widest block">/mês</span>
               </div>
             </div>
 
@@ -150,7 +150,7 @@ export default function Payment() {
           <div className="pt-6 border-t border-slate-100">
             <Button 
               onClick={handlePayment} 
-              className="w-full bg-[#009EE3] hover:bg-[#008CC9] h-14 text-white font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98]"
+              className="w-full bg-[#009EE3] hover:bg-[#008CC9] h-14 text-white font-black tracking-widest rounded-2xl shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98]"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -160,7 +160,7 @@ export default function Payment() {
               )}
               Pagar com Mercado Pago
             </Button>
-            <p className="text-[10px] text-center text-slate-400 mt-6 flex items-center justify-center gap-2 font-black uppercase tracking-widest">
+            <p className="text-[10px] text-center text-slate-400 mt-6 flex items-center justify-center gap-2 font-black tracking-widest">
               <ShieldCheck className="w-3 h-3" />
               Ambiente 100% seguro
             </p>
@@ -171,7 +171,7 @@ export default function Payment() {
                   logout();
                   navigate('/login');
                 }}
-                className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-brand-primary transition-colors flex items-center justify-center gap-2 mx-auto"
+                className="text-[10px] font-black tracking-widest text-slate-400 hover:text-brand-primary transition-colors flex items-center justify-center gap-2 mx-auto"
               >
                 <ArrowLeft className="w-3 h-3" /> Voltar para o Login
               </button>

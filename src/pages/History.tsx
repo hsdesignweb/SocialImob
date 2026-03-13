@@ -57,13 +57,13 @@ export default function History() {
               <button
                 onClick={() => {
                   loadFromHistory(item);
-                  navigate("/results");
+                  navigate("/app/results");
                 }}
                 className="w-full bg-white p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 hover:border-brand-primary transition-all text-left group relative overflow-hidden"
               >
                 <div className="absolute top-0 right-0 w-24 h-24 bg-brand-primary/5 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
                 
-                <div className="flex items-center gap-2 text-[10px] font-black text-brand-secondary uppercase tracking-widest mb-4 relative z-10">
+                <div className="flex items-center gap-2 text-[10px] font-black text-brand-secondary tracking-widest mb-4 relative z-10">
                   <Clock className="w-3 h-3" />
                   {new Date(item.timestamp).toLocaleDateString('pt-BR')} às {new Date(item.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                 </div>
@@ -75,14 +75,14 @@ export default function History() {
                   
                   <div className="flex flex-wrap gap-2">
                     {item.propertyData.buyerProfile?.split(',').slice(0, 2).map((p, i) => (
-                      <span key={i} className="px-2 py-1 bg-slate-50 text-slate-400 text-[8px] font-black rounded-lg uppercase tracking-widest border border-slate-100">
+                      <span key={i} className="px-2 py-1 bg-slate-50 text-slate-400 text-[8px] font-black rounded-lg tracking-widest border border-slate-100">
                         {p.trim()}
                       </span>
                     ))}
                   </div>
                 </div>
 
-                <div className="mt-8 flex items-center text-brand-primary font-black text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="mt-8 flex items-center text-brand-primary font-black text-xs tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
                   Ver Estratégia <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
                 </div>
               </button>
@@ -102,7 +102,7 @@ export default function History() {
           </div>
           <Button 
             className="bg-brand-primary hover:bg-blue-700 text-white font-black px-8 h-12 rounded-2xl"
-            onClick={() => navigate('/input')}
+            onClick={() => navigate('/app/input')}
           >
             Começar agora
           </Button>

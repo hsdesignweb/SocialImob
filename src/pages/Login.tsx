@@ -26,7 +26,7 @@ export default function Login() {
         } else if (result.status === 'suspended') {
              navigate('/payment?reason=suspended');
         } else {
-             navigate('/');
+             navigate('/app');
         }
       } else {
         setError(result.error || 'Credenciais inválidas. Tente novamente.');
@@ -68,7 +68,7 @@ export default function Login() {
             )}
 
             <div className="space-y-2">
-              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Email</label>
+              <label className="text-xs font-black text-slate-500 tracking-widest ml-4">Email</label>
               <div className="relative group">
                 <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
                   <Mail className="w-5 h-5" />
@@ -86,7 +86,7 @@ export default function Login() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between ml-4">
-                <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Senha</label>
+                <label className="text-xs font-black text-slate-500 tracking-widest">Senha</label>
                 <Link to="#" className="text-xs font-bold text-brand-primary hover:underline">Esqueceu a senha?</Link>
               </div>
               <div className="relative group">

@@ -18,6 +18,8 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Payment from "./pages/Payment";
 
+import LandingPage from "./pages/LandingPage";
+
 // Protected Route Component
 const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.ReactNode, requireAdmin?: boolean }) => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -35,7 +37,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.Re
   }
 
   if (requireAdmin && !user?.isAdmin) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/app" replace />;
   }
 
   // If user is authenticated but hasn't paid, redirect to payment
@@ -63,7 +65,7 @@ const PaymentRoute = ({ children }: { children: React.ReactNode }) => {
         return <Navigate to="/login" replace />;
     }
     if (user?.isPaid) {
-        return <Navigate to="/" replace />;
+        return <Navigate to="/app" replace />;
     }
     return <>{children}</>;
 }
@@ -74,6 +76,7 @@ export default function App() {
       <AppProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -85,7 +88,7 @@ export default function App() {
                 </PaymentRoute>
             } />
             
-            <Route path="/" element={
+            <Route path="/app" element={
               <ProtectedRoute>
                 <Layout />
               </ProtectedRoute>
@@ -100,6 +103,9 @@ export default function App() {
                 </ProtectedRoute>
               } />
             </Route>
+
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </AppProvider>

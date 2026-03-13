@@ -101,7 +101,13 @@ export default function InputStep() {
         TAREFAS DE GERAÇÃO (Apenas se isValidProperty for true):
         1. EXTRAÇÃO: Extraia tipo, localização, preço e características.
         2. ESTRATÉGIA: Defina ângulo de venda, persona, abordagem e narrativa.
-        3. REEL: Crie um roteiro viral (5 ganchos curtos e impactantes, corpo do texto com quebras de linha, CTA e direção de cenas).
+        3. REEL: Crie um roteiro viral. Para os ganchos, você DEVE adaptar e usar EXATAMENTE um destes 5 modelos como base: 
+           1. "Você não vai acreditar no que eu acabei de encontrar..."
+           2. "O segredo para morar bem em [Localização]..."
+           3. "Pare de procurar imóvel agora mesmo!"
+           4. "O investimento que você estava esperando..."
+           5. "Conheça o imóvel dos seus sonhos em 60 segundos."
+           Gere 5 variações baseadas nesses modelos, corpo do texto com quebras de linha, CTA e direção de cenas.
         4. PLANNER: Crie um plano de 7 dias com TEXTOS COMPLETOS e humanizados.
         5. TRÁFEGO E FUNIL: Gere 3 mensagens de abordagem, 3 de follow-up e 3 de encerramento. Devem ser textos naturais, sem parecer robótico.
         6. MULTIPLICADOR 10x (Metodologia 1 Ideia → 10 Conteúdos): 
@@ -280,7 +286,7 @@ export default function InputStep() {
         campaign: finalCampaign
       });
 
-      navigate("/results");
+      navigate("/app/results");
     } catch (error: any) {
       console.error("Error:", error);
       setError(error.message || "Erro ao gerar campanha.");
@@ -340,7 +346,7 @@ export default function InputStep() {
               <h3 className="font-black text-slate-900 text-lg flex items-center gap-3">
                 <Target className="w-5 h-5 text-brand-primary" /> Comprador Ideal
               </h3>
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{buyerProfiles.length}/3</span>
+              <span className="text-[10px] font-black text-slate-400 tracking-widest">{buyerProfiles.length}/3</span>
             </div>
             <div className="grid grid-cols-1 gap-3">
               {profiles.map((p) => {
@@ -400,7 +406,7 @@ export default function InputStep() {
       <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-xl border-t border-slate-100 z-40">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-6">
           {!user?.isAdmin && (
-            <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
+            <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 tracking-[0.3em]">
               <Coins className="w-4 h-4 text-brand-secondary" /> Custo: 1 crédito
             </div>
           )}

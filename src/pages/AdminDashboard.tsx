@@ -119,14 +119,14 @@ export default function AdminDashboard() {
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => navigate('/')} 
+            onClick={() => navigate('/app')} 
             className="shrink-0 text-slate-400 hover:text-brand-primary hover:bg-slate-50 rounded-2xl"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
           </Button>
           <div>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">Painel Boss</h1>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tighter">Painel Boss</h1>
             <p className="text-slate-500 font-medium">Gestão estratégica de usuários e métricas.</p>
           </div>
         </div>
@@ -149,7 +149,7 @@ export default function AdminDashboard() {
               <Users className="w-8 h-8 text-brand-primary" />
             </div>
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Usuários</p>
+              <p className="text-[10px] font-black text-slate-400 tracking-widest mb-1">Total Usuários</p>
               <p className="text-3xl font-black text-slate-900 tracking-tighter">{users.length}</p>
             </div>
           </CardContent>
@@ -161,7 +161,7 @@ export default function AdminDashboard() {
               <CreditCard className="w-8 h-8 text-brand-secondary" />
             </div>
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Assinantes Ativos</p>
+              <p className="text-[10px] font-black text-slate-400 tracking-widest mb-1">Assinantes Ativos</p>
               <p className="text-3xl font-black text-slate-900 tracking-tighter">{activePaidUsers}</p>
             </div>
           </CardContent>
@@ -173,7 +173,7 @@ export default function AdminDashboard() {
               <Activity className="w-8 h-8 text-emerald-600" />
             </div>
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Créditos Consumidos</p>
+              <p className="text-[10px] font-black text-slate-400 tracking-widest mb-1">Créditos Consumidos</p>
               <p className="text-3xl font-black text-slate-900 tracking-tighter">{totalCreditsUsed}</p>
             </div>
           </CardContent>
@@ -182,19 +182,19 @@ export default function AdminDashboard() {
 
       <Card className="bg-white border-slate-100 rounded-[2.5rem] overflow-hidden shadow-xl shadow-slate-200/50">
         <CardHeader className="bg-slate-50 border-b border-slate-100 p-8">
-          <CardTitle className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Lista de Usuários</CardTitle>
+          <CardTitle className="text-xs font-black tracking-[0.3em] text-slate-400">Lista de Usuários</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="border-slate-100 hover:bg-transparent">
-                  <TableHead className="text-slate-400 font-black uppercase text-[10px] tracking-widest p-6">Nome</TableHead>
-                  <TableHead className="text-slate-400 font-black uppercase text-[10px] tracking-widest p-6">Email</TableHead>
-                  <TableHead className="text-slate-400 font-black uppercase text-[10px] tracking-widest p-6">Créditos</TableHead>
-                  <TableHead className="text-slate-400 font-black uppercase text-[10px] tracking-widest p-6">Status</TableHead>
-                  <TableHead className="text-slate-400 font-black uppercase text-[10px] tracking-widest p-6">Cadastro</TableHead>
-                  <TableHead className="text-slate-400 font-black uppercase text-[10px] tracking-widest p-6 text-right">Ações</TableHead>
+                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6">Nome</TableHead>
+                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6">Email</TableHead>
+                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6">Créditos</TableHead>
+                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6">Status</TableHead>
+                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6">Cadastro</TableHead>
+                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6 text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -254,7 +254,7 @@ export default function AdminDashboard() {
                             <option value="expired">Expirado</option>
                           </select>
                         ) : (
-                          <span className={`px-4 py-1 rounded-2xl text-[9px] font-black uppercase tracking-widest border ${
+                          <span className={`px-4 py-1 rounded-2xl text-[9px] font-black tracking-widest border ${
                             user.is_paid 
                               ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
                               : "bg-slate-50 text-slate-500 border-slate-100"

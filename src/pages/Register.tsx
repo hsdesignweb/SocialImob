@@ -26,7 +26,7 @@ export default function Register() {
       if (result.success) {
         setSuccessMessage('Conta criada com sucesso! Redirecionando...');
         setTimeout(() => {
-          navigate('/');
+          navigate('/app');
         }, 2000);
       } else {
         setError(result.error || 'Erro ao criar conta.');
@@ -74,7 +74,7 @@ export default function Register() {
             )}
 
             <div className="space-y-2">
-              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Nome Completo</label>
+              <label className="text-xs font-black text-slate-500 tracking-widest ml-4">Nome Completo</label>
               <div className="relative group">
                 <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
                   <User className="w-5 h-5" />
@@ -91,7 +91,7 @@ export default function Register() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Email</label>
+              <label className="text-xs font-black text-slate-500 tracking-widest ml-4">Email</label>
               <div className="relative group">
                 <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
                   <Mail className="w-5 h-5" />
@@ -108,7 +108,7 @@ export default function Register() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Senha</label>
+              <label className="text-xs font-black text-slate-500 tracking-widest ml-4">Senha</label>
               <div className="relative group">
                 <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
                   <Lock className="w-5 h-5" />
