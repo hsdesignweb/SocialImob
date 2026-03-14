@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Plus, Rocket, History, Sparkles, CreditCard, FileText } from "lucide-react";
+import { Plus, Rocket, History, Sparkles, CreditCard, FileText, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppStore } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
@@ -47,6 +47,24 @@ export default function Home() {
         </motion.div>
 
         <div className="grid md:grid-cols-2 gap-8">
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="w-full h-16 md:h-20 text-base md:text-lg font-black border-2 border-brand-primary/20 text-slate-900 bg-white hover:bg-brand-primary/5 rounded-2xl transition-all flex flex-col items-center justify-center gap-1 relative overflow-hidden group"
+              onClick={() => navigate('/app/planner')}
+            >
+              <div className="flex items-center gap-4">
+                <Calendar className="w-5 h-5 text-brand-primary" />
+                Planner Imobiliário
+              </div>
+              <span className="text-[10px] font-black text-brand-primary tracking-[0.2em] uppercase">Bônus Exclusivo</span>
+              <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Sparkles className="w-8 h-8" />
+              </div>
+            </Button>
+          </motion.div>
+
           <div className="relative group">
             <Button 
               variant="outline" 
@@ -57,21 +75,6 @@ export default function Home() {
               <div className="flex items-center gap-4">
                 <Sparkles className="w-5 h-5" />
                 Gerar imagens
-              </div>
-            </Button>
-            <span className="absolute top-1/2 -translate-y-1/2 right-6 px-3 py-1 bg-slate-50 text-slate-400 text-[10px] font-black rounded-xl tracking-widest border border-slate-100">Em breve</span>
-          </div>
-
-          <div className="relative group">
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="w-full h-16 md:h-20 text-base md:text-lg font-black border-none text-white bg-slate-500 rounded-2xl cursor-not-allowed"
-              disabled
-            >
-              <div className="flex items-center gap-4">
-                <FileText className="w-5 h-5" />
-                Página de venda
               </div>
             </Button>
             <span className="absolute top-1/2 -translate-y-1/2 right-6 px-3 py-1 bg-slate-50 text-slate-400 text-[10px] font-black rounded-xl tracking-widest border border-slate-100">Em breve</span>

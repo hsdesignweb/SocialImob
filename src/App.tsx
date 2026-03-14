@@ -12,13 +12,14 @@ import InputStep from "./pages/InputStep";
 import ResultsStep from "./pages/ResultsStep";
 import AdminDashboard from "./pages/AdminDashboard";
 import History from "./pages/History";
+import Planner from "./pages/Planner";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Payment from "./pages/Payment";
 
-import LandingPage from "./pages/LandingPage";
+// import LandingPage from "./pages/LandingPage";
 
 // Protected Route Component
 const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.ReactNode, requireAdmin?: boolean }) => {
@@ -76,7 +77,7 @@ export default function App() {
       <AppProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -97,6 +98,7 @@ export default function App() {
               <Route path="input" element={<InputStep />} />
               <Route path="results" element={<ResultsStep />} />
               <Route path="history" element={<History />} />
+              <Route path="planner" element={<Planner />} />
               <Route path="admin" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminDashboard />

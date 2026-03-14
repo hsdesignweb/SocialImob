@@ -1,9 +1,10 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, Loader2, LogOut, Coins, MessageCircle, Target, Sparkles, Home as HomeIcon, Rocket, History } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Menu, Loader2, LogOut, Coins, MessageCircle, Target, Sparkles, Home as HomeIcon, Rocket, History, Calendar, Settings, Clock } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAppStore } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/lib/supabase';
 
 export default function Layout() {
   const location = useLocation();
@@ -12,6 +13,32 @@ export default function Layout() {
   const { isLoading } = useAppStore();
   const { user, logout } = useAuth();
   const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
+  const [completedPosts, setCompletedPosts] = useState(0);
+
+  const isPlanner = location.pathname === '/app/planner';
+
+  // Fetch planner stats if on planner page
+  useEffect(() => {
+    if (isPlanner) {
+      const fetchStats = async () => {
+        const { count } = await supabase
+          .from('posts')
+          .select('*', { count: 'exact', head: true })
+          .eq('completed', 1);
+        setCompletedPosts(count || 0);
+      };
+      fetchStats();
+
+      const channel = supabase
+        .channel('planner_stats')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => {
+          fetchStats();
+        })
+        .subscribe();
+
+      return () => { supabase.removeChannel(channel); };
+    }
+  }, [isPlanner]);
 
   const loadingPhrases = [
     "Vender imóveis não é obra do acaso, é aplicar a verdadeira engenharia de vendas em cada atendimento.",
@@ -126,17 +153,41 @@ export default function Layout() {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/app')}>
-            <div className="w-12 h-12 bg-brand-primary rounded-full flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-brand-primary/20">
-              S
+            <div className={`w-12 h-12 ${isPlanner ? 'bg-brand-primary' : 'bg-brand-primary'} rounded-full flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-brand-primary/20`}>
+              {isPlanner ? <Calendar className="w-6 h-6" /> : 'S'}
             </div>
             <div className="flex flex-col">
-              <span className="font-black text-2xl tracking-tighter leading-none text-slate-900">SocialImob</span>
+              <span className="font-black text-2xl tracking-tighter leading-none text-slate-900">
+                {isPlanner ? 'Planner ' : 'SocialImob'}
+                {isPlanner && <span className="text-brand-primary">Imobiliário</span>}
+              </span>
               <span className="text-[10px] font-black text-brand-secondary tracking-[0.2em]">{user?.name || "Corretor"}</span>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            {!user?.isAdmin && (
+            {isPlanner ? (
+              <div className="hidden md:flex items-center gap-6">
+                <button 
+                  onClick={() => window.dispatchEvent(new CustomEvent('open-planner-panel'))}
+                  className="flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-brand-primary transition-colors"
+                >
+                  <Settings className="w-4 h-4 text-brand-primary" />
+                  Painel
+                </button>
+                <button 
+                  onClick={() => window.dispatchEvent(new CustomEvent('go-to-today'))}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-brand-primary rounded-full text-sm font-bold hover:bg-blue-100 transition-colors"
+                >
+                  <Clock className="w-4 h-4" />
+                  Hoje
+                </button>
+                <div className="flex flex-col items-end">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Progresso Anual</span>
+                  <span className="text-sm font-black text-slate-900">{completedPosts} / 725 Posts</span>
+                </div>
+              </div>
+            ) : !user?.isAdmin && (
               <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-200">
                 <Coins className="w-4 h-4 text-brand-secondary" />
                 <span className="text-xs font-bold text-slate-700">{user?.credits} <span className="hidden sm:inline">créditos</span></span>
@@ -168,6 +219,13 @@ export default function Layout() {
                     <History className="w-4 h-4 text-slate-400" />
                     Histórico de Campanhas
                   </button>
+                  <button 
+                    onClick={() => { navigate('/app/planner'); setIsMenuOpen(false); }}
+                    className="w-full text-left px-5 py-4 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
+                  >
+                    <Calendar className="w-4 h-4 text-brand-primary" />
+                    Planner Imobiliário (Bônus)
+                  </button>
                   {user?.isAdmin && (
                     <button 
                       onClick={() => { navigate('/app/admin'); setIsMenuOpen(false); }}
@@ -193,7 +251,7 @@ export default function Layout() {
 
       {/* Main Content */}
       <main className="flex-1 max-w-6xl mx-auto w-full p-4 md:p-10 pb-24">
-        <div className="max-w-4xl mx-auto">
+        <div className={isPlanner ? "w-full" : "max-w-4xl mx-auto"}>
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
