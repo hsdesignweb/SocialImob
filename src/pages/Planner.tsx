@@ -51,6 +51,11 @@ export default function Planner() {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const formatText = (text: string | undefined | null) => {
+    if (!text) return "";
+    return text.replace(/\\n/g, '\n');
+  };
+
   // Fetch data
   const fetchData = async () => {
     setLoading(true);
@@ -227,10 +232,10 @@ export default function Planner() {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="flex-1 flex overflow-hidden">
+    <div className="flex-1 flex flex-col md:overflow-hidden">
+      <div className="flex-1 flex flex-col md:flex-row md:overflow-hidden">
         {/* Sidebar */}
-        <aside className="w-[300px] border-r border-slate-100 flex flex-col bg-white overflow-y-auto">
+        <aside className="w-full md:w-[300px] md:shrink-0 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col bg-white md:overflow-y-auto">
           <div className="p-6 space-y-8">
             {/* Search */}
             <div className="relative">
@@ -255,8 +260,8 @@ export default function Planner() {
               </div>
 
               <div className="grid grid-cols-7 gap-1 text-center">
-                {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => (
-                  <span key={d} className="text-[10px] font-black text-slate-300 uppercase tracking-widest py-2">{d}</span>
+                {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, idx) => (
+                  <span key={`${d}-${idx}`} className="text-[10px] font-black text-slate-300 uppercase tracking-widest py-2">{d}</span>
                 ))}
                 {daysInMonth.map((day, i) => {
                   if (!day) return <div key={`pad-${i}`} />;
@@ -311,7 +316,7 @@ export default function Planner() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto bg-white p-12">
+        <main className="flex-1 md:overflow-y-auto bg-white p-6 md:p-12">
           <div className="max-w-5xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div
@@ -354,7 +359,7 @@ export default function Planner() {
                     <div className="space-y-8">
                       {/* Caption Card */}
                       <Card className="border-slate-100 shadow-sm rounded-[2rem] overflow-hidden">
-                        <CardHeader className="p-8 border-b border-slate-50 flex flex-row items-center justify-between">
+                        <CardHeader className="p-5 md:p-8 border-b border-slate-50 flex flex-row items-center justify-between">
                           <div className="flex items-center gap-3">
                             <MessageCircle className="w-5 h-5 text-blue-500" />
                             <CardTitle className="text-lg font-black text-slate-900">Legenda do Post</CardTitle>
@@ -362,23 +367,23 @@ export default function Planner() {
                           <Button 
                             variant="outline" 
                             size="sm" 
-                            onClick={() => copyToClipboard(selectedPost.caption, 'caption')}
+                            onClick={() => copyToClipboard(formatText(selectedPost.caption), 'caption')}
                             className="h-9 px-4 rounded-lg border-slate-200 text-slate-400 font-bold text-xs gap-2 hover:bg-slate-50"
                           >
                             {copiedField === 'caption' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                             Copiar
                           </Button>
                         </CardHeader>
-                        <CardContent className="p-6 pt-0">
-                          <div className="p-8 bg-slate-50/80 rounded-3xl border border-slate-100 text-slate-600 font-medium leading-relaxed whitespace-pre-wrap text-sm">
-                            {selectedPost.caption}
+                        <CardContent className="p-5 md:p-6 pt-0">
+                          <div className="p-5 md:p-8 bg-slate-50/80 rounded-2xl md:rounded-3xl border border-slate-100 text-slate-900 font-medium leading-relaxed whitespace-pre-wrap text-sm">
+                            {formatText(selectedPost.caption)}
                           </div>
                         </CardContent>
                       </Card>
 
                       {/* Visual Direction Card */}
                       <Card className="border-slate-100 shadow-sm rounded-[2rem] overflow-hidden">
-                        <CardHeader className="p-8 border-b border-slate-50 flex flex-row items-center justify-between">
+                        <CardHeader className="p-5 md:p-8 border-b border-slate-50 flex flex-row items-center justify-between">
                           <div className="flex items-center gap-3">
                             <Lightbulb className="w-5 h-5 text-amber-500" />
                             <CardTitle className="text-lg font-black text-slate-900">Direcionamento Visual</CardTitle>
@@ -386,16 +391,16 @@ export default function Planner() {
                           <Button 
                             variant="outline" 
                             size="sm" 
-                            onClick={() => copyToClipboard(selectedPost.script, 'script')}
+                            onClick={() => copyToClipboard(formatText(selectedPost.script), 'script')}
                             className="h-9 px-4 rounded-lg border-slate-200 text-slate-400 font-bold text-xs gap-2 hover:bg-slate-50"
                           >
                             {copiedField === 'script' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                             Copiar
                           </Button>
                         </CardHeader>
-                        <CardContent className="p-6 pt-0">
-                          <div className="p-8 bg-yellow-50/50 rounded-3xl border border-yellow-100/50 text-slate-700 font-medium text-sm leading-relaxed">
-                            {selectedPost.script}
+                        <CardContent className="p-5 md:p-6 pt-0">
+                          <div className="p-5 md:p-8 bg-yellow-50/50 rounded-2xl md:rounded-3xl border border-yellow-100/50 text-slate-900 font-medium text-sm leading-relaxed whitespace-pre-wrap">
+                            {formatText(selectedPost.script)}
                           </div>
                         </CardContent>
                       </Card>
@@ -404,7 +409,7 @@ export default function Planner() {
                     {/* Right Column */}
                     <div className="space-y-8">
                       {/* Suggested Format */}
-                      <Card className="border-slate-100 shadow-sm rounded-[2.5rem] p-8 space-y-6">
+                      <Card className="border-slate-100 shadow-sm rounded-3xl md:rounded-[2.5rem] p-6 md:p-8 space-y-6">
                         <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Formato Sugerido</div>
                         <div className="flex items-center gap-5">
                           <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
@@ -418,7 +423,7 @@ export default function Planner() {
                       </Card>
 
                       {/* Campaign Files */}
-                      <Card className="bg-slate-900 text-white rounded-[2.5rem] p-10 space-y-8">
+                      <Card className="bg-slate-900 text-white rounded-3xl md:rounded-[2.5rem] p-6 md:p-10 space-y-8">
                         <div className="space-y-3">
                           <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Arquivos da Campanha</div>
                           <p className="text-sm font-medium text-slate-400 leading-relaxed">
@@ -498,15 +503,15 @@ export default function Planner() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden"
             >
-              <div className="p-8 border-b border-slate-100 flex items-center justify-between">
-                <h3 className="text-2xl font-black text-slate-900 tracking-tight">
+              <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between">
+                <h3 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
                   {editingPost?.id ? 'Editar Post' : 'Novo Post'}
                 </h3>
                 <button onClick={() => setIsEditing(false)} className="p-2 hover:bg-slate-50 rounded-full transition-colors">
                   <X className="w-6 h-6 text-slate-400" />
                 </button>
               </div>
-              <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+              <div className="p-6 md:p-8 space-y-6 max-h-[70vh] overflow-y-auto">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Título</label>
@@ -553,7 +558,7 @@ export default function Planner() {
                   />
                 </div>
               </div>
-              <div className="p-8 bg-slate-50 flex gap-4">
+              <div className="p-6 md:p-8 bg-slate-50 flex gap-4">
                 <Button 
                   variant="outline" 
                   onClick={() => setIsEditing(false)}

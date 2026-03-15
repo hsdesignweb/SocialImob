@@ -167,22 +167,24 @@ export default function Layout() {
 
           <div className="flex items-center gap-4">
             {isPlanner ? (
-              <div className="hidden md:flex items-center gap-6">
-                <button 
-                  onClick={() => window.dispatchEvent(new CustomEvent('open-planner-panel'))}
-                  className="flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-brand-primary transition-colors"
-                >
-                  <Settings className="w-4 h-4 text-brand-primary" />
-                  Painel
-                </button>
+              <div className="flex items-center gap-2 md:gap-6">
+                {user?.isAdmin && (
+                  <button 
+                    onClick={() => window.dispatchEvent(new CustomEvent('open-planner-panel'))}
+                    className="hidden md:flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-brand-primary transition-colors"
+                  >
+                    <Settings className="w-4 h-4 text-brand-primary" />
+                    Painel
+                  </button>
+                )}
                 <button 
                   onClick={() => window.dispatchEvent(new CustomEvent('go-to-today'))}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-brand-primary rounded-full text-sm font-bold hover:bg-blue-100 transition-colors"
+                  className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 bg-blue-50 text-brand-primary rounded-full text-xs md:text-sm font-bold hover:bg-blue-100 transition-colors"
                 >
                   <Clock className="w-4 h-4" />
                   Hoje
                 </button>
-                <div className="flex flex-col items-end">
+                <div className="hidden md:flex flex-col items-end">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Progresso Anual</span>
                   <span className="text-sm font-black text-slate-900">{completedPosts} / 725 Posts</span>
                 </div>
@@ -205,13 +207,27 @@ export default function Layout() {
                     <p className="text-sm font-bold text-slate-900 truncate">{user?.name}</p>
                     <p className="text-xs text-slate-500 truncate">{user?.email}</p>
                   </div>
-                  <a 
-                    href="mailto:atendimento@arkaconsultoria.com.br"
+                  <button 
+                    onClick={() => { navigate('/app'); setIsMenuOpen(false); }}
                     className="w-full text-left px-5 py-4 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
                   >
-                    <MessageCircle className="w-4 h-4 text-slate-400" />
-                    Suporte Técnico
-                  </a>
+                    <Rocket className="w-4 h-4 text-brand-primary" />
+                    Gerador de Campanhas
+                  </button>
+                  <button 
+                    onClick={() => { navigate('/app/planner'); setIsMenuOpen(false); }}
+                    className="w-full text-left px-5 py-4 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
+                  >
+                    <Calendar className="w-4 h-4 text-brand-primary" />
+                    Planner Imobiliário
+                  </button>
+                  <button 
+                    onClick={() => { navigate('/app/planner'); setIsMenuOpen(false); }}
+                    className="w-full text-left px-5 py-4 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
+                  >
+                    <Sparkles className="w-4 h-4 text-brand-secondary" />
+                    Planner Bônus
+                  </button>
                   <button 
                     onClick={() => { navigate('/app/history'); setIsMenuOpen(false); }}
                     className="w-full text-left px-5 py-4 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
@@ -219,13 +235,13 @@ export default function Layout() {
                     <History className="w-4 h-4 text-slate-400" />
                     Histórico de Campanhas
                   </button>
-                  <button 
-                    onClick={() => { navigate('/app/planner'); setIsMenuOpen(false); }}
+                  <a 
+                    href="mailto:atendimento@arkaconsultoria.com.br"
                     className="w-full text-left px-5 py-4 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
                   >
-                    <Calendar className="w-4 h-4 text-brand-primary" />
-                    Planner Imobiliário (Bônus)
-                  </button>
+                    <MessageCircle className="w-4 h-4 text-slate-400" />
+                    Suporte Técnico
+                  </a>
                   {user?.isAdmin && (
                     <button 
                       onClick={() => { navigate('/app/admin'); setIsMenuOpen(false); }}

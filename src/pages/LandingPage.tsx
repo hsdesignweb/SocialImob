@@ -69,12 +69,12 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-brand-bg font-sans text-white overflow-x-hidden selection:bg-brand-primary/30">
+    <div className="min-h-screen bg-slate-900 font-sans text-white overflow-x-hidden selection:bg-brand-primary/30">
       {/* Header */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-brand-bg/50 backdrop-blur-xl border-b border-white/5">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-900/50 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-brand-secondary rounded-xl flex items-center justify-center text-brand-bg font-black text-xl shadow-lg shadow-brand-secondary/20">
+            <div className="w-10 h-10 bg-brand-secondary rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-brand-secondary/20">
               S
             </div>
             <span className="text-xl font-black tracking-tighter">SocialImob</span>
@@ -92,7 +92,7 @@ export default function LandingPage() {
             </Link>
             <Button 
               onClick={() => navigate(isAuthenticated ? "/app" : "/register")}
-              className="bg-brand-primary hover:bg-brand-primary/80 text-brand-bg px-8 rounded-xl font-black tracking-widest text-xs h-12 shadow-lg shadow-brand-primary/20"
+              className="bg-brand-primary hover:bg-brand-primary/80 text-white px-8 rounded-xl font-black tracking-widest text-xs h-12 shadow-lg shadow-brand-primary/20"
             >
               Testar Agora
             </Button>
@@ -133,7 +133,7 @@ export default function LandingPage() {
               <Button 
                 size="lg"
                 onClick={() => navigate(isAuthenticated ? "/app" : "/register")}
-                className="h-20 px-12 bg-brand-primary hover:bg-brand-primary/80 text-brand-bg rounded-2xl font-black text-xl shadow-2xl shadow-brand-primary/30 transition-all hover:scale-105 active:scale-95 group"
+                className="h-20 px-12 bg-brand-primary hover:bg-brand-primary/80 text-white rounded-2xl font-black text-xl shadow-2xl shadow-brand-primary/30 transition-all hover:scale-105 active:scale-95 group"
               >
                 QUERO MEU ESTRATEGISTA DE BOLSO AGORA
                 <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-1 transition-transform" />
@@ -241,7 +241,7 @@ export default function LandingPage() {
               { step: "A Entrega", title: "Fechamento", desc: "Você recebe instantaneamente um Roteiro de Reels persuasivo, 10 formatos de posts para o feed e os scripts exatos de abordagem para o WhatsApp.", icon: <Rocket className="w-8 h-8" /> }
             ].map((item, i) => (
               <div key={i} className="bg-white/5 backdrop-blur-md p-10 rounded-[2.5rem] border border-white/10 space-y-6 relative group">
-                <div className="absolute -top-4 -left-4 w-12 h-12 bg-brand-secondary rounded-xl flex items-center justify-center text-brand-bg font-black shadow-lg">
+                <div className="absolute -top-4 -left-4 w-12 h-12 bg-brand-secondary rounded-xl flex items-center justify-center text-white font-black shadow-lg">
                   {i + 1}
                 </div>
                 <div className="w-16 h-16 bg-brand-secondary/10 rounded-2xl flex items-center justify-center text-brand-secondary group-hover:scale-110 transition-transform">
@@ -402,7 +402,7 @@ export default function LandingPage() {
 
               <Button 
                 onClick={() => navigate(isAuthenticated ? "/app" : "/register")}
-                className="w-full h-20 bg-brand-primary hover:bg-brand-primary/80 text-brand-bg rounded-2xl font-black text-xl shadow-xl shadow-brand-primary/20 transition-all active:scale-95"
+                className="w-full h-20 bg-brand-primary hover:bg-brand-primary/80 text-white rounded-2xl font-black text-xl shadow-xl shadow-brand-primary/20 transition-all active:scale-95"
               >
                 QUERO FUNDADOR
               </Button>
@@ -492,13 +492,13 @@ export default function LandingPage() {
           <Button 
             size="lg"
             onClick={() => navigate(isAuthenticated ? "/app" : "/register")}
-            className="h-20 px-16 bg-brand-primary hover:bg-brand-primary/80 text-brand-bg rounded-2xl font-black text-xl shadow-2xl shadow-brand-primary/30 transition-all hover:scale-105 active:scale-95"
+            className="h-20 px-16 bg-brand-primary hover:bg-brand-primary/80 text-white rounded-2xl font-black text-xl shadow-2xl shadow-brand-primary/30 transition-all hover:scale-105 active:scale-95"
           >
             QUERO MEU ESTRATEGISTA AGORA
           </Button>
           <div className="flex flex-col md:flex-row justify-between items-center w-full pt-10 border-t border-white/5 gap-6">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-brand-secondary rounded-lg flex items-center justify-center text-brand-bg font-black text-lg">
+              <div className="w-8 h-8 bg-brand-secondary rounded-lg flex items-center justify-center text-white font-black text-lg">
                 S
               </div>
               <span className="text-lg font-black tracking-tighter">SocialImob</span>

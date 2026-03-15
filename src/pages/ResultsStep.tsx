@@ -53,11 +53,11 @@ export default function ResultsStep() {
   if (!campaign || !strategy) {
     return (
       <div className="flex flex-col items-center justify-center h-[80vh] space-y-6 px-4">
-        <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center border border-white/10">
+        <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center border border-slate-200">
           <Info className="w-10 h-10 text-slate-500" />
         </div>
         <div className="text-center space-y-2">
-          <h2 className="text-2xl font-black text-white">Nenhuma campanha encontrada</h2>
+          <h2 className="text-2xl font-black text-slate-900">Nenhuma campanha encontrada</h2>
           <p className="text-slate-400">Parece que você ainda não gerou sua estratégia Boss.</p>
         </div>
         <Button 
@@ -77,6 +77,11 @@ export default function ResultsStep() {
   };
 
   const plannerDays = Array.isArray(campaign.planner) ? campaign.planner : [];
+
+  const formatText = (text: string) => {
+    if (!text) return "";
+    return text.replace(/\\n/g, '\n');
+  };
 
   return (
     <div className="min-h-screen bg-brand-bg flex flex-col overflow-x-hidden">
@@ -219,45 +224,45 @@ export default function ResultsStep() {
                 {/* Section Content */}
                 <div className="space-y-6">
                   {activeSection === "strategy" && (
-                    <div className="max-w-4xl mx-auto space-y-8">
-                      <div className="bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/40 p-6 md:p-10 space-y-10">
-                        <div className="flex items-center gap-6">
-                          <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                            <Target className="w-8 h-8 text-brand-primary" />
+                    <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
+                      <div className="bg-white border border-slate-100 rounded-3xl md:rounded-[2.5rem] shadow-xl shadow-slate-200/40 p-5 md:p-10 space-y-8 md:space-y-10">
+                        <div className="flex items-center gap-4 md:gap-6">
+                          <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                            <Target className="w-6 h-6 md:w-8 md:h-8 text-brand-primary" />
                           </div>
                           <div>
                             <h2 className="text-xl md:text-3xl font-black text-slate-900 leading-tight tracking-tighter">
                               Estratégia de Venda
                             </h2>
-                            <p className="text-slate-500 font-medium text-sm md:text-base mt-1">O plano mestre para sua venda</p>
+                            <p className="text-slate-500 font-medium text-xs md:text-base mt-1">O plano mestre para sua venda</p>
                           </div>
                         </div>
 
-                        <div className="bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100">
-                          <p className="text-slate-700 font-medium text-lg md:text-xl leading-relaxed">
+                        <div className="bg-slate-50/50 p-4 md:p-8 rounded-2xl md:rounded-[2rem] border border-slate-100">
+                          <p className="text-slate-900 font-medium text-base md:text-xl leading-relaxed">
                             Você enviou um <span className="font-bold text-brand-primary">{propertyData.type}</span> localizado em <span className="font-bold text-brand-primary">{propertyData.location}</span> e no valor de <span className="font-bold text-brand-primary">{propertyData.price}</span>.
                           </p>
                         </div>
 
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-3">
-                            <Zap className="w-5 h-5 text-brand-secondary" />
-                            <h4 className="text-xs font-black text-brand-secondary tracking-widest">Ângulo de Venda Principal</h4>
+                        <div className="space-y-3 md:space-y-4">
+                          <div className="flex items-center gap-2 md:gap-3">
+                            <Zap className="w-4 h-4 md:w-5 md:h-5 text-brand-primary" />
+                            <h4 className="text-[10px] md:text-xs font-black text-brand-primary tracking-widest uppercase">Ângulo de Venda Principal</h4>
                           </div>
-                          <p className="text-xl md:text-2xl font-black text-slate-900 leading-tight">
-                            {strategy.angle}
+                          <p className="text-lg md:text-2xl font-black text-slate-900 leading-tight">
+                            {formatText(strategy.angle)}
                           </p>
                         </div>
 
                         <div className="h-px bg-slate-100" />
 
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-3">
+                        <div className="space-y-3 md:space-y-4">
+                          <div className="flex items-center gap-2 md:gap-3">
                             <BookOpen className="w-4 h-4 text-brand-primary" />
-                            <h4 className="text-xs font-black text-slate-400 tracking-widest">Narrativa de Venda</h4>
+                            <h4 className="text-[10px] md:text-xs font-black text-brand-primary tracking-widest uppercase">Narrativa de Venda</h4>
                           </div>
-                          <p className="text-slate-700 font-medium leading-relaxed italic text-lg md:text-xl">
-                            "{strategy.narrative}"
+                          <p className="text-slate-900 font-medium leading-relaxed text-base md:text-xl whitespace-pre-wrap">
+                            {formatText(strategy.narrative)}
                           </p>
                         </div>
                       </div>
@@ -267,49 +272,49 @@ export default function ResultsStep() {
 
 
                   {activeSection === "reel" && (
-                    <div className="max-w-4xl mx-auto space-y-8">
-                      <div className="bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/40 p-6 md:p-10 space-y-10">
+                    <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
+                      <div className="bg-white border border-slate-100 rounded-3xl md:rounded-[2.5rem] shadow-xl shadow-slate-200/40 p-5 md:p-10 space-y-8 md:space-y-10">
                         <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-6">
-                            <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                              <Video className="w-8 h-8 text-brand-primary" />
+                          <div className="flex items-center gap-4 md:gap-6">
+                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                              <Video className="w-6 h-6 md:w-8 md:h-8 text-brand-primary" />
                             </div>
                             <div>
                               <h2 className="text-xl md:text-3xl font-black text-slate-900 leading-tight tracking-tighter">
                                 Roteiro Viral
                               </h2>
-                              <p className="text-slate-500 font-medium text-sm md:text-base mt-1">Script viral para redes sociais</p>
+                              <p className="text-slate-500 font-medium text-xs md:text-base mt-1">Script viral para redes sociais</p>
                             </div>
                           </div>
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="text-brand-primary hover:bg-blue-50 font-bold rounded-full px-4 h-10 flex items-center gap-2"
-                            onClick={() => copyToClipboard(campaign.reelScript?.body || "", 'reel')}
+                            className="text-brand-primary hover:bg-blue-50 font-bold rounded-full px-3 md:px-4 h-8 md:h-10 flex items-center gap-2"
+                            onClick={() => copyToClipboard(formatText(campaign.reelScript?.body || ""), 'reel')}
                           >
                             {copiedId === 'reel' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                            Copiar
+                            <span className="hidden md:inline">Copiar</span>
                           </Button>
                         </div>
 
-                        <div className="space-y-8">
-                          <div className="flex items-center gap-3">
-                            <Sparkles className="w-4 h-4 text-brand-secondary" />
-                            <h4 className="text-xs font-black text-brand-secondary tracking-widest">Ganchos de Atenção (Primeiros 3s)</h4>
+                        <div className="space-y-6 md:space-y-8">
+                          <div className="flex items-center gap-2 md:gap-3">
+                            <Sparkles className="w-4 h-4 text-brand-primary" />
+                            <h4 className="text-[10px] md:text-xs font-black text-brand-primary tracking-widest uppercase">Ganchos de Atenção (Primeiros 3s)</h4>
                           </div>
-                          <div className="space-y-4">
+                          <div className="space-y-3 md:space-y-4">
                             {(campaign.reelScript?.hooks || []).length > 0 ? (
                               (campaign.reelScript?.hooks || []).map((hook, hIdx) => (
-                                <div key={hIdx} className="flex items-start gap-4 md:gap-6 group relative">
+                                <div key={hIdx} className="flex items-start gap-3 md:gap-6 group relative bg-slate-50/50 p-4 md:p-0 md:bg-transparent rounded-2xl md:rounded-none">
                                   <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-brand-primary text-white flex items-center justify-center text-sm md:text-lg font-black shrink-0 shadow-lg shadow-brand-primary/20">
                                     {hIdx + 1}
                                   </div>
                                   <div className="pt-1 flex-1">
-                                    <p className="text-slate-700 font-bold text-base md:text-xl leading-snug pr-10">{hook}</p>
+                                    <p className="text-slate-900 font-bold text-sm md:text-xl leading-snug pr-8 md:pr-10">{formatText(hook)}</p>
                                   </div>
                                   <Button 
-                                    size="sm" variant="ghost" className="absolute top-0 right-0 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-full"
-                                    onClick={() => copyToClipboard(hook, `hook-${hIdx}`)}
+                                    size="sm" variant="ghost" className="absolute top-2 right-2 md:top-0 md:right-0 h-8 w-8 p-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity rounded-full bg-white md:bg-transparent shadow-sm md:shadow-none"
+                                    onClick={() => copyToClipboard(formatText(hook), `hook-${hIdx}`)}
                                   >
                                     {copiedId === `hook-${hIdx}` ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-slate-400" />}
                                   </Button>
@@ -323,29 +328,29 @@ export default function ResultsStep() {
 
                         <div className="h-px bg-slate-100" />
 
-                        <div className="grid md:grid-cols-2 gap-8 md:gap-12">
-                          <div className="space-y-6">
-                            <div className="flex items-center gap-3">
-                              <FileText className="w-4 h-4 text-brand-secondary" />
-                              <h4 className="text-xs font-black text-brand-secondary tracking-widest">O Script</h4>
+                        <div className="grid md:grid-cols-2 gap-6 md:gap-12">
+                          <div className="space-y-4 md:space-y-6">
+                            <div className="flex items-center gap-2 md:gap-3">
+                              <FileText className="w-4 h-4 text-brand-primary" />
+                              <h4 className="text-[10px] md:text-xs font-black text-brand-primary tracking-widest uppercase">O Script</h4>
                             </div>
-                            <div className="bg-slate-50/50 p-6 md:p-8 rounded-[2rem] border border-slate-100 text-slate-700 font-medium leading-relaxed italic text-lg md:text-xl relative whitespace-pre-wrap min-h-[150px]">
-                              "{campaign.reelScript?.body || "Script não gerado."}"
+                            <div className="bg-slate-50/50 p-4 md:p-8 rounded-2xl md:rounded-[2rem] border border-slate-100 text-slate-900 font-medium leading-relaxed text-base md:text-xl relative whitespace-pre-wrap min-h-[150px]">
+                              {formatText(campaign.reelScript?.body || "Script não gerado.")}
                             </div>
                           </div>
-                          <div className="space-y-8">
+                          <div className="space-y-6 md:space-y-8">
                             <div>
-                              <div className="flex items-center gap-3 mb-3">
-                                <Zap className="w-4 h-4 text-brand-secondary" />
-                                <h4 className="text-xs font-black text-brand-secondary tracking-widest">CTA de Alto Impacto</h4>
+                              <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
+                                <Zap className="w-4 h-4 text-brand-primary" />
+                                <h4 className="text-[10px] md:text-xs font-black text-brand-primary tracking-widest uppercase">CTA de Alto Impacto</h4>
                               </div>
-                              <p className="text-brand-primary text-xl md:text-2xl font-black tracking-tighter leading-tight">{campaign.reelScript?.cta || "CTA não gerada."}</p>
+                              <p className="text-slate-900 text-lg md:text-2xl font-black tracking-tighter leading-tight">{formatText(campaign.reelScript?.cta || "CTA não gerada.")}</p>
                             </div>
-                            <div className="bg-brand-primary/5 p-6 md:p-8 rounded-[2rem] border border-brand-primary/10">
-                              <h4 className="text-slate-900 font-black text-xs mb-3 flex items-center gap-2 tracking-widest">
+                            <div className="bg-brand-primary/5 p-4 md:p-8 rounded-2xl md:rounded-[2rem] border border-brand-primary/10">
+                              <h4 className="text-brand-primary font-black text-[10px] md:text-xs mb-2 md:mb-3 flex items-center gap-2 tracking-widest uppercase">
                                 <Video className="w-4 h-4 text-brand-primary" /> Direção de Cenas
                               </h4>
-                              <p className="text-slate-700 text-sm md:text-base leading-relaxed font-medium">{campaign.reelScript?.scenes || "Direção não gerada."}</p>
+                              <p className="text-slate-900 text-sm md:text-base leading-relaxed font-medium whitespace-pre-wrap">{formatText(campaign.reelScript?.scenes || "Direção não gerada.")}</p>
                             </div>
                           </div>
                         </div>
@@ -354,58 +359,58 @@ export default function ResultsStep() {
                   )}
 
                   {activeSection === "planner" && (
-                    <div className="max-w-4xl mx-auto space-y-8">
-                      <div className="bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/40 p-6 md:p-10 space-y-10">
-                        <div className="flex items-center gap-6">
-                          <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                            <Calendar className="w-8 h-8 text-brand-primary" />
+                    <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
+                      <div className="bg-white border border-slate-100 rounded-3xl md:rounded-[2.5rem] shadow-xl shadow-slate-200/40 p-5 md:p-10 space-y-8 md:space-y-10">
+                        <div className="flex items-center gap-4 md:gap-6">
+                          <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                            <Calendar className="w-6 h-6 md:w-8 h-8 text-brand-primary" />
                           </div>
                           <div>
                             <h2 className="text-xl md:text-3xl font-black text-slate-900 leading-tight tracking-tighter">
                               Planner de Conteúdo
                             </h2>
-                            <p className="text-slate-500 font-medium text-sm md:text-base mt-1">Sua semana de autoridade no mercado imobiliário</p>
+                            <p className="text-slate-500 font-medium text-xs md:text-base mt-1">Sua semana de autoridade no mercado imobiliário</p>
                           </div>
                         </div>
 
-                        <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100">
-                          <p className="text-slate-700 font-medium text-lg">
+                        <div className="bg-slate-50 p-4 md:p-8 rounded-2xl md:rounded-[2rem] border border-slate-100">
+                          <p className="text-slate-900 font-medium text-base md:text-lg">
                             Foque em entregar a dica de como falar sobre o tema, ao invés de apenas entregar o conteúdo pronto. Isso gera autoridade e conexão.
                           </p>
                         </div>
 
-                        <div className="space-y-8">
+                        <div className="space-y-6 md:space-y-8">
                           {plannerDays.map((day, idx) => (
                             <motion.div
                               key={idx}
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: idx * 0.1 }}
-                              className="bg-white border border-slate-100 rounded-[2rem] overflow-hidden shadow-sm group"
+                              className="bg-white border border-slate-100 rounded-2xl md:rounded-[2rem] overflow-hidden shadow-sm group"
                             >
-                              <div className="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center group-hover:bg-white transition-colors">
-                                <div className="flex items-center gap-4">
-                                  <div className="w-20 h-10 rounded-full bg-brand-primary text-white flex items-center justify-center text-[10px] font-black tracking-widest">
+                              <div className="bg-slate-50 p-4 md:p-6 border-b border-slate-100 flex justify-between items-center group-hover:bg-white transition-colors">
+                                <div className="flex items-center gap-3 md:gap-4">
+                                  <div className="w-16 h-8 md:w-20 md:h-10 rounded-full bg-brand-primary text-white flex items-center justify-center text-[10px] font-black tracking-widest">
                                     DIA {day.day || idx + 1}
                                   </div>
-                                  <span className="text-xl font-black text-slate-900 tracking-tighter">{day.title || `Dia ${idx + 1}`}</span>
+                                  <span className="text-lg md:text-xl font-black text-slate-900 tracking-tighter">{formatText(day.title || `Dia ${idx + 1}`)}</span>
                                 </div>
                                 <Button 
                                   size="sm" 
                                   variant="ghost" 
-                                  className="h-10 w-10 p-0 text-slate-400 hover:text-brand-primary rounded-full"
-                                  onClick={() => copyToClipboard(day.content || "", `day-${idx}`)}
+                                  className="h-8 w-8 md:h-10 md:w-10 p-0 text-slate-400 hover:text-brand-primary rounded-full bg-white md:bg-transparent shadow-sm md:shadow-none"
+                                  onClick={() => copyToClipboard(formatText(day.content || ""), `day-${idx}`)}
                                 >
-                                  {copiedId === `day-${idx}` ? <Check className="w-5 h-5 text-green-500" /> : <Copy className="w-5 h-5" />}
+                                  {copiedId === `day-${idx}` ? <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500" /> : <Copy className="w-4 h-4 md:w-5 md:h-5" />}
                                 </Button>
                               </div>
-                              <div className="p-8 space-y-4">
+                              <div className="p-4 md:p-8 space-y-3 md:space-y-4">
                                 <div className="flex items-center gap-2">
-                                  <Star className="w-4 h-4 text-brand-secondary" />
-                                  <span className="text-xs font-black text-brand-secondary tracking-widest">Dica de abordagem: {day.topic || "Foco Estratégico"}</span>
+                                  <Star className="w-4 h-4 text-brand-primary" />
+                                  <span className="text-[10px] md:text-xs font-black text-brand-primary tracking-widest uppercase">Dica de abordagem: {formatText(day.topic || "Foco Estratégico")}</span>
                                 </div>
-                                <div className="text-slate-700 font-medium leading-relaxed text-lg prose max-w-none">
-                                  <ReactMarkdown>{day.content || "Conteúdo não gerado."}</ReactMarkdown>
+                                <div className="text-slate-900 font-medium leading-relaxed text-base md:text-lg prose max-w-none whitespace-pre-wrap">
+                                  <ReactMarkdown>{formatText(day.content || "Conteúdo não gerado.")}</ReactMarkdown>
                                 </div>
                               </div>
                             </motion.div>
@@ -416,50 +421,50 @@ export default function ResultsStep() {
                   )}
 
                   {activeSection === "content10" && (
-                    <div className="max-w-4xl mx-auto space-y-8">
-                      <div className="bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/40 p-6 md:p-10 space-y-10">
-                        <div className="flex items-center gap-6">
-                          <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                            <Lightbulb className="w-8 h-8 text-brand-primary" />
+                    <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
+                      <div className="bg-white border border-slate-100 rounded-3xl md:rounded-[2.5rem] shadow-xl shadow-slate-200/40 p-5 md:p-10 space-y-8 md:space-y-10">
+                        <div className="flex items-center gap-4 md:gap-6">
+                          <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                            <Lightbulb className="w-6 h-6 md:w-8 md:h-8 text-brand-primary" />
                           </div>
                           <div>
                             <h2 className="text-xl md:text-3xl font-black text-slate-900 leading-tight tracking-tighter">
                               Multiplicador 10x
                             </h2>
-                            <p className="text-slate-500 font-medium text-sm md:text-base mt-1">1 Ideia transformada em 10 conteúdos</p>
+                            <p className="text-slate-500 font-medium text-xs md:text-base mt-1">1 Ideia transformada em 10 conteúdos</p>
                           </div>
                         </div>
 
-                        <div className="bg-brand-primary/5 p-8 rounded-[2rem] border border-brand-primary/10">
-                          <p className="text-slate-700 font-medium text-lg">
+                        <div className="bg-brand-primary/5 p-4 md:p-8 rounded-2xl md:rounded-[2rem] border border-brand-primary/10">
+                          <p className="text-slate-900 font-medium text-base md:text-lg">
                             Vamos transformar seu anúncio em 10 formatos de conteúdo para dominar o algoritmo.
                           </p>
                         </div>
                         
-                        <div className="grid gap-6">
+                        <div className="grid gap-4 md:gap-6">
                           {(campaign.derivedContent10 || []).map((item, iIdx) => (
                             <motion.div
                               key={iIdx}
                               initial={{ opacity: 0, y: 20 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: iIdx * 0.05 }}
-                              className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm group relative hover:bg-slate-50 transition-all"
+                              className="bg-white p-4 md:p-8 rounded-2xl md:rounded-[2rem] border border-slate-100 shadow-sm group relative hover:bg-slate-50 transition-all"
                             >
-                              <div className="flex justify-between items-center mb-6">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-3 h-3 rounded-full bg-brand-secondary" />
-                                  <span className="text-xs font-black text-brand-secondary tracking-widest">
-                                    {item.type}
+                              <div className="flex justify-between items-center mb-4 md:mb-6">
+                                <div className="flex items-center gap-2 md:gap-3">
+                                  <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-brand-primary" />
+                                  <span className="text-[10px] md:text-xs font-black text-brand-primary tracking-widest uppercase">
+                                    {formatText(item.type)}
                                   </span>
                                 </div>
                                 <Button 
-                                  size="sm" variant="ghost" className="h-10 w-10 p-0 text-slate-400 hover:text-brand-primary rounded-full"
-                                  onClick={() => copyToClipboard(item.content, `content10-${iIdx}`)}
+                                  size="sm" variant="ghost" className="h-8 w-8 md:h-10 md:w-10 p-0 text-slate-400 hover:text-brand-primary rounded-full bg-white md:bg-transparent shadow-sm md:shadow-none"
+                                  onClick={() => copyToClipboard(formatText(item.content), `content10-${iIdx}`)}
                                 >
-                                  {copiedId === `content10-${iIdx}` ? <Check className="w-5 h-5 text-green-500" /> : <Copy className="w-5 h-5" />}
+                                  {copiedId === `content10-${iIdx}` ? <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500" /> : <Copy className="w-4 h-4 md:w-5 md:h-5" />}
                                 </Button>
                               </div>
-                              <p className="text-slate-700 font-medium text-lg leading-relaxed pr-8 whitespace-pre-wrap">{item.content}</p>
+                              <p className="text-slate-900 font-medium text-base md:text-lg leading-relaxed pr-2 md:pr-8 whitespace-pre-wrap">{formatText(item.content)}</p>
                             </motion.div>
                           ))}
                         </div>
@@ -468,46 +473,46 @@ export default function ResultsStep() {
                   )}
 
                   {activeSection === "messages" && (
-                    <div className="max-w-4xl mx-auto space-y-8">
-                      <div className="bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/40 p-6 md:p-10 space-y-12">
-                        <div className="flex items-center gap-6">
-                          <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                            <MessageCircle className="w-8 h-8 text-brand-primary" />
+                    <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
+                      <div className="bg-white border border-slate-100 rounded-3xl md:rounded-[2.5rem] shadow-xl shadow-slate-200/40 p-5 md:p-10 space-y-8 md:space-y-12">
+                        <div className="flex items-center gap-4 md:gap-6">
+                          <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                            <MessageCircle className="w-6 h-6 md:w-8 md:h-8 text-brand-primary" />
                           </div>
                           <div>
                             <h2 className="text-xl md:text-3xl font-black text-slate-900 leading-tight tracking-tighter">
                               Abordagens de Funil
                             </h2>
-                            <p className="text-slate-500 font-medium text-sm md:text-base mt-1">Scripts persuasivos para cada etapa da venda</p>
+                            <p className="text-slate-500 font-medium text-xs md:text-base mt-1">Scripts persuasivos para cada etapa da venda</p>
                           </div>
                         </div>
 
                         {[
                           { id: 'abordagem', label: 'Abordar', color: 'brand-primary', desc: 'Primeiro contato e despertar de interesse' },
-                          { id: 'followup', label: 'Acompanhar', color: 'brand-secondary', desc: 'Quebra de objeções e manutenção do desejo' },
-                          { id: 'encerramento', label: 'Encerrar', color: 'emerald-600', desc: 'Fechamento e agendamento de visita' }
+                          { id: 'followup', label: 'Acompanhar', color: 'brand-primary', desc: 'Quebra de objeções e manutenção do desejo' },
+                          { id: 'encerramento', label: 'Encerrar', color: 'brand-primary', desc: 'Fechamento e agendamento de visita' }
                         ].map((stage) => (
-                          <div key={stage.id} className="space-y-8">
-                            <div className="flex items-center gap-5 px-4">
-                              <div className={`w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm`}>
-                                <MessageCircle className={`w-6 h-6 text-brand-primary`} />
+                          <div key={stage.id} className="space-y-6 md:space-y-8">
+                            <div className="flex items-center gap-3 md:gap-5 px-2 md:px-4">
+                              <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm shrink-0`}>
+                                <MessageCircle className={`w-5 h-5 md:w-6 md:h-6 text-brand-primary`} />
                               </div>
                               <div>
-                                <h3 className="text-xl font-black text-slate-900 tracking-tighter">{stage.label}</h3>
-                                <p className="text-slate-500 text-sm font-medium">{stage.desc}</p>
+                                <h3 className="text-lg md:text-xl font-black text-slate-900 tracking-tighter">{stage.label}</h3>
+                                <p className="text-slate-500 text-xs md:text-sm font-medium">{stage.desc}</p>
                               </div>
                             </div>
-                            <div className="grid gap-6">
+                            <div className="grid gap-4 md:gap-6">
                               {(campaign.funnelMessages[stage.id as keyof typeof campaign.funnelMessages] || []).map((msg: string, mIdx: number) => (
-                                <div key={mIdx} className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm relative group hover:bg-slate-50 transition-all">
+                                <div key={mIdx} className="bg-white p-4 md:p-8 rounded-2xl md:rounded-[2rem] border border-slate-100 shadow-sm relative group hover:bg-slate-50 transition-all">
                                   <Button 
-                                    size="sm" variant="ghost" className="absolute top-6 right-6 h-10 w-10 p-0 text-slate-400 hover:text-brand-primary rounded-full"
-                                    onClick={() => copyToClipboard(msg, `msg-${stage.id}-${mIdx}`)}
+                                    size="sm" variant="ghost" className="absolute top-4 right-4 md:top-6 md:right-6 h-8 w-8 md:h-10 md:w-10 p-0 text-slate-400 hover:text-brand-primary rounded-full bg-white md:bg-transparent shadow-sm md:shadow-none"
+                                    onClick={() => copyToClipboard(formatText(msg), `msg-${stage.id}-${mIdx}`)}
                                   >
-                                    {copiedId === `msg-${stage.id}-${mIdx}` ? <Check className="w-5 h-5 text-green-500" /> : <Copy className="w-5 h-5" />}
+                                    {copiedId === `msg-${stage.id}-${mIdx}` ? <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500" /> : <Copy className="w-4 h-4 md:w-5 md:h-5" />}
                                   </Button>
-                                  <p className="text-slate-700 font-medium text-lg leading-relaxed pr-16 italic whitespace-pre-wrap">
-                                    "{msg}"
+                                  <p className="text-slate-900 font-medium text-base md:text-lg leading-relaxed pr-10 md:pr-16 whitespace-pre-wrap">
+                                    {formatText(msg)}
                                   </p>
                                 </div>
                               ))}

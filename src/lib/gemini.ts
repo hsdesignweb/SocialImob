@@ -102,8 +102,15 @@ export const generateJSON = async (prompt: string, schema?: any, systemInstructi
       } catch (error: any) {
         console.warn(`Attempt ${attempt} failed:`, error);
         lastError = error;
+        
+        // Se for erro de cota (429), não tentar novamente e lançar erro amigável
+        if (error.message?.includes("RESOURCE_EXHAUSTED") || error.message?.includes("429")) {
+          throw new Error("O limite de uso da inteligência artificial foi atingido (Cota Excedida). Por favor, tente novamente mais tarde.");
+        }
+        
         // If it's an API key error, don't retry
         if (error.message?.includes("API Key")) throw error;
+        
         // Wait a bit before retrying
         if (attempt < maxRetries) await new Promise(resolve => setTimeout(resolve, 1000));
       }
