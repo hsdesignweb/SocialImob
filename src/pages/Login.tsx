@@ -87,7 +87,7 @@ export default function Login() {
             <div className="space-y-2">
               <div className="flex items-center justify-between ml-4">
                 <label className="text-xs font-black text-slate-500 tracking-widest">Senha</label>
-                <Link to="#" className="text-xs font-bold text-brand-primary hover:underline">Esqueceu a senha?</Link>
+                <Link to="/forgot-password" className="text-xs font-bold text-brand-primary hover:underline">Esqueceu a senha?</Link>
               </div>
               <div className="relative group">
                 <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
