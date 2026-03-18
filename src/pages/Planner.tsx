@@ -204,19 +204,6 @@ export default function Planner() {
     }
   };
 
-  const toggleComplete = async (post: PlannerPost) => {
-    try {
-      const { error } = await supabase
-        .from('posts')
-        .update({ completed: post.completed ? 0 : 1 })
-        .eq('id', post.id);
-      if (error) throw error;
-      fetchData();
-    } catch (error) {
-      console.error('Error toggling completion:', error);
-    }
-  };
-
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
     setCopiedField(field);
@@ -332,26 +319,10 @@ export default function Planner() {
                     <div className="text-sm font-black text-blue-600 tracking-wider">
                       {new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-[1.1] max-w-2xl">
+                    <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-[1.1] max-w-2xl">
                       {selectedPost?.title || "Nenhum post planejado"}
                     </h2>
                   </div>
-                  {selectedPost && (
-                    <Button
-                      onClick={() => toggleComplete(selectedPost)}
-                      className={`h-16 px-10 rounded-full font-black transition-all flex items-center gap-4 ${
-                        selectedPost.completed 
-                          ? 'bg-emerald-500 text-white' 
-                          : 'bg-slate-900 text-white hover:bg-slate-800'
-                      }`}
-                    >
-                      {selectedPost.completed ? (
-                        <><CheckCircle className="w-6 h-6" /> Concluído</>
-                      ) : (
-                        <><Circle className="w-6 h-6" /> Marcar como Feito</>
-                      )}
-                    </Button>
-                  )}
                 </div>
 
                 {selectedPost ? (
@@ -364,15 +335,13 @@ export default function Planner() {
                             <MessageCircle className="w-5 h-5 text-blue-500" />
                             <CardTitle className="text-lg font-black text-slate-900">Legenda do Post</CardTitle>
                           </div>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <div 
                             onClick={() => copyToClipboard(formatText(selectedPost.caption), 'caption')}
-                            className="h-9 px-4 rounded-lg border-slate-200 text-slate-400 font-bold text-xs gap-2 hover:bg-slate-50"
+                            className="flex items-center text-slate-400 font-bold text-xs gap-2 cursor-pointer hover:text-slate-600 transition-colors"
                           >
                             {copiedField === 'caption' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                             Copiar
-                          </Button>
+                          </div>
                         </CardHeader>
                         <CardContent className="p-5 md:p-6 pt-0">
                           <div className="p-5 md:p-8 bg-slate-50/80 rounded-2xl md:rounded-3xl border border-slate-100 text-slate-900 font-medium leading-relaxed whitespace-pre-wrap text-sm">
@@ -388,15 +357,13 @@ export default function Planner() {
                             <Lightbulb className="w-5 h-5 text-amber-500" />
                             <CardTitle className="text-lg font-black text-slate-900">Direcionamento Visual</CardTitle>
                           </div>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <div 
                             onClick={() => copyToClipboard(formatText(selectedPost.script), 'script')}
-                            className="h-9 px-4 rounded-lg border-slate-200 text-slate-400 font-bold text-xs gap-2 hover:bg-slate-50"
+                            className="flex items-center text-slate-400 font-bold text-xs gap-2 cursor-pointer hover:text-slate-600 transition-colors"
                           >
                             {copiedField === 'script' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                             Copiar
-                          </Button>
+                          </div>
                         </CardHeader>
                         <CardContent className="p-5 md:p-6 pt-0">
                           <div className="p-5 md:p-8 bg-yellow-50/50 rounded-2xl md:rounded-3xl border border-yellow-100/50 text-slate-900 font-medium text-sm leading-relaxed whitespace-pre-wrap">
