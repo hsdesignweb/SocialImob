@@ -256,14 +256,22 @@ export default function AdminDashboard() {
                             <option value="active">Ativo</option>
                             <option value="pending_payment">Pendente</option>
                             <option value="expired">Expirado</option>
+                            <option value="suspended">Suspenso</option>
                           </select>
                         ) : (
                           <span className={`px-4 py-1 rounded-2xl text-[9px] font-black tracking-widest border ${
-                            user.is_paid 
+                            user.status === 'active' || user.status === 'paid'
                               ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
+                              : user.status === 'suspended'
+                              ? "bg-red-50 text-red-600 border-red-100"
                               : "bg-slate-50 text-slate-500 border-slate-100"
                           }`}>
-                            {user.status}
+                            {user.status === 'active' ? 'ATIVO' : 
+                             user.status === 'trial' ? 'TRIAL' : 
+                             user.status === 'pending_payment' ? 'PENDENTE' : 
+                             user.status === 'expired' ? 'EXPIRADO' : 
+                             user.status === 'suspended' ? 'SUSPENSO' : 
+                             user.status.toUpperCase()}
                           </span>
                         )}
                       </TableCell>

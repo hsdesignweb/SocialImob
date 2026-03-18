@@ -215,33 +215,19 @@ export default function Layout() {
                     Gerador de Campanhas
                   </button>
                   <button 
+                    onClick={() => { navigate('/app/history'); setIsMenuOpen(false); }}
+                    className="w-full text-left px-5 py-4 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
+                  >
+                    <History className="w-4 h-4 text-slate-400" />
+                    Campanhas Geradas
+                  </button>
+                  <button 
                     onClick={() => { navigate('/app/planner'); setIsMenuOpen(false); }}
                     className="w-full text-left px-5 py-4 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
                   >
                     <Calendar className="w-4 h-4 text-brand-primary" />
                     Planner Imobiliário
                   </button>
-                  <button 
-                    onClick={() => { navigate('/app/planner'); setIsMenuOpen(false); }}
-                    className="w-full text-left px-5 py-4 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
-                  >
-                    <Sparkles className="w-4 h-4 text-brand-secondary" />
-                    Planner Bônus
-                  </button>
-                  <button 
-                    onClick={() => { navigate('/app/history'); setIsMenuOpen(false); }}
-                    className="w-full text-left px-5 py-4 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
-                  >
-                    <History className="w-4 h-4 text-slate-400" />
-                    Histórico de Campanhas
-                  </button>
-                  <a 
-                    href="mailto:atendimento@arkaconsultoria.com.br"
-                    className="w-full text-left px-5 py-4 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
-                  >
-                    <MessageCircle className="w-4 h-4 text-slate-400" />
-                    Suporte Técnico
-                  </a>
                   {user?.isAdmin && (
                     <button 
                       onClick={() => { navigate('/app/admin'); setIsMenuOpen(false); }}
