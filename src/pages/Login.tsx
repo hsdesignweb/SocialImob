@@ -116,7 +116,7 @@ export default function Login() {
           <div className="mt-8 text-center">
             <p className="text-sm font-medium text-slate-500">
               Não tem uma conta?{' '}
-              <Link to="/register" className="text-brand-primary font-black hover:underline">Criar conta</Link>
+              <Link to="/register" className="text-brand-primary font-black hover:underline">Assinar</Link>
             </p>
           </div>
         </div>

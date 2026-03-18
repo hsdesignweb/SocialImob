@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { MercadoPagoConfig, Preference } from 'mercadopago';
+import { MercadoPagoConfig, PreApproval } from 'mercadopago';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -25,36 +25,32 @@ const client = new MercadoPagoConfig({
 // API Routes
 app.post('/api/create-preference', async (req, res) => {
   try {
-    const preference = new Preference(client);
+    const { return_url, user_email } = req.body;
+    const preApproval = new PreApproval(client);
     
     // Get the base URL for redirection
-    // In production/preview, use the provided APP_URL env var or fallback to request origin
     const baseUrl = process.env.APP_URL || `https://${req.get('host')}`;
     
-    const result = await preference.create({
+    const backUrl = return_url ? `${baseUrl}${return_url}` : `${baseUrl}/payment?status=approved`;
+
+    const result = await preApproval.create({
       body: {
-        items: [
-          {
-            id: 'socialimob-pro',
-            title: 'SocialImob Pro - Assinatura Mensal',
-            quantity: 1,
-            unit_price: 97,
-            currency_id: 'BRL',
-          }
-        ],
-        back_urls: {
-          success: `${baseUrl}/payment`,
-          failure: `${baseUrl}/payment`,
-          pending: `${baseUrl}/payment`
+        reason: 'SocialImob Pro - Assinatura Mensal',
+        auto_recurring: {
+          frequency: 1,
+          frequency_type: 'months',
+          transaction_amount: 97,
+          currency_id: 'BRL'
         },
-        auto_return: 'approved',
+        back_url: backUrl,
+        payer_email: user_email || undefined
       }
     });
 
     res.json({ init_point: result.init_point });
   } catch (error) {
-    console.error('Error creating preference:', error);
-    res.status(500).json({ error: 'Failed to create preference' });
+    console.error('Error creating subscription:', error);
+    res.status(500).json({ error: 'Failed to create subscription' });
   }
 });
 

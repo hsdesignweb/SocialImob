@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Mail, Lock, User, UserPlus, Loader2, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, User, Phone, Loader2, ArrowLeft, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
 
 export default function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -17,12 +18,13 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setIsLoading(true);
     setError('');
     setSuccessMessage('');
 
     try {
-      const result = await register(name, email, password);
+      const result = await register(name, email, phone, password);
       if (result.success) {
         setSuccessMessage('Conta criada com sucesso! Redirecionando...');
         setTimeout(() => {
@@ -55,8 +57,12 @@ export default function Register() {
           <div className="w-12 h-12 bg-brand-primary rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-brand-primary/20 mx-auto mb-6">
             S
           </div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Crie sua conta</h1>
-          <p className="text-slate-500 font-medium">Comece sua jornada estratégica com IA</p>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
+            Crie sua conta
+          </h1>
+          <p className="text-slate-500 font-medium">
+            Preencha os dados abaixo para começar
+          </p>
         </div>
 
         <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100">
@@ -102,6 +108,23 @@ export default function Register() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full h-14 pl-14 pr-6 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
                   placeholder="seu@email.com"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-black text-slate-500 tracking-widest ml-4">WhatsApp</label>
+              <div className="relative group">
+                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-primary transition-colors">
+                  <Phone className="w-5 h-5" />
+                </div>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full h-14 pl-14 pr-6 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
+                  placeholder="(11) 99999-9999"
                   required
                 />
               </div>

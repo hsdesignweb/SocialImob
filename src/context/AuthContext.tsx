@@ -17,7 +17,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string; status?: string; isPaid?: boolean }>;
-  register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  register: (name: string, email: string, phone: string, password: string) => Promise<{ success: boolean; error?: string }>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   updatePassword: (password: string) => Promise<{ success: boolean; error?: string }>;
   completePayment: () => Promise<void>;
@@ -154,19 +154,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { success: true };
   };
 
-  const register = async (name: string, email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
+  const register = async (name: string, email: string, phone: string, password: string) => {
+    const { data: authData, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           name,
+          phone,
         },
       },
     });
 
     if (error) {
       return { success: false, error: error.message };
+    }
+
+    if (authData.user && phone) {
+      await supabase.from('profiles').update({
+        phone: phone,
+      }).eq('id', authData.user.id);
     }
 
     return { success: true };

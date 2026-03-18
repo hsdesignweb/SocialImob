@@ -16,9 +16,10 @@ export default function Payment() {
     const params = new URLSearchParams(location.search);
     const status = params.get('status'); // approved, pending, failure
     const paymentId = params.get('payment_id');
+    const preapprovalId = params.get('preapproval_id');
     const reason = params.get('reason');
 
-    if (status === 'approved' && paymentId) {
+    if (status === 'approved' || preapprovalId) {
       handlePaymentSuccess();
     }
 
@@ -53,6 +54,10 @@ export default function Payment() {
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          user_email: user?.email,
+          return_url: '/payment?status=approved'
+        })
       });
 
       if (!response.ok) {

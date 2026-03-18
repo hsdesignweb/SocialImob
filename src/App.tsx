@@ -41,9 +41,9 @@ const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.Re
     return <Navigate to="/app" replace />;
   }
 
-  // If user is authenticated but hasn't paid, redirect to payment
+  // If user is authenticated but hasn't paid or is suspended, redirect to payment
   // Unless they are already on the payment page or they are an admin
-  if (user && !user.isAdmin && user.isPaid === false && user.status !== 'trial') {
+  if (user && !user.isAdmin && (user.isPaid === false || user.status === 'suspended') && user.status !== 'trial') {
       return <Navigate to="/payment" replace />;
   }
 
@@ -65,7 +65,7 @@ const PaymentRoute = ({ children }: { children: React.ReactNode }) => {
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
     }
-    if (user?.isPaid) {
+    if (user?.isPaid && user?.status !== 'suspended') {
         return <Navigate to="/app" replace />;
     }
     return <>{children}</>;

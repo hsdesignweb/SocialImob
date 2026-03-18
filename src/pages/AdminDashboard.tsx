@@ -11,6 +11,7 @@ interface UserMetric {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   credits: number;
   status: string;
   is_paid: boolean;
@@ -190,7 +191,7 @@ export default function AdminDashboard() {
               <TableHeader>
                 <TableRow className="border-slate-100 hover:bg-transparent">
                   <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6">Nome</TableHead>
-                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6">Email</TableHead>
+                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6">Email / WhatsApp</TableHead>
                   <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6">Créditos</TableHead>
                   <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6">Status</TableHead>
                   <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6">Cadastro</TableHead>
@@ -220,7 +221,10 @@ export default function AdminDashboard() {
                           <span className="text-slate-900 font-bold">{user.name || 'Sem nome'}</span>
                         )}
                       </TableCell>
-                      <TableCell className="p-6 text-slate-500 font-medium">{user.email}</TableCell>
+                      <TableCell className="p-6 text-slate-500 font-medium">
+                        <div>{user.email}</div>
+                        {user.phone && <div className="text-xs text-slate-400 mt-1">{user.phone}</div>}
+                      </TableCell>
                       <TableCell className="p-6">
                         {editingId === user.id ? (
                           <Input 
