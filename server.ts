@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { MercadoPagoConfig, PreApproval } from 'mercadopago';
+import { MercadoPagoConfig, Preference } from 'mercadopago';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -79,14 +79,15 @@ app.post('/api/send-welcome', async (req, res) => {
 
 app.post('/api/create-preference', async (req, res) => {
   try {
-    const { return_url, user_email, coupon_code } = req.body;
-    const preApproval = new PreApproval(client);
+    const { return_url, user_email, coupon_code, plan = 'monthly' } = req.body;
+    const preference = new Preference(client);
     
     // Get the base URL for redirection
     const baseUrl = process.env.APP_URL || `https://${req.get('host')}`;
-    const backUrl = return_url ? `${baseUrl}${return_url}` : `${baseUrl}/payment?status=approved`;
+    const backUrl = return_url ? `${baseUrl}${return_url}` : `${baseUrl}/payment?status=approved&plan=${plan}`;
 
-    let transaction_amount = 97; // Default price
+    let transaction_amount = plan === 'yearly' ? 698.40 : 97; // Default prices
+    const title = plan === 'yearly' ? 'SocialImob Pro - Plano Anual' : 'SocialImob Pro - Plano Mensal';
 
     // Validate coupon if provided
     if (coupon_code) {
@@ -105,24 +106,39 @@ app.post('/api/create-preference', async (req, res) => {
       }
     }
 
-    const result = await preApproval.create({
+    const result = await preference.create({
       body: {
-        reason: 'SocialImob Pro - Assinatura Mensal',
-        auto_recurring: {
-          frequency: 1,
-          frequency_type: 'months',
-          transaction_amount: transaction_amount,
-          currency_id: 'BRL'
+        items: [
+          {
+            id: plan,
+            title: title,
+            quantity: 1,
+            unit_price: transaction_amount,
+            currency_id: 'BRL',
+          }
+        ],
+        payer: {
+          email: user_email || undefined
         },
-        back_url: backUrl,
-        payer_email: user_email || undefined
+        back_urls: {
+          success: backUrl,
+          pending: backUrl,
+          failure: `${baseUrl}/payment?status=failure`
+        },
+        auto_return: 'approved',
+        payment_methods: {
+          excluded_payment_types: [
+            { id: 'ticket' } // Exclui boleto, permite PIX e Cartão
+          ],
+          installments: 12 // Permite parcelamento em até 12x
+        }
       }
     });
 
     res.json({ init_point: result.init_point });
   } catch (error) {
-    console.error('Error creating subscription:', error);
-    res.status(500).json({ error: 'Failed to create subscription' });
+    console.error('Error creating preference:', error);
+    res.status(500).json({ error: 'Failed to create preference' });
   }
 });
 

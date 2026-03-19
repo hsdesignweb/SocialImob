@@ -20,7 +20,7 @@ interface AuthContextType {
   register: (name: string, email: string, phone: string, password: string) => Promise<{ success: boolean; error?: string }>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   updatePassword: (password: string) => Promise<{ success: boolean; error?: string }>;
-  completePayment: () => Promise<void>;
+  completePayment: (plan?: string) => Promise<void>;
   logout: () => Promise<void>;
   consumeCredit: () => Promise<boolean>;
   isAuthenticated: boolean;
@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (data) {
         const userEmail = data.email || email;
-        const userData: User = {
+        const userData: User & { expires_at?: string } = {
           id: data.id,
           email: userEmail,
           name: data.name || '',
@@ -85,6 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           isPaid: userEmail === 'hsdesignweb@gmail.com' ? true : data.is_paid,
           subscriptionDate: data.subscription_date,
           status: userEmail === 'hsdesignweb@gmail.com' ? 'active' : data.status,
+          expires_at: data.expires_at
         };
         checkSubscriptionStatus(userData);
       }
@@ -95,22 +96,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const checkSubscriptionStatus = async (userData: User) => {
-    // Logic similar to before, but we might want to update the DB if status changes
-    // For now, just set local state. In a real app, we'd use a DB trigger or Edge Function for expiration.
-    
+  const checkSubscriptionStatus = async (userData: User & { expires_at?: string }) => {
     if (userData.isAdmin) {
       setUser(userData);
       return;
     }
 
-    if (userData.isPaid && userData.subscriptionDate) {
+    if (userData.isPaid) {
       const now = new Date();
-      const subDate = new Date(userData.subscriptionDate);
-      const diffTime = Math.abs(now.getTime() - subDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      let isExpired = false;
 
-      if (diffDays > 30) {
+      if (userData.expires_at) {
+        // Use the new exact calendar expiration date
+        const expiresAt = new Date(userData.expires_at);
+        isExpired = now.getTime() > expiresAt.getTime();
+      } else if (userData.subscriptionDate) {
+        // Fallback for old subscriptions that don't have expires_at yet
+        const subDate = new Date(userData.subscriptionDate);
+        const diffTime = Math.abs(now.getTime() - subDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        isExpired = diffDays > 30;
+      }
+
+      if (isExpired) {
         // Subscription expired
         const updatedUser = { ...userData, status: 'suspended' as const };
         setUser(updatedUser);
@@ -198,23 +206,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { success: true };
   };
 
-  const completePayment = async () => {
+  const completePayment = async (plan: string = 'monthly') => {
     if (!user) return;
     
-    const updates = {
-      is_paid: true,
-      credits: 100,
-      subscription_date: new Date().toISOString(),
-      status: 'active'
-    };
-
-    const { error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', user.id);
+    const { error } = await supabase.rpc('activate_subscription', {
+      p_user_id: user.id,
+      p_plan_type: plan
+    });
 
     if (!error) {
-      setUser({ ...user, ...updates, isPaid: true, subscriptionDate: updates.subscription_date, status: 'active' });
+      // Re-fetch profile to get updated credits and dates
+      await fetchProfile(user.id, user.email);
     }
   };
 

@@ -55,7 +55,7 @@ export default function Login() {
           <div className="w-12 h-12 bg-brand-primary rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-sm mx-auto mb-6">
             S
           </div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Bem-vindo de volta</h1>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Bem-vindo ao SocialImob</h1>
           <p className="text-slate-500 font-medium">Entre para gerenciar suas campanhas</p>
         </div>
 
