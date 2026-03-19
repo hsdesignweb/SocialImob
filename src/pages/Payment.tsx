@@ -26,8 +26,11 @@ export default function Payment() {
     const reason = params.get('reason');
     const plan = params.get('plan') || 'monthly';
 
-    if (status === 'approved' || preapprovalId) {
-      handlePaymentSuccess(plan);
+    if (status === 'approved' && paymentId) {
+      handlePaymentSuccess(paymentId);
+    } else if (status === 'approved' && preapprovalId) {
+      // Handle subscription approval
+      handlePaymentSuccess(preapprovalId);
     }
 
     if (reason === 'suspended') {
@@ -37,32 +40,52 @@ export default function Payment() {
     }
   }, [location]);
 
-  const handlePaymentSuccess = async (plan: string) => {
+  const handlePaymentSuccess = async (paymentId: string) => {
     setIsLoading(true);
     try {
-      await completePayment(plan);
-      
-      // Send welcome email
-      if (user?.email) {
-        try {
-          await fetch('/api/send-welcome', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              email: user.email,
-              name: user.name
-            })
-          });
-        } catch (emailErr) {
-          console.error("Failed to send welcome email", emailErr);
-          // Don't block the user if email fails
-        }
+      // Verify payment with backend
+      const response = await fetch('/api/verify-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ payment_id: paymentId })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to verify payment');
       }
 
-      // Clear query params
-      navigate('/app', { replace: true });
+      const data = await response.json();
+      
+      if (data.success) {
+        // Refresh user profile to get updated credits and status
+        await completePayment(data.plan);
+        
+        // Send welcome email
+        if (user?.email) {
+          try {
+            await fetch('/api/send-welcome', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                email: user.email,
+                name: user.name
+              })
+            });
+          } catch (emailErr) {
+            console.error("Failed to send welcome email", emailErr);
+            // Don't block the user if email fails
+          }
+        }
+
+        // Clear query params
+        navigate('/app', { replace: true });
+      } else {
+        setError("Pagamento ainda não foi aprovado. Verifique o status no Mercado Pago.");
+      }
     } catch (error) {
       console.error("Payment completion failed", error);
       setError("Erro ao confirmar pagamento. Entre em contato com o suporte.");
@@ -109,6 +132,7 @@ export default function Payment() {
         },
         body: JSON.stringify({
           user_email: user?.email,
+          user_id: user?.id,
           return_url: `/payment?status=approved&plan=${selectedPlan}`,
           coupon_code: appliedCoupon?.code,
           plan: selectedPlan

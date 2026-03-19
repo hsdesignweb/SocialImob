@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Users, CreditCard, Activity, Search, ArrowLeft, Edit2, Check, X } from "lucide-react";
+import { Users, CreditCard, Activity, Search, ArrowLeft, Edit2, Check, X, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 interface UserMetric {
@@ -288,9 +288,31 @@ export default function AdminDashboard() {
                             </Button>
                           </div>
                         ) : (
-                          <Button size="icon" variant="ghost" className="h-10 w-10 text-slate-400 hover:text-brand-primary hover:bg-slate-50 rounded-2xl" onClick={() => handleEdit(user)}>
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
+                          <div className="flex justify-end gap-2">
+                            <Button size="icon" variant="ghost" className="h-10 w-10 text-slate-400 hover:text-brand-primary hover:bg-slate-50 rounded-2xl" onClick={() => handleEdit(user)}>
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              className="h-10 w-10 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-2xl" 
+                              onClick={async () => {
+                                if (window.confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')) {
+                                  try {
+                                    const { error } = await supabase.rpc('delete_user', { user_id: user.id });
+                                    if (error) throw error;
+                                    setUsers(users.filter(u => u.id !== user.id));
+                                    alert('Usuário excluído com sucesso.');
+                                  } catch (error) {
+                                    console.error('Erro ao excluir usuário:', error);
+                                    alert('Erro ao excluir usuário.');
+                                  }
+                                }
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         )}
                       </TableCell>
                     </TableRow>

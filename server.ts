@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { MercadoPagoConfig, Preference } from 'mercadopago';
+import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -21,7 +21,7 @@ app.use(express.json());
 
 // Initialize Supabase for backend
 const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Initialize Resend
@@ -33,6 +33,41 @@ const client = new MercadoPagoConfig({
 });
 
 // API Routes
+app.post('/api/verify-payment', async (req, res) => {
+  try {
+    const { payment_id } = req.body;
+    if (!payment_id) {
+      return res.status(400).json({ error: 'Payment ID is required' });
+    }
+
+    const paymentClient = new Payment(client);
+    const payment = await paymentClient.get({ id: payment_id });
+    
+    if (payment.status === 'approved' && payment.external_reference) {
+      const { user_id, plan } = JSON.parse(payment.external_reference);
+      
+      if (user_id) {
+        const { error } = await supabase.rpc('activate_subscription', {
+          p_user_id: user_id,
+          p_plan_type: plan || 'monthly'
+        });
+        
+        if (error) {
+          console.error('Verify payment RPC error:', error);
+          return res.status(500).json({ error: 'Failed to activate subscription' });
+        }
+        
+        return res.json({ success: true, plan });
+      }
+    }
+    
+    res.json({ success: false, status: payment.status });
+  } catch (error) {
+    console.error('Verify payment error:', error);
+    res.status(500).json({ error: 'Failed to verify payment' });
+  }
+});
+
 app.post('/api/send-welcome', async (req, res) => {
   try {
     const { email, name } = req.body;
@@ -79,7 +114,7 @@ app.post('/api/send-welcome', async (req, res) => {
 
 app.post('/api/create-preference', async (req, res) => {
   try {
-    const { return_url, user_email, coupon_code, plan = 'monthly' } = req.body;
+    const { return_url, user_email, user_id, coupon_code, plan = 'monthly' } = req.body;
     const preference = new Preference(client);
     
     // Get the base URL for redirection
@@ -126,6 +161,8 @@ app.post('/api/create-preference', async (req, res) => {
           failure: `${baseUrl}/payment?status=failure`
         },
         auto_return: 'approved',
+        external_reference: JSON.stringify({ user_id, plan, user_email }),
+        notification_url: `${baseUrl}/api/webhook`,
         payment_methods: {
           excluded_payment_types: [
             { id: 'ticket' } // Exclui boleto, permite PIX e Cartão
@@ -139,6 +176,47 @@ app.post('/api/create-preference', async (req, res) => {
   } catch (error) {
     console.error('Error creating preference:', error);
     res.status(500).json({ error: 'Failed to create preference' });
+  }
+});
+
+// Webhook to handle Mercado Pago notifications
+app.post('/api/webhook', async (req, res) => {
+  try {
+    const { type, data } = req.body;
+    
+    // We only care about payment updates
+    if (type === 'payment' && data?.id) {
+      const paymentClient = new Payment(client);
+      const payment = await paymentClient.get({ id: data.id });
+      
+      if (payment.status === 'approved' && payment.external_reference) {
+        try {
+          const { user_id, plan, user_email } = JSON.parse(payment.external_reference);
+          
+          if (user_id) {
+            // Call Supabase RPC to activate subscription
+            const { error } = await supabase.rpc('activate_subscription', {
+              p_user_id: user_id,
+              p_plan_type: plan || 'monthly'
+            });
+            
+            if (error) {
+              console.error('Webhook RPC error:', error);
+            } else {
+              console.log(`Subscription activated via webhook for user ${user_id} (${plan})`);
+            }
+          }
+        } catch (parseError) {
+          console.error('Error parsing external_reference:', parseError);
+        }
+      }
+    }
+    
+    // Always return 200 OK to Mercado Pago
+    res.status(200).send('OK');
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).send('Error processing webhook');
   }
 });
 

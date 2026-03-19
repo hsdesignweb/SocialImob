@@ -210,15 +210,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const completePayment = async (plan: string = 'monthly') => {
     if (!user) return;
     
-    const { error } = await supabase.rpc('activate_subscription', {
-      p_user_id: user.id,
-      p_plan_type: plan
-    });
-
-    if (!error) {
-      // Re-fetch profile to get updated credits and dates
-      await fetchProfile(user.id, user.email);
-    }
+    // The backend already activated the subscription via /api/verify-payment or webhook
+    // We just need to re-fetch the profile to get updated credits and dates
+    await fetchProfile(user.id, user.email);
   };
 
   const logout = async () => {
