@@ -252,7 +252,6 @@ export default function AdminDashboard() {
                             value={editForm.status}
                             onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
                           >
-                            <option value="trial">Trial</option>
                             <option value="active">Ativo</option>
                             <option value="pending_payment">Pendente</option>
                             <option value="expired">Expirado</option>

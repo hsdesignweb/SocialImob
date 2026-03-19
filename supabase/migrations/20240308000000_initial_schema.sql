@@ -4,10 +4,10 @@ create table if not exists public.profiles (
   email text,
   name text,
   is_admin boolean default false,
-  credits integer default 3,
+  credits integer default 0,
   is_paid boolean default false,
   subscription_date timestamp with time zone,
-  status text check (status in ('active', 'suspended', 'pending_payment', 'trial')) default 'trial',
+  status text check (status in ('active', 'suspended', 'pending_payment')) default 'pending_payment',
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -34,8 +34,8 @@ begin
     new.id,
     new.email,
     new.raw_user_meta_data->>'name',
-    3, -- Default 3 credits for everyone
-    'trial', -- Default status
+    0, -- Default 0 credits
+    'pending_payment', -- Default status
     case when new.email = 'hebert.ss@gmail.com' then true else false end -- Auto-admin for specific email
   );
   return new;

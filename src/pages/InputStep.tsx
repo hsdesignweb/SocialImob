@@ -222,10 +222,6 @@ export default function InputStep() {
       // 3. Consume credit ONLY after successful validation and generation
       const creditConsumed = consumeCredit();
       if (!creditConsumed) {
-        if (user?.status === 'trial' && user.credits <= 0) {
-           navigate('/payment?reason=trial_ended');
-           return;
-        }
         throw new Error("Erro ao processar créditos.");
       }
 

@@ -99,7 +99,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Logic similar to before, but we might want to update the DB if status changes
     // For now, just set local state. In a real app, we'd use a DB trigger or Edge Function for expiration.
     
-    if (userData.isAdmin || userData.status === 'trial') {
+    if (userData.isAdmin) {
       setUser(userData);
       return;
     }
@@ -227,7 +227,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const consumeCredit = async (): Promise<boolean> => {
     if (!user) return false;
     if (user.isAdmin) return true;
-    if (user.status !== 'active' && user.status !== 'trial') return false;
+    if (user.status !== 'active') return false;
 
     if (user.credits > 0) {
       const newCredits = user.credits - 1;

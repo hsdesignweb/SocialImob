@@ -153,12 +153,10 @@ export default function Payment() {
         
         <div className="bg-slate-50 p-10 text-center border-b border-slate-100 relative z-10">
           <h1 className="text-3xl font-black text-slate-900 tracking-tighter mb-2">
-            {user?.status === 'suspended' ? 'Renovar Assinatura' : 
-             user?.status === 'trial' ? 'Acesso Pro' : 'Finalize sua Assinatura'}
+            {user?.status === 'suspended' ? 'Renovar Assinatura' : 'Finalize sua Assinatura'}
           </h1>
           <p className="text-slate-500 font-medium text-sm">
-            {user?.status === 'suspended' ? 'Reative seu acesso ao SocialImob Pro' : 
-             user?.status === 'trial' ? 'Desbloqueie acesso ilimitado e recursos PRO' : 'Libere seu acesso ao SocialImob Pro'}
+            {user?.status === 'suspended' ? 'Reative seu acesso ao SocialImob Pro' : 'Libere seu acesso ao SocialImob Pro'}
           </p>
         </div>
 

@@ -11,8 +11,8 @@ begin
     new.email,
     new.raw_user_meta_data->>'name',
     new.raw_user_meta_data->>'phone',
-    3, -- Default 3 credits for everyone
-    'trial', -- Default status
+    0, -- Default 0 credits
+    'pending_payment', -- Default status
     case when new.email = 'hebert.ss@gmail.com' then true else false end -- Auto-admin for specific email
   );
   return new;
