@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Session } from '@supabase/supabase-js';
+import { translateAuthError } from '@/lib/utils';
 
 export interface User {
   id: string;
@@ -139,7 +140,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     if (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: translateAuthError(error.message) };
     }
     
     // Fetch profile immediately to determine redirection
@@ -175,7 +176,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     if (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: translateAuthError(error.message) };
     }
 
     if (authData.user && phone) {
@@ -193,7 +194,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     if (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: translateAuthError(error.message) };
     }
     return { success: true };
   };
@@ -201,7 +202,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updatePassword = async (password: string) => {
     const { error } = await supabase.auth.updateUser({ password });
     if (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: translateAuthError(error.message) };
     }
     return { success: true };
   };
