@@ -77,29 +77,61 @@ export default function AdminDashboard() {
   const handleSave = async (userId: string) => {
     setIsSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          name: editForm.name,
-          credits: editForm.credits, 
-          status: editForm.status,
-          is_paid: editForm.status === 'active' || editForm.status === 'paid'
-        })
-        .eq('id', userId);
+      const isPaid = editForm.status === 'active' || editForm.status === 'paid';
+      
+      // Try RPC first
+      let rpcError = null;
+      try {
+        const { error } = await supabase.rpc('admin_update_user', {
+          p_user_id: userId,
+          p_name: editForm.name,
+          p_credits: editForm.credits,
+          p_status: editForm.status,
+          p_is_paid: isPaid
+        });
+        rpcError = error;
+      } catch (e) {
+        rpcError = e;
+      }
 
-      if (error) throw error;
+      // If RPC fails (e.g., migration not applied), fallback to API endpoint
+      if (rpcError) {
+        console.log('RPC failed, falling back to API endpoint...', rpcError);
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        const response = await fetch('/api/admin/update-user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`
+          },
+          body: JSON.stringify({
+            admin_id: session?.user?.id,
+            user_id: userId,
+            name: editForm.name,
+            credits: editForm.credits,
+            status: editForm.status,
+            is_paid: isPaid
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to update user via API');
+        }
+      }
       
       setUsers(users.map(u => u.id === userId ? { 
         ...u, 
         name: editForm.name,
         credits: editForm.credits, 
         status: editForm.status,
-        is_paid: editForm.status === 'active' || editForm.status === 'paid'
+        is_paid: isPaid
       } : u));
       setEditingId(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating user:", error);
-      alert("Erro ao atualizar usuário.");
+      alert(error.message || "Erro ao atualizar usuário.");
     } finally {
       setIsSaving(false);
     }

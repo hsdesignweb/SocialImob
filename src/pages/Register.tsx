@@ -16,8 +16,33 @@ export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
+    if (value.length > 11) {
+      value = value.slice(0, 11);
+    }
+    
+    // Format as (XX) XXXXX-XXXX
+    let formatted = value;
+    if (value.length > 2) {
+      formatted = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+    }
+    if (value.length > 7) {
+      formatted = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+    }
+    
+    setPhone(formatted);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate phone number length (at least 10 digits: 2 for DDD + 8 for number)
+    const rawPhone = phone.replace(/\D/g, '');
+    if (rawPhone.length < 10) {
+      setError('Por favor, insira um número de WhatsApp válido com DDD.');
+      return;
+    }
 
     setIsLoading(true);
     setError('');
@@ -122,10 +147,11 @@ export default function Register() {
                 <input
                   type="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={handlePhoneChange}
                   className="w-full h-14 pl-14 pr-6 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-medium text-slate-900 placeholder:text-slate-400"
                   placeholder="(11) 99999-9999"
                   required
+                  maxLength={15}
                 />
               </div>
             </div>

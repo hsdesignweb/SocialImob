@@ -33,6 +33,71 @@ const client = new MercadoPagoConfig({
 });
 
 // API Routes
+app.post('/api/admin/update-user', async (req, res) => {
+  try {
+    const { admin_id, user_id, name, credits, status, is_paid } = req.body;
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(' ')[1];
+
+    if (!admin_id || !user_id || !token) {
+      return res.status(400).json({ error: 'Missing required fields or token' });
+    }
+
+    // Create a Supabase client authenticated as the admin user
+    const userSupabase = createClient(supabaseUrl, process.env.VITE_SUPABASE_ANON_KEY || '', {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    });
+
+    // Verify caller is admin using their token
+    const { data: adminData, error: adminError } = await userSupabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', admin_id)
+      .single();
+
+    if (adminError || !adminData?.is_admin) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    // Update user
+    // If we have the service role key, use the global supabase client to bypass RLS
+    // Otherwise, use the user's client (which requires the RLS policy to be applied)
+    const hasServiceRoleKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+    console.log(`Updating user ${user_id}. Using service role key: ${hasServiceRoleKey}`);
+    const clientToUse = hasServiceRoleKey ? supabase : userSupabase;
+
+    const { data, error: updateError } = await clientToUse
+      .from('profiles')
+      .update({
+        name,
+        credits,
+        status,
+        is_paid
+      })
+      .eq('id', user_id)
+      .select();
+
+    if (updateError) {
+      console.error('Error updating user:', updateError);
+      return res.status(500).json({ error: 'Failed to update user' });
+    }
+
+    if (!data || data.length === 0) {
+      console.error('Update blocked by RLS or user not found');
+      return res.status(403).json({ error: 'Update blocked by RLS. Please add SUPABASE_SERVICE_ROLE_KEY to your Secrets or run the admin update policy migration in Supabase.' });
+    }
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Unexpected error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.post('/api/verify-payment', async (req, res) => {
   try {
     const { payment_id } = req.body;
@@ -47,14 +112,41 @@ app.post('/api/verify-payment', async (req, res) => {
       const { user_id, plan } = JSON.parse(payment.external_reference);
       
       if (user_id) {
-        const { error } = await supabase.rpc('activate_subscription', {
-          p_user_id: user_id,
-          p_plan_type: plan || 'monthly'
-        });
+        let rpcError = null;
+        try {
+          const { error } = await supabase.rpc('activate_subscription', {
+            p_user_id: user_id,
+            p_plan_type: plan || 'monthly'
+          });
+          rpcError = error;
+        } catch (e) {
+          rpcError = e;
+        }
         
-        if (error) {
-          console.error('Verify payment RPC error:', error);
-          return res.status(500).json({ error: 'Failed to activate subscription' });
+        if (rpcError) {
+          console.error('Verify payment RPC error, falling back to direct update:', rpcError);
+          // Fallback to direct update using service role key
+          const { data, error: updateError } = await supabase
+            .from('profiles')
+            .update({
+              is_paid: true,
+              status: 'active',
+              credits: plan === 'yearly' ? 1200 : 100,
+              subscription_date: new Date().toISOString(),
+              // We can't easily calculate expires_at in JS with exact calendar months like Postgres interval,
+              // but we can approximate for the fallback.
+              expires_at: new Date(Date.now() + (plan === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString()
+            })
+            .eq('id', user_id)
+            .select();
+            
+          if (updateError) {
+             console.error('Fallback update error:', updateError);
+             return res.status(500).json({ error: 'Failed to activate subscription' });
+          } else if (!data || data.length === 0) {
+             console.error(`Fallback failed: RLS blocked update for user ${user_id}. Please add SUPABASE_SERVICE_ROLE_KEY to Secrets.`);
+             return res.status(500).json({ error: 'Failed to activate subscription due to database permissions' });
+          }
         }
         
         return res.json({ success: true, plan });
@@ -195,13 +287,38 @@ app.post('/api/webhook', async (req, res) => {
           
           if (user_id) {
             // Call Supabase RPC to activate subscription
-            const { error } = await supabase.rpc('activate_subscription', {
-              p_user_id: user_id,
-              p_plan_type: plan || 'monthly'
-            });
+            let rpcError = null;
+            try {
+              const { error } = await supabase.rpc('activate_subscription', {
+                p_user_id: user_id,
+                p_plan_type: plan || 'monthly'
+              });
+              rpcError = error;
+            } catch (e) {
+              rpcError = e;
+            }
             
-            if (error) {
-              console.error('Webhook RPC error:', error);
+            if (rpcError) {
+              console.error('Webhook RPC error, falling back to direct update:', rpcError);
+              const { data, error: updateError } = await supabase
+                .from('profiles')
+                .update({
+                  is_paid: true,
+                  status: 'active',
+                  credits: plan === 'yearly' ? 1200 : 100,
+                  subscription_date: new Date().toISOString(),
+                  expires_at: new Date(Date.now() + (plan === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString()
+                })
+                .eq('id', user_id)
+                .select();
+                
+              if (updateError) {
+                console.error('Webhook fallback update error:', updateError);
+              } else if (!data || data.length === 0) {
+                console.error(`Webhook fallback failed: RLS blocked update for user ${user_id}. Please add SUPABASE_SERVICE_ROLE_KEY to Secrets.`);
+              } else {
+                console.log(`Subscription activated via webhook fallback for user ${user_id} (${plan})`);
+              }
             } else {
               console.log(`Subscription activated via webhook for user ${user_id} (${plan})`);
             }
