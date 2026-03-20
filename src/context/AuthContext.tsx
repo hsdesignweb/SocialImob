@@ -62,6 +62,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Listen for profile changes
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel(`public:profiles:id=eq.${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Profile updated in real-time:', payload);
+          const data = payload.new;
+          const userEmail = data.email || user.email;
+          const userData: User & { expires_at?: string } = {
+            id: data.id,
+            email: userEmail,
+            name: data.name || '',
+            isAdmin: data.is_admin || (userEmail === 'hebert.ss@gmail.com'),
+            credits: data.credits || 0,
+            isPaid: data.is_paid || false,
+            subscriptionDate: data.subscription_date,
+            status: data.status || 'trial',
+            expires_at: data.expires_at
+          };
+          setUser(userData);
+          checkSubscriptionStatus(userData);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
   const fetchProfile = async (userId: string, email: string) => {
     try {
       const { data, error } = await supabase
@@ -82,10 +122,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           email: userEmail,
           name: data.name || '',
           isAdmin: data.is_admin || (userEmail === 'hebert.ss@gmail.com'),
-          credits: userEmail === 'hsdesignweb@gmail.com' ? 60 : data.credits,
-          isPaid: userEmail === 'hsdesignweb@gmail.com' ? true : data.is_paid,
+          credits: data.credits || 0,
+          isPaid: data.is_paid || false,
           subscriptionDate: data.subscription_date,
-          status: userEmail === 'hsdesignweb@gmail.com' ? 'active' : data.status,
+          status: data.status || 'trial',
           expires_at: data.expires_at
         };
         checkSubscriptionStatus(userData);
@@ -121,11 +161,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (isExpired) {
         // Subscription expired
-        const updatedUser = { ...userData, status: 'suspended' as const };
+        const updatedUser = { ...userData, status: 'expired' as const };
         setUser(updatedUser);
         
         // Update in DB
-        await supabase.from('profiles').update({ status: 'suspended' }).eq('id', userData.id);
+        await supabase.from('profiles').update({ status: 'expired' }).eq('id', userData.id);
         return;
       }
     }
@@ -224,7 +264,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const consumeCredit = async (): Promise<boolean> => {
     if (!user) return false;
     if (user.isAdmin) return true;
-    if (user.status !== 'active') return false;
+    if (user.status !== 'active' && user.status !== 'trial') return false;
 
     if (user.credits > 0) {
       const newCredits = user.credits - 1;

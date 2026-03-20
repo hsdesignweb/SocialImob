@@ -31,6 +31,37 @@ export default function AdminDashboard() {
   useEffect(() => {
     console.log("AdminDashboard mounted, fetching users...");
     fetchUsers();
+
+    // Subscribe to real-time changes
+    const channel = supabase
+      .channel('admin-profiles-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'profiles'
+        },
+        (payload) => {
+          console.log('Real-time update received:', payload);
+          if (payload.eventType === 'UPDATE') {
+            setUsers(currentUsers => 
+              currentUsers.map(user => 
+                user.id === payload.new.id ? { ...user, ...payload.new } : user
+              )
+            );
+          } else if (payload.eventType === 'INSERT') {
+            setUsers(currentUsers => [payload.new as any, ...currentUsers]);
+          } else if (payload.eventType === 'DELETE') {
+            setUsers(currentUsers => currentUsers.filter(user => user.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchUsers = async () => {
@@ -142,7 +173,12 @@ export default function AdminDashboard() {
     (u.email?.toLowerCase() || "").includes(searchTerm.toLowerCase())
   );
 
-  const totalCreditsUsed = users.reduce((acc, curr) => acc + (100 - (curr.credits || 0)), 0);
+  const totalCreditsUsed = users.reduce((acc, curr) => {
+    // Rough estimate of consumed credits, assuming 100 is the base.
+    // Avoids negative consumption if a user has more than 100 credits.
+    const consumed = Math.max(0, 100 - (curr.credits || 0));
+    return acc + consumed;
+  }, 0);
   const activePaidUsers = users.filter(u => u.is_paid).length;
 
   return (
@@ -222,12 +258,12 @@ export default function AdminDashboard() {
             <Table>
               <TableHeader>
                 <TableRow className="border-slate-100 hover:bg-transparent">
-                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6">Nome</TableHead>
-                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6">Email / WhatsApp</TableHead>
-                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6">Créditos</TableHead>
-                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6">Status</TableHead>
-                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6">Cadastro</TableHead>
-                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest p-6 text-right">Ações</TableHead>
+                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest px-4 py-4">Nome</TableHead>
+                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest px-4 py-4">Email / WhatsApp</TableHead>
+                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest px-4 py-4">Créditos</TableHead>
+                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest px-4 py-4">Status</TableHead>
+                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest px-4 py-4">Cadastro</TableHead>
+                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest px-4 py-4 text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -242,10 +278,10 @@ export default function AdminDashboard() {
                 ) : (
                   filteredUsers.map((user) => (
                     <TableRow key={user.id} className="border-slate-100 hover:bg-slate-50 transition-colors">
-                      <TableCell className="p-6">
+                      <TableCell className="px-4 py-4 min-w-[120px]">
                         {editingId === user.id ? (
                           <Input 
-                            className="h-10 bg-white border-slate-200 text-slate-900 rounded-2xl px-6" 
+                            className="h-10 w-full min-w-[100px] bg-white border-slate-200 text-slate-900 rounded-2xl px-3 text-sm" 
                             value={editForm.name} 
                             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                           />
@@ -253,21 +289,21 @@ export default function AdminDashboard() {
                           <span className="text-slate-900 font-bold">{user.name || 'Sem nome'}</span>
                         )}
                       </TableCell>
-                      <TableCell className="p-6 text-slate-500 font-medium">
+                      <TableCell className="px-4 py-4 text-slate-500 font-medium">
                         <div>{user.email}</div>
                         {user.phone && <div className="text-xs text-slate-400 mt-1">{user.phone}</div>}
                       </TableCell>
-                      <TableCell className="p-6">
+                      <TableCell className="px-4 py-4">
                         {editingId === user.id ? (
                           <Input 
                             type="number" 
-                            className="w-24 h-10 bg-white border-slate-200 text-slate-900 rounded-2xl px-4" 
+                            className="w-16 h-10 bg-white border-slate-200 text-slate-900 rounded-2xl px-2 text-center text-sm" 
                             value={editForm.credits} 
                             onChange={(e) => setEditForm({ ...editForm, credits: parseInt(e.target.value) || 0 })}
                           />
                         ) : (
                           <div className="flex items-center gap-3">
-                            <div className="w-20 h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="w-20 h-2 bg-slate-100 rounded-full overflow-hidden hidden sm:block">
                               <div 
                                 className="h-full bg-brand-primary shadow-lg shadow-brand-primary/20" 
                                 style={{ width: `${Math.min(100, Math.max(0, ((user.credits || 0) / 100) * 100))}%` }}
@@ -277,10 +313,10 @@ export default function AdminDashboard() {
                           </div>
                         )}
                       </TableCell>
-                      <TableCell className="p-6">
+                      <TableCell className="px-4 py-4">
                         {editingId === user.id ? (
                           <select 
-                            className="text-xs bg-white border border-slate-200 text-slate-900 rounded-2xl p-2 px-4 outline-none focus:border-brand-primary"
+                            className="text-xs w-24 bg-white border border-slate-200 text-slate-900 rounded-2xl p-2 px-2 outline-none focus:border-brand-primary"
                             value={editForm.status}
                             onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
                           >
@@ -290,7 +326,7 @@ export default function AdminDashboard() {
                             <option value="suspended">Suspenso</option>
                           </select>
                         ) : (
-                          <span className={`px-4 py-1 rounded-2xl text-[9px] font-black tracking-widest border ${
+                          <span className={`px-3 py-1 rounded-2xl text-[9px] font-black tracking-widest border ${
                             user.status === 'active' || user.status === 'paid'
                               ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
                               : user.status === 'suspended'
@@ -306,10 +342,10 @@ export default function AdminDashboard() {
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="p-6 text-xs text-slate-400 font-bold">
+                      <TableCell className="px-4 py-4 text-xs text-slate-400 font-bold whitespace-nowrap">
                         {user.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : 'N/A'}
                       </TableCell>
-                      <TableCell className="p-6 text-right">
+                      <TableCell className="px-4 py-4 text-right whitespace-nowrap">
                         {editingId === user.id ? (
                           <div className="flex justify-end gap-2">
                             <Button size="icon" variant="ghost" className="h-10 w-10 text-emerald-600 hover:bg-emerald-50 rounded-2xl" onClick={() => handleSave(user.id)} disabled={isSaving}>

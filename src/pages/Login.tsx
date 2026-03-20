@@ -25,6 +25,8 @@ export default function Login() {
              navigate('/payment', { state: { email } });
         } else if (result.status === 'suspended') {
              navigate('/payment?reason=suspended');
+        } else if (result.status === 'expired') {
+             navigate('/payment?reason=expired');
         } else {
              navigate('/app');
         }

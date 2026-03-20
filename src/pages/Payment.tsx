@@ -34,6 +34,8 @@ export default function Payment() {
     }
 
     if (reason === 'suspended') {
+      setError("Sua conta foi suspensa pelo administrador.");
+    } else if (reason === 'expired') {
       setError("Sua assinatura expirou. Renove para continuar acessando.");
     } else if (reason === 'trial_ended') {
       setError("Seus créditos gratuitos acabaram. Assine para continuar gerando campanhas.");
@@ -188,10 +190,10 @@ export default function Payment() {
         
         <div className="bg-slate-50 p-10 text-center border-b border-slate-100 relative z-10">
           <h1 className="text-3xl font-black text-slate-900 tracking-tighter mb-2">
-            {user?.status === 'suspended' ? 'Renovar Assinatura' : 'Escolha seu Plano'}
+            {user?.status === 'suspended' ? 'Conta Suspensa' : 'Escolha seu Plano'}
           </h1>
           <p className="text-slate-500 font-medium text-sm">
-            {user?.status === 'suspended' ? 'Reative seu acesso ao SocialImob Pro' : 'Libere seu acesso ao SocialImob Pro'}
+            {user?.status === 'suspended' ? 'Sua conta foi suspensa pelo administrador.' : 'Libere seu acesso ao SocialImob Pro'}
           </p>
         </div>
 
@@ -203,10 +205,27 @@ export default function Payment() {
             </div>
           )}
 
-          <div className="space-y-4">
-            {/* Yearly Plan (Highlighted) */}
-            <div 
-              onClick={() => setSelectedPlan('yearly')}
+          {user?.status === 'suspended' ? (
+            <div className="text-center space-y-6 py-8">
+              <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <AlertCircle className="w-10 h-10 text-red-500" />
+              </div>
+              <p className="text-slate-600 font-medium">
+                Sua conta encontra-se bloqueada no momento. Por favor, entre em contato com o suporte para mais informações.
+              </p>
+              <Button 
+                onClick={() => window.location.href = 'mailto:suporte@socialimob.com'}
+                className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold text-lg shadow-xl shadow-slate-900/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Contatar Suporte
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-4">
+                {/* Yearly Plan (Highlighted) */}
+              <div 
+                onClick={() => setSelectedPlan('yearly')}
               className={`relative cursor-pointer transition-all duration-200 rounded-3xl border-2 p-6 ${
                 selectedPlan === 'yearly' 
                   ? 'border-emerald-500 bg-emerald-50/30 shadow-lg shadow-emerald-500/10' 
@@ -334,18 +353,20 @@ export default function Payment() {
               <ShieldCheck className="w-3 h-3" />
               Ambiente 100% seguro • PIX ou Cartão em até 12x
             </p>
-            
-            <div className="mt-8 text-center">
-              <button 
-                onClick={() => {
-                  logout();
-                  navigate('/login');
-                }}
-                className="text-[10px] font-black tracking-widest text-slate-400 hover:text-brand-primary transition-colors flex items-center justify-center gap-2 mx-auto"
-              >
-                <ArrowLeft className="w-3 h-3" /> Voltar para o Login
-              </button>
-            </div>
+          </div>
+          </>
+          )}
+
+          <div className="mt-8 text-center">
+            <button 
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+              className="text-[10px] font-black tracking-widest text-slate-400 hover:text-brand-primary transition-colors flex items-center justify-center gap-2 mx-auto"
+            >
+              <ArrowLeft className="w-3 h-3" /> Voltar para o Login
+            </button>
           </div>
         </div>
       </div>
