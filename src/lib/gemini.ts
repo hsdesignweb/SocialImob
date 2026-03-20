@@ -45,7 +45,7 @@ export const generateJSON = async (prompt: string, schema?: any, systemInstructi
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const model = "gemini-3-flash-preview";
+        const model = "gemini-2.5-flash";
         
         // Detect URLs in prompt or parts to enable urlContext
         const urlRegex = /(https?:\/\/[^\s]+)/g;
