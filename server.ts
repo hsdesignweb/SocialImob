@@ -55,12 +55,20 @@ app.post('/api/admin/update-user', async (req, res) => {
     // Verify caller is admin using their token
     const { data: adminData, error: adminError } = await userSupabase
       .from('profiles')
-      .select('is_admin')
+      .select('is_admin, email')
       .eq('id', admin_id)
       .single();
 
-    if (adminError || !adminData?.is_admin) {
+    const isAdmin = adminData?.is_admin || adminData?.email === 'hebert.ss@gmail.com';
+
+    if (adminError || !isAdmin) {
       return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    // Auto-fix the is_admin flag for the designated admin if it's false
+    if (adminData?.email === 'hebert.ss@gmail.com' && !adminData?.is_admin) {
+      console.log('Auto-fixing is_admin flag for designated admin...');
+      await userSupabase.from('profiles').update({ is_admin: true }).eq('id', admin_id);
     }
 
     // Update user
@@ -70,19 +78,40 @@ app.post('/api/admin/update-user', async (req, res) => {
     console.log(`Updating user ${user_id}. Using service role key: ${hasServiceRoleKey}`);
     const clientToUse = hasServiceRoleKey ? supabase : userSupabase;
 
-    const { data, error: updateError } = await clientToUse
-      .from('profiles')
-      .update({
+    // Fetch current user to check if expires_at needs updating
+    const { data: currentUser } = await clientToUse.from('profiles').select('expires_at, status').eq('id', user_id).single();
+    
+    let updatePayload: any = {
         name,
         credits,
         status,
         is_paid
-      })
+    };
+
+    // If changing to active and the subscription is currently expired or in the past, extend it
+    if (status === 'active' && currentUser) {
+        const now = new Date();
+        const currentExpiresAt = currentUser.expires_at ? new Date(currentUser.expires_at) : null;
+        
+        if (!currentExpiresAt || currentExpiresAt < now) {
+            // Extend by 30 days
+            const newExpiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+            updatePayload.expires_at = newExpiresAt.toISOString();
+            console.log(`Extending subscription for user ${user_id} to ${updatePayload.expires_at}`);
+        }
+    }
+
+    const { data, error: updateError } = await clientToUse
+      .from('profiles')
+      .update(updatePayload)
       .eq('id', user_id)
       .select();
 
     if (updateError) {
       console.error('Error updating user:', updateError);
+      if (updateError.message?.includes('violates check constraint')) {
+        return res.status(400).json({ error: 'Erro de restrição no banco de dados. Por favor, execute a migração SQL mais recente no Supabase para permitir os novos status (Expirado, Trial).' });
+      }
       return res.status(500).json({ error: 'Failed to update user' });
     }
 

@@ -39,6 +39,8 @@ export default function Payment() {
       setError("Sua assinatura expirou. Renove para continuar acessando.");
     } else if (reason === 'trial_ended') {
       setError("Seus créditos gratuitos acabaram. Assine para continuar gerando campanhas.");
+    } else if (reason === 'pending_payment') {
+      setError("Sua conta está aguardando pagamento. Assine para liberar o acesso.");
     }
   }, [location]);
 

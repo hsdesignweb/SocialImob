@@ -110,46 +110,27 @@ export default function AdminDashboard() {
     try {
       const isPaid = editForm.status === 'active' || editForm.status === 'paid';
       
-      // Try RPC first
-      let rpcError = null;
-      try {
-        const { error } = await supabase.rpc('admin_update_user', {
-          p_user_id: userId,
-          p_name: editForm.name,
-          p_credits: editForm.credits,
-          p_status: editForm.status,
-          p_is_paid: isPaid
-        });
-        rpcError = error;
-      } catch (e) {
-        rpcError = e;
-      }
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch('/api/admin/update-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          admin_id: session?.user?.id,
+          user_id: userId,
+          name: editForm.name,
+          credits: editForm.credits,
+          status: editForm.status,
+          is_paid: isPaid
+        })
+      });
 
-      // If RPC fails (e.g., migration not applied), fallback to API endpoint
-      if (rpcError) {
-        console.log('RPC failed, falling back to API endpoint...', rpcError);
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        const response = await fetch('/api/admin/update-user', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session?.access_token}`
-          },
-          body: JSON.stringify({
-            admin_id: session?.user?.id,
-            user_id: userId,
-            name: editForm.name,
-            credits: editForm.credits,
-            status: editForm.status,
-            is_paid: isPaid
-          })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || 'Failed to update user via API');
-        }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to update user via API');
       }
       
       setUsers(users.map(u => u.id === userId ? { 
@@ -263,7 +244,7 @@ export default function AdminDashboard() {
                   <TableHead className="text-slate-400 font-black text-[10px] tracking-widest px-4 py-4">Créditos</TableHead>
                   <TableHead className="text-slate-400 font-black text-[10px] tracking-widest px-4 py-4">Status</TableHead>
                   <TableHead className="text-slate-400 font-black text-[10px] tracking-widest px-4 py-4">Cadastro</TableHead>
-                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest px-4 py-4 text-right">Ações</TableHead>
+                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest px-4 py-4 text-right sticky right-0 bg-slate-50 z-10">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -277,7 +258,7 @@ export default function AdminDashboard() {
                   </TableRow>
                 ) : (
                   filteredUsers.map((user) => (
-                    <TableRow key={user.id} className="border-slate-100 hover:bg-slate-50 transition-colors">
+                    <TableRow key={user.id} className="border-slate-100 hover:bg-slate-50 transition-colors group">
                       <TableCell className="px-4 py-4 min-w-[120px]">
                         {editingId === user.id ? (
                           <Input 
@@ -345,7 +326,7 @@ export default function AdminDashboard() {
                       <TableCell className="px-4 py-4 text-xs text-slate-400 font-bold whitespace-nowrap">
                         {user.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : 'N/A'}
                       </TableCell>
-                      <TableCell className="px-4 py-4 text-right whitespace-nowrap">
+                      <TableCell className="px-4 py-4 text-right whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50 transition-colors z-10 shadow-[-10px_0_15px_-10px_rgba(0,0,0,0.05)]">
                         {editingId === user.id ? (
                           <div className="flex justify-end gap-2">
                             <Button size="icon" variant="ghost" className="h-10 w-10 text-emerald-600 hover:bg-emerald-50 rounded-2xl" onClick={() => handleSave(user.id)} disabled={isSaving}>
