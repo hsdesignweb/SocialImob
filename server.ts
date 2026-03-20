@@ -307,61 +307,67 @@ app.post('/api/webhook', async (req, res) => {
     
     // We only care about payment updates
     if (type === 'payment' && data?.id) {
-      const paymentClient = new Payment(client);
-      const payment = await paymentClient.get({ id: data.id });
-      
-      if (payment.status === 'approved' && payment.external_reference) {
-        try {
-          const { user_id, plan, user_email } = JSON.parse(payment.external_reference);
-          
-          if (user_id) {
-            // Call Supabase RPC to activate subscription
-            let rpcError = null;
-            try {
-              const { error } = await supabase.rpc('activate_subscription', {
-                p_user_id: user_id,
-                p_plan_type: plan || 'monthly'
-              });
-              rpcError = error;
-            } catch (e) {
-              rpcError = e;
-            }
+      try {
+        const paymentClient = new Payment(client);
+        const payment = await paymentClient.get({ id: data.id });
+        
+        if (payment.status === 'approved' && payment.external_reference) {
+          try {
+            const { user_id, plan, user_email } = JSON.parse(payment.external_reference);
             
-            if (rpcError) {
-              console.error('Webhook RPC error, falling back to direct update:', rpcError);
-              const { data, error: updateError } = await supabase
-                .from('profiles')
-                .update({
-                  is_paid: true,
-                  status: 'active',
-                  credits: plan === 'yearly' ? 1200 : 100,
-                  subscription_date: new Date().toISOString(),
-                  expires_at: new Date(Date.now() + (plan === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString()
-                })
-                .eq('id', user_id)
-                .select();
-                
-              if (updateError) {
-                console.error('Webhook fallback update error:', updateError);
-              } else if (!data || data.length === 0) {
-                console.error(`Webhook fallback failed: RLS blocked update for user ${user_id}. Please add SUPABASE_SERVICE_ROLE_KEY to Secrets.`);
-              } else {
-                console.log(`Subscription activated via webhook fallback for user ${user_id} (${plan})`);
+            if (user_id) {
+              // Call Supabase RPC to activate subscription
+              let rpcError = null;
+              try {
+                const { error } = await supabase.rpc('activate_subscription', {
+                  p_user_id: user_id,
+                  p_plan_type: plan || 'monthly'
+                });
+                rpcError = error;
+              } catch (e) {
+                rpcError = e;
               }
-            } else {
-              console.log(`Subscription activated via webhook for user ${user_id} (${plan})`);
+              
+              if (rpcError) {
+                console.error('Webhook RPC error, falling back to direct update:', rpcError);
+                const { data: updateData, error: updateError } = await supabase
+                  .from('profiles')
+                  .update({
+                    is_paid: true,
+                    status: 'active',
+                    credits: plan === 'yearly' ? 1200 : 100,
+                    subscription_date: new Date().toISOString(),
+                    expires_at: new Date(Date.now() + (plan === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString()
+                  })
+                  .eq('id', user_id)
+                  .select();
+                  
+                if (updateError) {
+                  console.error('Webhook fallback update error:', updateError);
+                } else if (!updateData || updateData.length === 0) {
+                  console.error(`Webhook fallback failed: RLS blocked update for user ${user_id}. Please add SUPABASE_SERVICE_ROLE_KEY to Secrets.`);
+                } else {
+                  console.log(`Subscription activated via webhook fallback for user ${user_id} (${plan})`);
+                }
+              } else {
+                console.log(`Subscription activated via webhook for user ${user_id} (${plan})`);
+              }
             }
+          } catch (parseError) {
+            console.error('Error parsing external_reference:', parseError);
           }
-        } catch (parseError) {
-          console.error('Error parsing external_reference:', parseError);
         }
+      } catch (mpError) {
+        console.error('Error fetching payment from Mercado Pago (this is normal during simulation):', mpError);
+        // We still want to return 200 OK so MP doesn't retry
       }
     }
     
-    // Always return 200 OK to Mercado Pago
+    // Always return 200 OK to Mercado Pago so they know we received it
     res.status(200).send('OK');
   } catch (error) {
     console.error('Webhook error:', error);
+    // Only return 500 if there's a catastrophic failure in our server logic
     res.status(500).send('Error processing webhook');
   }
 });
