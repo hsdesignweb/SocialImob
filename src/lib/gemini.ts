@@ -61,17 +61,28 @@ export const generateJSON = async (prompt: string, schema?: any, systemInstructi
           }
         ];
   
+        const config: any = {
+          systemInstruction: systemInstruction || "Você é um assistente especializado em marketing imobiliário. Responda sempre em Português do Brasil. Se um link for fornecido, analise o conteúdo da página para extrair informações reais sobre o imóvel.",
+          maxOutputTokens: 8192,
+          temperature: 0.7,
+        };
+
+        if (hasUrls) {
+          config.tools = [{ urlContext: {} }];
+          // When using tools, responseMimeType 'application/json' is unsupported.
+          // So we instruct the model to return JSON matching the schema.
+          contents[0].parts.push({
+            text: `\n\nCRITICAL INSTRUCTION: You MUST return ONLY a valid JSON object. Do not include any markdown formatting, explanations, or other text. The JSON object MUST strictly follow this schema:\n${JSON.stringify(schema, null, 2)}`
+          });
+        } else {
+          config.responseMimeType = "application/json";
+          config.responseSchema = schema;
+        }
+
         const response = await client.models.generateContent({
           model,
           contents,
-          config: {
-              responseMimeType: "application/json",
-              responseSchema: schema,
-              systemInstruction: systemInstruction || "Você é um assistente especializado em marketing imobiliário. Responda sempre em Português do Brasil. Se um link for fornecido, analise o conteúdo da página para extrair informações reais sobre o imóvel.",
-              maxOutputTokens: 8192,
-              temperature: 0.7,
-              tools: hasUrls ? [{ urlContext: {} }] : undefined
-          }
+          config
         });
     
         if (!response.text) {
