@@ -48,6 +48,7 @@ export default function Planner() {
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingPost, setEditingPost] = useState<Partial<PlannerPost> | null>(null);
+  const [postToDelete, setPostToDelete] = useState<string | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -137,8 +138,8 @@ export default function Planner() {
   const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
 
-  const selectedPost = useMemo(() => {
-    return posts.find(p => p.date === selectedDate);
+  const selectedPosts = useMemo(() => {
+    return posts.filter(p => p.date === selectedDate);
   }, [posts, selectedDate]);
 
   const selectedImportantDate = useMemo(() => {
@@ -174,7 +175,7 @@ export default function Planner() {
     try {
       const payload = {
         ...editingPost,
-        date: selectedDate,
+        date: editingPost.date || selectedDate,
         completed: editingPost.completed || 0
       };
 
@@ -193,15 +194,21 @@ export default function Planner() {
     }
   };
 
-  const handleDeletePost = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este post?')) return;
+  const confirmDeletePost = async () => {
+    if (!isAdmin || !postToDelete) return;
     try {
-      const { error } = await supabase.from('posts').delete().eq('id', id);
+      const { error } = await supabase.from('posts').delete().eq('id', postToDelete);
       if (error) throw error;
+      setPostToDelete(null);
       fetchData();
     } catch (error) {
       console.error('Error deleting post:', error);
     }
+  };
+
+  const handleDeletePost = (id: string) => {
+    if (!isAdmin) return;
+    setPostToDelete(id);
   };
 
   const copyToClipboard = (text: string, field: string) => {
@@ -254,7 +261,7 @@ export default function Planner() {
                   if (!day) return <div key={`pad-${i}`} />;
                   
                   const dateStr = day.toISOString().split('T')[0];
-                  const hasPost = posts.find(p => p.date === dateStr);
+                  const dayPosts = posts.filter(p => p.date === dateStr);
                   const isSelected = selectedDate === dateStr;
                   const isToday = new Date().toISOString().split('T')[0] === dateStr;
 
@@ -269,8 +276,12 @@ export default function Planner() {
                       `}
                     >
                       {day.getDate()}
-                      {hasPost && (
-                        <div className={`absolute -top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-blue-500`} />
+                      {dayPosts.length > 0 && (
+                        <div className="absolute -top-1 left-1/2 -translate-x-1/2 flex gap-0.5">
+                          {dayPosts.slice(0, 2).map((_, idx) => (
+                            <div key={idx} className={`w-1.5 h-1.5 rounded-full bg-blue-500`} />
+                          ))}
+                        </div>
                       )}
                     </button>
                   );
@@ -313,115 +324,134 @@ export default function Planner() {
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-12"
               >
-                {/* Post Header */}
-                <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                  <div className="space-y-4">
-                    <div className="text-sm font-black text-blue-600 tracking-wider">
-                      {new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                    </div>
-                    <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-[1.1] max-w-2xl">
-                      {selectedPost?.title || "Nenhum post planejado"}
-                    </h2>
-                  </div>
-                </div>
+                {selectedPosts.length > 0 ? (
+                  <div className="space-y-16">
+                    {selectedPosts.map((post, index) => (
+                      <div key={post.id} className="space-y-8">
+                        {/* Post Header */}
+                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                          <div className="space-y-4 w-full">
+                            {index === 0 && (
+                              <div className="text-sm font-black text-blue-600 tracking-wider">
+                                {new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                              </div>
+                            )}
+                            <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-[1.1] max-w-2xl">
+                              {post.title}
+                            </h2>
+                            
+                            {/* Discrete Info Bar */}
+                            <div className="flex flex-wrap items-center gap-3 pt-2">
+                              <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg">
+                                <CalendarIcon className="w-4 h-4 text-slate-400" />
+                                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Formato: {post.format}</span>
+                              </div>
+                              
+                              {post.media_link ? (
+                                <div className="flex flex-wrap gap-2">
+                                  {post.media_link.split('\n').filter(link => link.trim() !== '').map((link, idx) => (
+                                    <a 
+                                      key={idx}
+                                      href={link.trim()}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors"
+                                    >
+                                      <Camera className="w-4 h-4" />
+                                      Acessar Mídia {idx + 1}
+                                    </a>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg">
+                                  <Camera className="w-4 h-4 text-slate-400" />
+                                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Utilize fotos do seu acervo</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
 
-                {selectedPost ? (
-                  <div className="grid lg:grid-cols-[1fr_320px] gap-12 items-start">
-                    <div className="space-y-8">
-                      {/* Caption Card */}
-                      <Card className="border-slate-100 shadow-sm rounded-[2rem] overflow-hidden">
-                        <CardHeader className="p-5 md:p-8 border-b border-slate-50 flex flex-row items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <MessageCircle className="w-5 h-5 text-blue-500" />
-                            <CardTitle className="text-lg font-black text-slate-900">Legenda do Post</CardTitle>
-                          </div>
-                          <div 
-                            onClick={() => copyToClipboard(formatText(selectedPost.caption), 'caption')}
-                            className="flex items-center text-slate-400 font-bold text-xs gap-2 cursor-pointer hover:text-slate-600 transition-colors"
-                          >
-                            {copiedField === 'caption' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                            Copiar
-                          </div>
-                        </CardHeader>
-                        <CardContent className="p-5 md:p-6 pt-0">
-                          <div className="p-5 md:p-8 bg-slate-50/80 rounded-2xl md:rounded-3xl border border-slate-100 text-slate-900 font-medium leading-relaxed whitespace-pre-wrap text-sm">
-                            {formatText(selectedPost.caption)}
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      {/* Visual Direction Card */}
-                      <Card className="border-slate-100 shadow-sm rounded-[2rem] overflow-hidden">
-                        <CardHeader className="p-5 md:p-8 border-b border-slate-50 flex flex-row items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Lightbulb className="w-5 h-5 text-amber-500" />
-                            <CardTitle className="text-lg font-black text-slate-900">Direcionamento Visual</CardTitle>
-                          </div>
-                          <div 
-                            onClick={() => copyToClipboard(formatText(selectedPost.script), 'script')}
-                            className="flex items-center text-slate-400 font-bold text-xs gap-2 cursor-pointer hover:text-slate-600 transition-colors"
-                          >
-                            {copiedField === 'script' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                            Copiar
-                          </div>
-                        </CardHeader>
-                        <CardContent className="p-5 md:p-6 pt-0">
-                          <div className="p-5 md:p-8 bg-yellow-50/50 rounded-2xl md:rounded-3xl border border-yellow-100/50 text-slate-900 font-medium text-sm leading-relaxed whitespace-pre-wrap">
-                            {formatText(selectedPost.script)}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    {/* Right Column */}
-                    <div className="space-y-8">
-                      {/* Suggested Format */}
-                      <Card className="border-slate-100 shadow-sm rounded-3xl md:rounded-[2.5rem] p-6 md:p-8 space-y-6">
-                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Formato Sugerido</div>
-                        <div className="flex items-center gap-5">
-                          <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
-                            <CalendarIcon className="w-7 h-7" />
-                          </div>
-                          <div>
-                            <div className="text-xl font-black text-slate-900">Arte</div>
-                            <div className="text-xs font-bold text-slate-400">Quadrado (1:1)</div>
-                          </div>
+                          {isAdmin && (
+                            <div className="flex gap-2 shrink-0">
+                              <Button 
+                                variant="outline"
+                                onClick={() => { setEditingPost(post); setIsEditing(true); }}
+                                className="h-10 px-4 border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50"
+                              >
+                                <Edit2 className="w-4 h-4 mr-2" /> Editar
+                              </Button>
+                              <Button 
+                                variant="outline"
+                                onClick={() => handleDeletePost(post.id)}
+                                className="h-10 w-10 p-0 border-slate-200 text-red-400 hover:text-red-600 hover:bg-red-50 font-bold rounded-xl flex items-center justify-center"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
-                      </Card>
 
-                      {/* Campaign Files */}
-                      <Card className="bg-slate-900 text-white rounded-3xl md:rounded-[2.5rem] p-6 md:p-10 space-y-8">
-                        <div className="space-y-3">
-                          <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Arquivos da Campanha</div>
-                          <p className="text-sm font-medium text-slate-400 leading-relaxed">
-                            Utilize fotos do seu próprio acervo ou visitas.
-                          </p>
+                        <div className="space-y-8 pt-4">
+                          {/* Caption Card */}
+                          <Card className="border-slate-100 shadow-sm rounded-[2rem] overflow-hidden">
+                            <CardHeader className="p-5 md:p-8 border-b border-slate-50 flex flex-row items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <MessageCircle className="w-5 h-5 text-blue-500" />
+                                <CardTitle className="text-lg font-black text-slate-900">Legenda do Post</CardTitle>
+                              </div>
+                              <div 
+                                onClick={() => copyToClipboard(formatText(post.caption), 'caption')}
+                                className="flex items-center text-slate-400 font-bold text-xs gap-2 cursor-pointer hover:text-slate-600 transition-colors"
+                              >
+                                {copiedField === 'caption' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                Copiar
+                              </div>
+                            </CardHeader>
+                            <CardContent className="p-5 md:p-6 pt-0">
+                              <div className="p-5 md:p-8 bg-slate-50/80 rounded-2xl md:rounded-3xl border border-slate-100 text-slate-900 font-medium leading-relaxed whitespace-pre-wrap text-sm">
+                                {formatText(post.caption)}
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          {/* Visual Direction Card */}
+                          <Card className="border-slate-100 shadow-sm rounded-[2rem] overflow-hidden">
+                            <CardHeader className="p-5 md:p-8 border-b border-slate-50 flex flex-row items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <Lightbulb className="w-5 h-5 text-amber-500" />
+                                <CardTitle className="text-lg font-black text-slate-900">Direcionamento Visual</CardTitle>
+                              </div>
+                              <div 
+                                onClick={() => copyToClipboard(formatText(post.script), 'script')}
+                                className="flex items-center text-slate-400 font-bold text-xs gap-2 cursor-pointer hover:text-slate-600 transition-colors"
+                              >
+                                {copiedField === 'script' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                Copiar
+                              </div>
+                            </CardHeader>
+                            <CardContent className="p-5 md:p-6 pt-0">
+                              <div className="p-5 md:p-8 bg-yellow-50/50 rounded-2xl md:rounded-3xl border border-yellow-100/50 text-slate-900 font-medium text-sm leading-relaxed whitespace-pre-wrap">
+                                {formatText(post.script)}
+                              </div>
+                            </CardContent>
+                          </Card>
                         </div>
-                        <Button className="w-full h-16 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-2xl font-black flex items-center justify-center gap-4 transition-all">
-                          <Camera className="w-6 h-6" />
-                          Usar mídia própria
+                      </div>
+                    ))}
+                    
+                    {isAdmin && selectedPosts.length < 2 && (
+                      <div className="pt-8 border-t border-slate-100 flex justify-center">
+                        <Button 
+                          onClick={() => {
+                            setEditingPost({ title: '', format: 'Stories', script: '', caption: '', date: selectedDate, media_link: '' });
+                            setIsEditing(true);
+                          }}
+                          className="bg-slate-900 hover:bg-slate-800 text-white px-8 h-14 rounded-2xl font-black shadow-xl"
+                        >
+                          <Plus className="w-5 h-5 mr-2" /> Adicionar outra opção para este dia
                         </Button>
-                      </Card>
-
-                      {isAdmin && (
-                        <div className="flex gap-3">
-                          <Button 
-                            variant="outline"
-                            onClick={() => { setEditingPost(selectedPost); setIsEditing(true); }}
-                            className="flex-1 h-14 border-slate-100 text-slate-400 font-bold rounded-2xl hover:bg-slate-50"
-                          >
-                            <Edit2 className="w-4 h-4 mr-2" /> Editar
-                          </Button>
-                          <Button 
-                            variant="outline"
-                            onClick={() => handleDeletePost(selectedPost.id)}
-                            className="h-14 border-slate-100 text-red-300 hover:text-red-500 hover:bg-red-50 font-bold rounded-2xl"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-32 text-center space-y-8">
@@ -481,13 +511,12 @@ export default function Planner() {
               <div className="p-6 md:p-8 space-y-6 max-h-[70vh] overflow-y-auto">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Título</label>
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Data de Publicação</label>
                     <input 
-                      type="text" 
-                      value={editingPost?.title || ''}
-                      onChange={e => setEditingPost({ ...editingPost, title: e.target.value })}
+                      type="date" 
+                      value={editingPost?.date || selectedDate}
+                      onChange={e => setEditingPost({ ...editingPost, date: e.target.value })}
                       className="w-full h-12 px-4 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none transition-all font-medium"
-                      placeholder="Ex: Tour pelo Imóvel"
                     />
                   </div>
                   <div className="space-y-2">
@@ -500,9 +529,30 @@ export default function Planner() {
                       <option value="Stories">Stories</option>
                       <option value="Reels">Reels</option>
                       <option value="Feed">Feed / Carrossel</option>
-                      <option value="WhatsApp">WhatsApp</option>
+                      <option value="Imagem">Imagem</option>
                     </select>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Título</label>
+                  <input 
+                    type="text" 
+                    value={editingPost?.title || ''}
+                    onChange={e => setEditingPost({ ...editingPost, title: e.target.value })}
+                    className="w-full h-12 px-4 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none transition-all font-medium"
+                    placeholder="Ex: Tour pelo Imóvel"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Links de Imagens / Mídia (Um por linha)</label>
+                  <textarea 
+                    value={editingPost?.media_link || ''}
+                    onChange={e => setEditingPost({ ...editingPost, media_link: e.target.value })}
+                    className="w-full h-24 p-4 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none transition-all font-medium resize-none"
+                    placeholder="Cole os links do Google Drive, Canva, etc. (Um por linha)"
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -538,6 +588,52 @@ export default function Planner() {
                   className="flex-1 h-14 bg-brand-primary hover:bg-blue-700 text-white rounded-xl font-black shadow-lg shadow-brand-primary/20"
                 >
                   Salvar Post
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {postToDelete && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setPostToDelete(null)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-white rounded-[2rem] shadow-2xl overflow-hidden p-8 text-center space-y-6"
+            >
+              <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto">
+                <Trash2 className="w-8 h-8" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black text-slate-900">Excluir Post?</h3>
+                <p className="text-slate-500 font-medium">
+                  Tem certeza que deseja excluir este post? Esta ação não pode ser desfeita.
+                </p>
+              </div>
+              <div className="flex gap-4 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setPostToDelete(null)}
+                  className="flex-1 h-14 rounded-xl font-black"
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={confirmDeletePost}
+                  className="flex-1 h-14 bg-red-500 hover:bg-red-600 text-white rounded-xl font-black shadow-lg shadow-red-500/20"
+                >
+                  Excluir
                 </Button>
               </div>
             </motion.div>

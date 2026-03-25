@@ -11,7 +11,7 @@ export interface User {
   credits: number;
   isPaid?: boolean;
   subscriptionDate?: string; // ISO string
-  status?: 'active' | 'suspended' | 'pending_payment' | 'trial';
+  status?: 'active' | 'suspended' | 'pending_payment' | 'trial' | 'expired';
 }
 
 interface AuthContextType {
