@@ -99,39 +99,24 @@ export default function InputStep() {
         OBJETIVOS: ${goals.join(", ")}
 
         TAREFAS DE GERAÇÃO (Apenas se isValidProperty for true):
-        1. EXTRAÇÃO: Extraia tipo, localização, preço e características.
-        2. ESTRATÉGIA: Defina ângulo de venda, persona, abordagem e narrativa.
-        3. REEL: Crie um roteiro viral. Para os ganchos, você DEVE adaptar e usar EXATAMENTE um destes 5 modelos como base: 
-           1. "Você não vai acreditar no que eu acabei de encontrar..."
-           2. "O segredo para morar bem em [Localização]..."
-           3. "Pare de procurar imóvel agora mesmo!"
-           4. "O investimento que você estava esperando..."
-           5. "Conheça o imóvel dos seus sonhos em 60 segundos."
-           Gere 5 variações baseadas nesses modelos, corpo do texto com quebras de linha, CTA e direção de cenas.
-        4. PLANNER: Crie um plano de 7 dias com TEXTOS COMPLETOS e humanizados.
-        5. TRÁFEGO E FUNIL: Gere 3 mensagens de abordagem, 3 de follow-up e 3 de encerramento. Devem ser textos naturais, sem parecer robótico.
-        6. MULTIPLICADOR 10x (Metodologia 1 Ideia → 10 Conteúdos): 
-           Objetivo: Transformar uma única ideia central em 10 conteúdos diferentes, mantendo o mesmo tema, mas variando ângulo, narrativa e formato.
-           A lógica é NÃO mudar o assunto, apenas mudar a forma de comunicar para que a mensagem seja repetida sem parecer repetitiva.
-           Gere EXATAMENTE 10 itens no array "derivedContent10", um para cada formato abaixo:
-           - Lista: 5 pontos cruciais ou curiosidades sobre o imóvel.
-           - Storytelling: Uma pequena narrativa realista sobre o dia a dia ou a conquista deste imóvel.
-           - Posicionamento: Uma opinião forte e profissional sobre por que este imóvel é a melhor escolha.
-           - Explicação técnica: Visão de especialista sobre acabamento, localização ou potencial de valorização.
-           - Motivacional: Mensagem inspiradora sobre mudança de vida e realização de sonhos.
-           - POV (Ponto de Vista): Texto que coloca o leitor na cena (Ex: "POV: Você recebendo os amigos nesse terraço...").
-           - Análise: Reflexão estratégica sobre o custo-benefício ou o momento do mercado para este imóvel.
-           - Tutorial: Guia prático (Ex: 3 passos para visitar, como garantir essa unidade).
-           - Conexão: Foco no lado emocional, bem-estar, família e segurança.
-           - Tendência: Por que este imóvel representa o futuro do morar ou investir na região.
+        Gere uma estratégia de conteúdo completa com os seguintes tópicos. 
+        IMPORTANTE: Para TODOS os conteúdos gerados (itens 3 a 10), inclua sempre uma Chamada para Ação (CTA) persuasiva no final, incentivando o cliente a entrar em contato, agendar uma visita ou comentar.
+        
+        1. Introdução/Estratégia de venda: Analise o que foi enviado e una com uma breve pesquisa para entregar uma perspectiva de venda.
+        2. Conteúdo Principal: 5 ideias de ganchos de acordo com a estrutura de um reel que funciona.
+        3. Conteúdo sobre Diferencial: Script de um conteúdo sobre o principal diferencial listado sobre o imóvel. (Inclua CTA)
+        4. Sobre o Condomínio: Pesquise sobre o que foi informado e gere um script de um conteúdo sobre o condomínio (caso seja relevante), destacando os pontos fortes e itens de lazer. (Inclua CTA)
+        5. Lista: Pesquise sobre o que foi listado e gere um script de um conteúdo em lista sobre o imóvel. Exemplo: "esses são os 5 pontos que vão te fazer querer morar nesse imóvel". (Inclua CTA)
+        6. Posicionamento: Script de um conteúdo onde o corretor use sua experiência para opinar sobre a oportunidade de ter este imóvel (estilo tela verde). (Inclua CTA)
+        7. Explicação técnica: Script de um conteúdo para destacar acabamentos e outros diferenciais do imóvel. (Inclua CTA)
+        8. POV: Vídeo básico de tour enquanto um POV escrito na tela diz algo como: "POV: Agora você mora no...". (Inclua CTA)
+        9. Notícia: Com o objetivo de gerar curiosidade, pense em um script de um conteúdo que transforme o imóvel em notícia ou algo positivo sobre a região ou sobre o tipo de imóvel em questão. (Inclua CTA)
+        10. Estilo de vida: Pensando no ego, conteúdo sobre o estilo de vida do perfil de cliente em potencial do imóvel. Script de um conteúdo para quem deseja morar ou investir no imóvel trabalhar pilares como merecimento, vencer na vida, qualidade e outros gatilhos de pertencimento. (Inclua CTA)
 
         REGRAS CRÍTICAS DE FORMATAÇÃO:
         - Responda SEMPRE em Português do Brasil (PT-BR).
         - NUNCA use CAPSLOCK (exceto em siglas). Use capitalização normal (Sentença ou Título).
         - É PROIBIDO gerar textos inteiros em letras maiúsculas.
-        - Use quebras de linha (\n) no corpo do script do Reel e no Planner para legibilidade.
-        - Nos GANCHOS do Reel, NÃO use quebras de linha, mantenha em uma única linha.
-        - Use negrito (**texto**) para enfatizar pontos cruciais.
         - Linguagem persuasiva, humanizada e estratégica.
       `;
 
@@ -140,73 +125,29 @@ export default function InputStep() {
         properties: {
           isValidProperty: { type: Type.BOOLEAN },
           errorMessage: { type: Type.STRING },
-          extractedData: {
-            type: Type.OBJECT,
-            properties: {
-              type: { type: Type.STRING },
-              location: { type: Type.STRING },
-              price: { type: Type.STRING },
-              features: { type: Type.ARRAY, items: { type: Type.STRING } }
-            }
-          },
           strategy: {
             type: Type.OBJECT,
             properties: {
-              angle: { type: Type.STRING },
-              persona: { type: Type.STRING },
-              approach: { type: Type.STRING },
-              narrative: { type: Type.STRING },
-              sequence: { type: Type.ARRAY, items: { type: Type.STRING } }
-            }
-          },
-          reel: {
-            type: Type.OBJECT,
-            properties: {
-              hooks: { type: Type.ARRAY, items: { type: Type.STRING } },
-              body: { type: Type.STRING },
-              cta: { type: Type.STRING },
-              scenes: { type: Type.STRING }
-            }
-          },
-          planner: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                day: { type: Type.INTEGER },
-                title: { type: Type.STRING },
-                topic: { type: Type.STRING },
-                content: { type: Type.STRING }
-              }
-            }
-          },
-          funnelMessages: {
-            type: Type.OBJECT,
-            properties: {
-              abordagem: { type: Type.ARRAY, items: { type: Type.STRING } },
-              followup: { type: Type.ARRAY, items: { type: Type.STRING } },
-              encerramento: { type: Type.ARRAY, items: { type: Type.STRING } }
-            }
-          },
-          traffic: {
-            type: Type.OBJECT,
-            properties: {
-              segmentation: { type: Type.STRING },
-              creativeAdvice: { type: Type.STRING }
-            }
-          },
-          derivedContent10: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                type: { type: Type.STRING },
-                content: { type: Type.STRING }
-              }
+              introducao: { type: Type.STRING },
+              conteudoPrincipal: {
+                type: Type.OBJECT,
+                properties: {
+                  ganchos: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  estruturaReel: { type: Type.STRING }
+                }
+              },
+              diferencial: { type: Type.STRING },
+              condominio: { type: Type.STRING },
+              lista: { type: Type.STRING },
+              posicionamento: { type: Type.STRING },
+              explicacaoTecnica: { type: Type.STRING },
+              pov: { type: Type.STRING },
+              noticia: { type: Type.STRING },
+              estiloDeVida: { type: Type.STRING }
             }
           }
         },
-        required: ["isValidProperty", "extractedData", "strategy", "reel", "planner", "funnelMessages", "derivedContent10", "traffic"]
+        required: ["isValidProperty", "strategy"]
       };
 
       const fullResult = await generateJSON(unifiedPrompt, unifiedSchema);
@@ -220,7 +161,7 @@ export default function InputStep() {
       }
 
       // 3. Consume credit ONLY after successful validation and generation
-      const creditConsumed = consumeCredit();
+      const creditConsumed = await consumeCredit(100);
       if (!creditConsumed) {
         throw new Error("Erro ao processar créditos.");
       }
@@ -228,58 +169,35 @@ export default function InputStep() {
       // 4. Process and Save Results
       const propertyData = {
         description: inputText,
-        ...fullResult.extractedData,
         buyerProfile: buyerProfiles.join(", "),
         goal: goals.join(", ")
       };
       updatePropertyData(propertyData);
 
       const finalStrategy = {
-        angle: fixCase(fullResult.strategy?.angle || ""),
-        persona: fixCase(fullResult.strategy?.persona || ""),
-        approach: fixCase(fullResult.strategy?.approach || ""),
-        narrative: fixCase(fullResult.strategy?.narrative || ""),
-        sequence: (fullResult.strategy?.sequence || []).map(fixCase)
-      };
-
-      const finalCampaign = {
-        reelScript: {
-          hooks: (fullResult.reel?.hooks || []).map((h: string) => fixCase(h.replace(/\n/g, " ").trim())),
-          body: fixCase(fullResult.reel?.body || ""),
-          cta: fixCase(fullResult.reel?.cta || ""),
-          scenes: fixCase(fullResult.reel?.scenes || "")
+        introducao: fixCase(fullResult.strategy?.introducao || ""),
+        conteudoPrincipal: {
+          ganchos: (fullResult.strategy?.conteudoPrincipal?.ganchos || []).map((h: string) => fixCase(h)),
+          estruturaReel: fixCase(fullResult.strategy?.conteudoPrincipal?.estruturaReel || "")
         },
-        funnelMessages: {
-          abordagem: (fullResult.funnelMessages?.abordagem || []).map(fixCase),
-          followup: (fullResult.funnelMessages?.followup || []).map(fixCase),
-          encerramento: (fullResult.funnelMessages?.encerramento || []).map(fixCase)
-        },
-        planner: (fullResult.planner || []).map((p: any) => ({
-          ...p,
-          title: fixCase(p.title || ""),
-          topic: fixCase(p.topic || ""),
-          content: fixCase(p.content || "")
-        })),
-        traffic: fullResult.traffic || { creatives: {}, segmentation: "" },
-        executionGuide: { 
-          creativeTips: [fixCase(fullResult.traffic?.creativeAdvice || "")], 
-          publishingAdvice: "Siga o cronograma de 7 dias.", 
-          engagementStrategy: "Responda todos os comentários nos primeiros 30 minutos." 
-        },
-        derivedContent10: (fullResult.derivedContent10 || []).map((d: any) => ({
-          type: fixCase(d.type || ""),
-          content: fixCase(d.content || "")
-        }))
+        diferencial: fixCase(fullResult.strategy?.diferencial || ""),
+        condominio: fixCase(fullResult.strategy?.condominio || ""),
+        lista: fixCase(fullResult.strategy?.lista || ""),
+        posicionamento: fixCase(fullResult.strategy?.posicionamento || ""),
+        explicacaoTecnica: fixCase(fullResult.strategy?.explicacaoTecnica || ""),
+        pov: fixCase(fullResult.strategy?.pov || ""),
+        noticia: fixCase(fullResult.strategy?.noticia || ""),
+        estiloDeVida: fixCase(fullResult.strategy?.estiloDeVida || "")
       };
 
       setStrategy(finalStrategy);
-      setCampaign(finalCampaign);
+      setCampaign(null as any); // Clear old campaign data
 
       // Save to history
       addToHistory({
         propertyData,
         strategy: finalStrategy,
-        campaign: finalCampaign
+        campaign: null as any
       });
 
       navigate("/app/results");
@@ -294,9 +212,19 @@ export default function InputStep() {
 
   return (
     <div className="space-y-8 pb-32">
-      <div className="space-y-2">
-        <h2 className="text-3xl font-black text-slate-900 tracking-tight">O que vamos vender?</h2>
-        <p className="text-slate-500 font-medium">Você pode descrever seu imóvel ou colar o link do site ou portal</p>
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+        <div className="space-y-2">
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">O que vamos vender?</h2>
+          <p className="text-slate-500 font-medium">Você pode descrever seu imóvel ou colar o link do site ou portal</p>
+        </div>
+        <Button 
+          variant="outline" 
+          onClick={() => navigate('/app/history')}
+          className="flex items-center gap-2 bg-white border-slate-200 text-slate-600 hover:text-brand-primary hover:border-brand-primary/30 hover:bg-brand-primary/5 w-full md:w-auto rounded-xl shadow-sm"
+        >
+          <History className="w-4 h-4" />
+          Estratégias Geradas
+        </Button>
       </div>
 
       <div className="space-y-8">

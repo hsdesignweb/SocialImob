@@ -27,6 +27,8 @@ export default function Login() {
              navigate('/payment?reason=suspended');
         } else if (result.status === 'expired') {
              navigate('/payment?reason=expired');
+        } else if (!result.isPaid && result.status !== 'trial' && result.status !== 'active') {
+             navigate('/payment');
         } else {
              navigate('/app');
         }
@@ -54,10 +56,12 @@ export default function Login() {
         className="w-full max-w-md z-10"
       >
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-brand-primary rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-sm mx-auto mb-6">
-            S
-          </div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Bem-vindo ao SocialImob</h1>
+          <img 
+            src="https://hebertsilva.com/wp-content/uploads/2026/03/logo-social-imob.png" 
+            alt="SocialImob Logo" 
+            className="h-12 object-contain mx-auto mb-6"
+            referrerPolicy="no-referrer"
+          />
           <p className="text-slate-500 font-medium">Entre para gerenciar suas campanhas</p>
         </div>
 

@@ -53,7 +53,7 @@ export default function Register() {
       if (result.success) {
         setSuccessMessage('Conta criada com sucesso! Redirecionando...');
         setTimeout(() => {
-          navigate('/app');
+          navigate('/payment');
         }, 2000);
       } else {
         setError(result.error || 'Erro ao criar conta.');
@@ -79,9 +79,12 @@ export default function Register() {
         className="w-full max-w-md z-10"
       >
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-brand-primary rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-brand-primary/20 mx-auto mb-6">
-            S
-          </div>
+          <img 
+            src="https://hebertsilva.com/wp-content/uploads/2026/03/logo-social-imob.png" 
+            alt="SocialImob Logo" 
+            className="h-12 object-contain mx-auto mb-6"
+            referrerPolicy="no-referrer"
+          />
           <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
             Crie sua conta
           </h1>

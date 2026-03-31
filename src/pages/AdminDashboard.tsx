@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Users, CreditCard, Activity, Search, ArrowLeft, Edit2, Check, X, Trash2 } from "lucide-react";
+import { Users, CreditCard, Activity, Search, ArrowLeft, Edit2, Check, X, Trash2, GraduationCap } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { AdminLessons } from "@/components/admin/AdminLessons";
 
 interface UserMetric {
   id: string;
@@ -16,6 +17,7 @@ interface UserMetric {
   status: string;
   is_paid: boolean;
   created_at: string;
+  expires_at?: string;
 }
 
 export default function AdminDashboard() {
@@ -27,6 +29,9 @@ export default function AdminDashboard() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<{ name: string, credits: number, status: string }>({ name: "", credits: 0, status: "" });
   const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<'users' | 'lessons'>('users');
+  const [userToDelete, setUserToDelete] = useState<UserMetric | null>(null);
+  const [alertMessage, setAlertMessage] = useState<{title: string, message: string, type: 'success' | 'error'} | null>(null);
 
   useEffect(() => {
     console.log("AdminDashboard mounted, fetching users...");
@@ -143,9 +148,24 @@ export default function AdminDashboard() {
       setEditingId(null);
     } catch (error: any) {
       console.error("Error updating user:", error);
-      alert(error.message || "Erro ao atualizar usuário.");
+      setAlertMessage({ title: 'Erro', message: error.message || "Erro ao atualizar usuário.", type: 'error' });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+    try {
+      const { error } = await supabase.rpc('delete_user', { user_id: userToDelete.id });
+      if (error) throw error;
+      setUsers(users.filter(u => u.id !== userToDelete.id));
+      setAlertMessage({ title: 'Sucesso', message: 'Usuário excluído com sucesso.', type: 'success' });
+    } catch (error) {
+      console.error('Erro ao excluir usuário:', error);
+      setAlertMessage({ title: 'Erro', message: 'Erro ao excluir usuário.', type: 'error' });
+    } finally {
+      setUserToDelete(null);
     }
   };
 
@@ -176,23 +196,54 @@ export default function AdminDashboard() {
             Voltar
           </Button>
           <div>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tighter">Painel Boss</h1>
-            <p className="text-slate-500 font-medium">Gestão estratégica de usuários e métricas.</p>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tighter">Painel Administrativo</h1>
+            <p className="text-slate-500 font-medium">Gestão estratégica de usuários e conteúdo.</p>
           </div>
         </div>
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input 
-            type="text" 
-            placeholder="Buscar usuário..." 
-            className="pl-12 pr-6 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none w-full md:w-80 text-slate-900 placeholder:text-slate-400 transition-all shadow-sm"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        
+        {/* Tab Navigation */}
+        <div className="flex bg-slate-100 p-1 rounded-2xl">
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              activeTab === 'users' 
+                ? 'bg-white text-brand-primary shadow-sm' 
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            Usuários
+          </button>
+          <button
+            onClick={() => setActiveTab('lessons')}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              activeTab === 'lessons' 
+                ? 'bg-white text-brand-secondary shadow-sm' 
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <GraduationCap className="w-4 h-4" />
+            Aulas e Módulos
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {activeTab === 'users' ? (
+        <>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input 
+                type="text" 
+                placeholder="Buscar usuário..." 
+                className="pl-12 pr-6 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none w-full text-slate-900 placeholder:text-slate-400 transition-all shadow-sm"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="bg-white border-slate-100 rounded-[2rem] shadow-xl shadow-slate-200/50">
           <CardContent className="p-8 flex items-center gap-6">
             <div className="w-16 h-16 bg-brand-primary/5 rounded-2xl flex items-center justify-center border border-brand-primary/10">
@@ -244,6 +295,7 @@ export default function AdminDashboard() {
                   <TableHead className="text-slate-400 font-black text-[10px] tracking-widest px-4 py-4">Créditos</TableHead>
                   <TableHead className="text-slate-400 font-black text-[10px] tracking-widest px-4 py-4">Status</TableHead>
                   <TableHead className="text-slate-400 font-black text-[10px] tracking-widest px-4 py-4">Cadastro</TableHead>
+                  <TableHead className="text-slate-400 font-black text-[10px] tracking-widest px-4 py-4">Expiração</TableHead>
                   <TableHead className="text-slate-400 font-black text-[10px] tracking-widest px-4 py-4 text-right sticky right-0 bg-slate-50 z-10">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -302,6 +354,7 @@ export default function AdminDashboard() {
                             onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
                           >
                             <option value="active">Ativo</option>
+                            <option value="trial">Trial</option>
                             <option value="pending_payment">Pendente</option>
                             <option value="expired">Expirado</option>
                             <option value="suspended">Suspenso</option>
@@ -310,6 +363,8 @@ export default function AdminDashboard() {
                           <span className={`px-3 py-1 rounded-2xl text-[9px] font-black tracking-widest border ${
                             user.status === 'active' || user.status === 'paid'
                               ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
+                              : user.status === 'trial'
+                              ? "bg-blue-50 text-blue-600 border-blue-100"
                               : user.status === 'suspended'
                               ? "bg-red-50 text-red-600 border-red-100"
                               : "bg-slate-50 text-slate-500 border-slate-100"
@@ -325,6 +380,9 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell className="px-4 py-4 text-xs text-slate-400 font-bold whitespace-nowrap">
                         {user.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : 'N/A'}
+                      </TableCell>
+                      <TableCell className="px-4 py-4 text-xs text-slate-400 font-bold whitespace-nowrap">
+                        {user.expires_at ? new Date(user.expires_at).toLocaleDateString('pt-BR') : 'N/A'}
                       </TableCell>
                       <TableCell className="px-4 py-4 text-right whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50 transition-colors z-10 shadow-[-10px_0_15px_-10px_rgba(0,0,0,0.05)]">
                         {editingId === user.id ? (
@@ -345,19 +403,7 @@ export default function AdminDashboard() {
                               size="icon" 
                               variant="ghost" 
                               className="h-10 w-10 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-2xl" 
-                              onClick={async () => {
-                                if (window.confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')) {
-                                  try {
-                                    const { error } = await supabase.rpc('delete_user', { user_id: user.id });
-                                    if (error) throw error;
-                                    setUsers(users.filter(u => u.id !== user.id));
-                                    alert('Usuário excluído com sucesso.');
-                                  } catch (error) {
-                                    console.error('Erro ao excluir usuário:', error);
-                                    alert('Erro ao excluir usuário.');
-                                  }
-                                }
-                              }}
+                              onClick={() => setUserToDelete(user)}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -372,6 +418,39 @@ export default function AdminDashboard() {
           </div>
         </CardContent>
       </Card>
+        </>
+      ) : (
+        <AdminLessons />
+      )}
+
+      {/* Delete User Modal */}
+      {userToDelete && (
+        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl">
+            <h3 className="text-lg font-bold text-slate-900 mb-2">Excluir Usuário</h3>
+            <p className="text-slate-500 mb-6">Tem certeza que deseja excluir o usuário <strong>{userToDelete.name || userToDelete.email}</strong>? Esta ação não pode ser desfeita.</p>
+            <div className="flex justify-end gap-3">
+              <Button variant="ghost" onClick={() => setUserToDelete(null)}>Cancelar</Button>
+              <Button onClick={confirmDeleteUser} className="bg-red-500 hover:bg-red-600 text-white">Excluir</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Alert Modal */}
+      {alertMessage && (
+        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl">
+            <h3 className={`text-lg font-bold mb-2 ${alertMessage.type === 'error' ? 'text-red-600' : 'text-emerald-600'}`}>
+              {alertMessage.title}
+            </h3>
+            <p className="text-slate-500 mb-6">{alertMessage.message}</p>
+            <div className="flex justify-end">
+              <Button onClick={() => setAlertMessage(null)} className="bg-brand-primary text-white">OK</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

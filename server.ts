@@ -138,43 +138,96 @@ app.post('/api/verify-payment', async (req, res) => {
     const payment = await paymentClient.get({ id: payment_id });
     
     if (payment.status === 'approved' && payment.external_reference) {
-      const { user_id, plan } = JSON.parse(payment.external_reference);
+      const { user_id, plan, is_credits } = JSON.parse(payment.external_reference);
       
       if (user_id) {
-        let rpcError = null;
-        try {
-          const { error } = await supabase.rpc('activate_subscription', {
-            p_user_id: user_id,
-            p_plan_type: plan || 'monthly'
-          });
-          rpcError = error;
-        } catch (e) {
-          rpcError = e;
-        }
-        
-        if (rpcError) {
-          console.error('Verify payment RPC error, falling back to direct update:', rpcError);
-          // Fallback to direct update using service role key
-          const { data, error: updateError } = await supabase
-            .from('profiles')
-            .update({
-              is_paid: true,
-              status: 'active',
-              credits: plan === 'yearly' ? 1200 : 100,
-              subscription_date: new Date().toISOString(),
-              // We can't easily calculate expires_at in JS with exact calendar months like Postgres interval,
-              // but we can approximate for the fallback.
-              expires_at: new Date(Date.now() + (plan === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString()
-            })
-            .eq('id', user_id)
-            .select();
+        if (is_credits) {
+          // Add credits to user
+          let creditsToAdd = 0;
+          if (plan === 'credits_10') creditsToAdd = 10;
+          else if (plan === 'credits_50') creditsToAdd = 50;
+          else if (plan === 'credits_150') creditsToAdd = 150;
+
+          if (creditsToAdd > 0) {
+            // Get current credits first
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('credits')
+              .eq('id', user_id)
+              .single();
+
+            const currentCredits = profile?.credits || 0;
+
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update({
+                credits: currentCredits + creditsToAdd,
+              })
+              .eq('id', user_id);
+
+            if (updateError) {
+              console.error('Verify payment credit update error:', updateError);
+              return res.status(500).json({ error: 'Failed to add credits' });
+            }
+          }
+        } else {
+          let rpcError = null;
+          try {
+            const { error } = await supabase.rpc('activate_subscription', {
+              p_user_id: user_id,
+              p_plan_type: plan || 'monthly'
+            });
+            rpcError = error;
+          } catch (e) {
+            rpcError = e;
+          }
+          
+          if (rpcError) {
+            console.error('Verify payment RPC error, falling back to direct update:', rpcError);
             
-          if (updateError) {
-             console.error('Fallback update error:', updateError);
-             return res.status(500).json({ error: 'Failed to activate subscription' });
-          } else if (!data || data.length === 0) {
-             console.error(`Fallback failed: RLS blocked update for user ${user_id}. Please add SUPABASE_SERVICE_ROLE_KEY to Secrets.`);
-             return res.status(500).json({ error: 'Failed to activate subscription due to database permissions' });
+            // Get current profile for fallback logic
+            const { data: currentProfile } = await supabase
+              .from('profiles')
+              .select('status, credits')
+              .eq('id', user_id)
+              .single();
+              
+            const currentStatus = currentProfile?.status;
+            const currentCredits = currentProfile?.credits || 0;
+            
+            let newCredits = currentCredits;
+            if (plan.startsWith('premium')) {
+              newCredits = 50000;
+            } else if (plan.startsWith('pro')) {
+              newCredits = 10000;
+            } else if (plan.startsWith('basic')) {
+              if (currentStatus !== 'active') {
+                newCredits = currentCredits + 500;
+              }
+            }
+            
+            // Fallback to direct update using service role key
+            const { data, error: updateError } = await supabase
+              .from('profiles')
+              .update({
+                is_paid: true,
+                status: 'active',
+                credits: newCredits,
+                subscription_date: new Date().toISOString(),
+                // We can't easily calculate expires_at in JS with exact calendar months like Postgres interval,
+                // but we can approximate for the fallback.
+                expires_at: new Date(Date.now() + (plan.endsWith('yearly') ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString()
+              })
+              .eq('id', user_id)
+              .select();
+              
+            if (updateError) {
+               console.error('Fallback update error:', updateError);
+               return res.status(500).json({ error: 'Failed to activate subscription' });
+            } else if (!data || data.length === 0) {
+               console.error(`Fallback failed: RLS blocked update for user ${user_id}. Please add SUPABASE_SERVICE_ROLE_KEY to Secrets.`);
+               return res.status(500).json({ error: 'Failed to activate subscription due to database permissions' });
+            }
           }
         }
         
@@ -233,20 +286,95 @@ app.post('/api/send-welcome', async (req, res) => {
   }
 });
 
+app.post('/api/activate-trial', async (req, res) => {
+  try {
+    const { user_id } = req.body;
+
+    if (!user_id) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    // Check if user already had a trial
+    const { data: profile, error: fetchError } = await supabase
+      .from('profiles')
+      .select('status, is_paid')
+      .eq('id', user_id)
+      .single();
+
+    if (fetchError || !profile) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (profile.status !== 'pending_payment') {
+      return res.status(400).json({ error: 'User is not eligible for trial' });
+    }
+
+    // Activate trial: 7 days, 500 credits
+    const { data, error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        status: 'trial',
+        credits: 500,
+        subscription_date: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      })
+      .eq('id', user_id)
+      .select();
+
+    if (updateError) {
+      console.error('Failed to activate trial:', updateError);
+      return res.status(500).json({ error: 'Failed to activate trial' });
+    }
+
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Activate trial error:', error);
+    res.status(500).json({ error: 'Failed to activate trial' });
+  }
+});
+
 app.post('/api/create-preference', async (req, res) => {
   try {
-    const { return_url, user_email, user_id, coupon_code, plan = 'monthly' } = req.body;
+    const { return_url, user_email, user_id, coupon_code, plan = 'monthly', is_credits = false, price } = req.body;
     const preference = new Preference(client);
     
     // Get the base URL for redirection
     const baseUrl = process.env.APP_URL || `https://${req.get('host')}`;
     const backUrl = return_url ? `${baseUrl}${return_url}` : `${baseUrl}/payment?status=approved&plan=${plan}`;
 
-    let transaction_amount = plan === 'yearly' ? 698.40 : 97; // Default prices
-    const title = plan === 'yearly' ? 'SocialImob Pro - Plano Anual' : 'SocialImob Pro - Plano Mensal';
+    let transaction_amount = 97;
+    let title = 'SocialImob Pro - Plano Mensal';
+
+    if (plan === 'basic_monthly') {
+      transaction_amount = 29.90;
+      title = 'SocialImob - Basic Mensal';
+    } else if (plan === 'basic_yearly') {
+      transaction_amount = 197.00;
+      title = 'SocialImob - Basic Anual';
+    } else if (plan === 'pro_monthly') {
+      transaction_amount = 97.00;
+      title = 'SocialImob - Pro Mensal';
+    } else if (plan === 'pro_yearly') {
+      transaction_amount = 797.00;
+      title = 'SocialImob - Pro Anual';
+    } else if (plan === 'premium_monthly') {
+      transaction_amount = 197.00;
+      title = 'SocialImob - Premium Mensal';
+    } else if (plan === 'premium_yearly') {
+      transaction_amount = 997.00;
+      title = 'SocialImob - Premium Anual';
+    }
+
+    if (is_credits) {
+      transaction_amount = price;
+      if (plan === 'credits_10') title = 'ImpulsoImob - Kit Básico (10 Créditos)';
+      else if (plan === 'credits_50') title = 'ImpulsoImob - Kit Profissional (50 Créditos)';
+      else if (plan === 'credits_150') title = 'ImpulsoImob - Kit Agência (150 Créditos)';
+      else title = 'ImpulsoImob - Pacote de Créditos';
+    }
 
     // Validate coupon if provided
-    if (coupon_code) {
+    if (coupon_code && !is_credits) {
       const { data: coupon, error } = await supabase
         .from('coupons')
         .select('*')
@@ -282,7 +410,7 @@ app.post('/api/create-preference', async (req, res) => {
           failure: `${baseUrl}/payment?status=failure`
         },
         auto_return: 'approved',
-        external_reference: JSON.stringify({ user_id, plan, user_email }),
+        external_reference: JSON.stringify({ user_id, plan, user_email, is_credits }),
         notification_url: `${baseUrl}/api/webhook`,
         payment_methods: {
           excluded_payment_types: [
@@ -313,44 +441,98 @@ app.post('/api/webhook', async (req, res) => {
         
         if (payment.status === 'approved' && payment.external_reference) {
           try {
-            const { user_id, plan, user_email } = JSON.parse(payment.external_reference);
+            const { user_id, plan, user_email, is_credits } = JSON.parse(payment.external_reference);
             
             if (user_id) {
-              // Call Supabase RPC to activate subscription
-              let rpcError = null;
-              try {
-                const { error } = await supabase.rpc('activate_subscription', {
-                  p_user_id: user_id,
-                  p_plan_type: plan || 'monthly'
-                });
-                rpcError = error;
-              } catch (e) {
-                rpcError = e;
-              }
-              
-              if (rpcError) {
-                console.error('Webhook RPC error, falling back to direct update:', rpcError);
-                const { data: updateData, error: updateError } = await supabase
-                  .from('profiles')
-                  .update({
-                    is_paid: true,
-                    status: 'active',
-                    credits: plan === 'yearly' ? 1200 : 100,
-                    subscription_date: new Date().toISOString(),
-                    expires_at: new Date(Date.now() + (plan === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString()
-                  })
-                  .eq('id', user_id)
-                  .select();
-                  
-                if (updateError) {
-                  console.error('Webhook fallback update error:', updateError);
-                } else if (!updateData || updateData.length === 0) {
-                  console.error(`Webhook fallback failed: RLS blocked update for user ${user_id}. Please add SUPABASE_SERVICE_ROLE_KEY to Secrets.`);
-                } else {
-                  console.log(`Subscription activated via webhook fallback for user ${user_id} (${plan})`);
+              if (is_credits) {
+                // Add credits to user
+                let creditsToAdd = 0;
+                if (plan === 'credits_10') creditsToAdd = 10;
+                else if (plan === 'credits_50') creditsToAdd = 50;
+                else if (plan === 'credits_150') creditsToAdd = 150;
+
+                if (creditsToAdd > 0) {
+                  // Get current credits first
+                  const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('credits')
+                    .eq('id', user_id)
+                    .single();
+
+                  const currentCredits = profile?.credits || 0;
+
+                  const { error: updateError } = await supabase
+                    .from('profiles')
+                    .update({
+                      credits: currentCredits + creditsToAdd,
+                    })
+                    .eq('id', user_id);
+
+                  if (updateError) {
+                    console.error('Webhook credit update error:', updateError);
+                  } else {
+                    console.log(`Added ${creditsToAdd} credits via webhook for user ${user_id}`);
+                  }
                 }
               } else {
-                console.log(`Subscription activated via webhook for user ${user_id} (${plan})`);
+                // Call Supabase RPC to activate subscription
+                let rpcError = null;
+                try {
+                  const { error } = await supabase.rpc('activate_subscription', {
+                    p_user_id: user_id,
+                    p_plan_type: plan || 'monthly'
+                  });
+                  rpcError = error;
+                } catch (e) {
+                  rpcError = e;
+                }
+                
+                if (rpcError) {
+                  console.error('Webhook RPC error, falling back to direct update:', rpcError);
+                  
+                  // Get current profile for fallback logic
+                  const { data: currentProfile } = await supabase
+                    .from('profiles')
+                    .select('status, credits')
+                    .eq('id', user_id)
+                    .single();
+                    
+                  const currentStatus = currentProfile?.status;
+                  const currentCredits = currentProfile?.credits || 0;
+                  
+                  let newCredits = currentCredits;
+                  if (plan.startsWith('premium')) {
+                    newCredits = 50000;
+                  } else if (plan.startsWith('pro')) {
+                    newCredits = 10000;
+                  } else if (plan.startsWith('basic')) {
+                    if (currentStatus !== 'active') {
+                      newCredits = currentCredits + 500;
+                    }
+                  }
+                  
+                  const { data: updateData, error: updateError } = await supabase
+                    .from('profiles')
+                    .update({
+                      is_paid: true,
+                      status: 'active',
+                      credits: newCredits,
+                      subscription_date: new Date().toISOString(),
+                      expires_at: new Date(Date.now() + (plan.endsWith('yearly') ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString()
+                    })
+                    .eq('id', user_id)
+                    .select();
+                    
+                  if (updateError) {
+                    console.error('Webhook fallback update error:', updateError);
+                  } else if (!updateData || updateData.length === 0) {
+                    console.error(`Webhook fallback failed: RLS blocked update for user ${user_id}. Please add SUPABASE_SERVICE_ROLE_KEY to Secrets.`);
+                  } else {
+                    console.log(`Subscription activated via webhook fallback for user ${user_id} (${plan})`);
+                  }
+                } else {
+                  console.log(`Subscription activated via webhook for user ${user_id} (${plan})`);
+                }
               }
             }
           } catch (parseError) {
@@ -374,6 +556,57 @@ app.post('/api/webhook', async (req, res) => {
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
+});
+
+import { GoogleGenAI } from '@google/genai';
+
+app.post('/api/generate-image', async (req, res) => {
+  try {
+    const { prompt } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: 'Gemini API key is not configured' });
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-image',
+      contents: {
+        parts: [
+          {
+            text: prompt,
+          },
+        ],
+      },
+    });
+
+    let imageUrl = null;
+    if (response.candidates && response.candidates[0] && response.candidates[0].content && response.candidates[0].content.parts) {
+      for (const part of response.candidates[0].content.parts) {
+        if (part.inlineData) {
+          const base64EncodeString = part.inlineData.data;
+          const mimeType = part.inlineData.mimeType || 'image/png';
+          imageUrl = `data:${mimeType};base64,${base64EncodeString}`;
+          break;
+        }
+      }
+    }
+
+    if (!imageUrl) {
+      return res.status(500).json({ error: 'Failed to generate image from model' });
+    }
+
+    res.json({ imageUrl });
+  } catch (error) {
+    console.error('Error generating image:', error);
+    res.status(500).json({ error: 'Failed to generate image' });
+  }
 });
 
 // Vite middleware setup

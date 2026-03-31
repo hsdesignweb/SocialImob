@@ -14,11 +14,19 @@ export interface PropertyData {
 }
 
 export interface CampaignStrategy {
-  angle: string;
-  persona: string;
-  approach: string;
-  narrative: string;
-  sequence: string[];
+  introducao: string;
+  conteudoPrincipal: {
+    ganchos: string[];
+    estruturaReel: string;
+  };
+  diferencial: string;
+  condominio: string;
+  lista: string;
+  posicionamento: string;
+  explicacaoTecnica: string;
+  pov: string;
+  noticia: string;
+  estiloDeVida: string;
 }
 
 export interface GeneratedContent {

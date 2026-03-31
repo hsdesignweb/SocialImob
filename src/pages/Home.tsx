@@ -76,19 +76,20 @@ export default function Home() {
       {/* Main Actions Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
-        {/* Button 1: Gerador de Campanhas */}
+        {/* Button 1: Sim Academy */}
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Button 
+            variant="outline" 
             size="lg" 
-            className="w-full h-24 text-lg font-black bg-brand-primary hover:bg-blue-700 transition-all rounded-2xl shadow-xl shadow-brand-primary/20 flex flex-col items-center justify-center gap-2 group"
-            onClick={handleNewCampaign}
+            className="w-full h-24 text-lg font-black border-2 border-brand-secondary/20 text-slate-900 bg-white hover:bg-brand-secondary/5 rounded-2xl transition-all flex flex-col items-center justify-center gap-2 group"
+            onClick={() => navigate('/app/lessons')}
           >
-            <Rocket className="w-6 h-6 group-hover:-translate-y-1 transition-transform" />
-            Gerador de Campanhas
+            <GraduationCap className="w-6 h-6 text-brand-secondary group-hover:scale-110 transition-transform" />
+            Sim Academy
           </Button>
         </motion.div>
 
-        {/* Button 2: Planner Imobiliário */}
+        {/* Button 2: Plannerimob */}
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Button 
             variant="outline" 
@@ -97,39 +98,23 @@ export default function Home() {
             onClick={() => navigate('/app/planner')}
           >
             <Calendar className="w-6 h-6 text-brand-primary group-hover:scale-110 transition-transform" />
-            Planner Imobiliário
+            Plannerimob
           </Button>
         </motion.div>
 
-        {/* Button 3: Gerador de Artes (Em breve) */}
-        <div className="relative group">
+        {/* Button 3: Estrategista de Conteúdo */}
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Button 
-            variant="outline" 
             size="lg" 
-            className="w-full h-24 text-lg font-black border-none text-slate-400 bg-slate-100 rounded-2xl cursor-not-allowed flex flex-col items-center justify-center gap-2"
-            disabled
+            className="w-full h-24 text-lg font-black bg-brand-primary hover:bg-blue-700 transition-all rounded-2xl shadow-xl shadow-brand-primary/20 flex flex-col items-center justify-center gap-2 group"
+            onClick={handleNewCampaign}
           >
-            <ImageIcon className="w-6 h-6 opacity-50" />
-            Gerador de Artes
+            <Rocket className="w-6 h-6 group-hover:-translate-y-1 transition-transform" />
+            Estrategista de Conteúdo
           </Button>
-          <span className="absolute top-3 right-3 px-2 py-1 bg-white text-slate-400 text-[9px] font-black rounded-lg tracking-widest border border-slate-200 shadow-sm uppercase">Em breve</span>
-        </div>
+        </motion.div>
 
-        {/* Button 4: Gerador de Fotos Profissionais (Em breve) */}
-        <div className="relative group">
-          <Button 
-            variant="outline" 
-            size="lg" 
-            className="w-full h-24 text-lg font-black border-none text-slate-400 bg-slate-100 rounded-2xl cursor-not-allowed flex flex-col items-center justify-center gap-2"
-            disabled
-          >
-            <Camera className="w-6 h-6 opacity-50" />
-            Fotos Profissionais
-          </Button>
-          <span className="absolute top-3 right-3 px-2 py-1 bg-white text-slate-400 text-[9px] font-black rounded-lg tracking-widest border border-slate-200 shadow-sm uppercase">Em breve</span>
-        </div>
-
-        {/* Button 5: Gerador de Tráfego (Em breve) */}
+        {/* Button 4: SocialAds (Em breve) */}
         <div className="relative group">
           <Button 
             variant="outline" 
@@ -138,12 +123,12 @@ export default function Home() {
             disabled
           >
             <Megaphone className="w-6 h-6 opacity-50" />
-            Gerador de Tráfego
+            SocialAds
           </Button>
           <span className="absolute top-3 right-3 px-2 py-1 bg-white text-slate-400 text-[9px] font-black rounded-lg tracking-widest border border-slate-200 shadow-sm uppercase">Em breve</span>
         </div>
 
-        {/* Button 6: Curso Bônus (Em breve) */}
+        {/* Button 5: Fotos profissionais (Em breve) */}
         <div className="relative group">
           <Button 
             variant="outline" 
@@ -151,8 +136,36 @@ export default function Home() {
             className="w-full h-24 text-lg font-black border-none text-slate-400 bg-slate-100 rounded-2xl cursor-not-allowed flex flex-col items-center justify-center gap-2"
             disabled
           >
-            <GraduationCap className="w-6 h-6 opacity-50" />
-            Curso Bônus
+            <Camera className="w-6 h-6 opacity-50" />
+            Fotos profissionais
+          </Button>
+          <span className="absolute top-3 right-3 px-2 py-1 bg-white text-slate-400 text-[9px] font-black rounded-lg tracking-widest border border-slate-200 shadow-sm uppercase">Em breve</span>
+        </div>
+
+        {/* Button 6: Artes para Carrosseis (Em breve) */}
+        <div className="relative group">
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="w-full h-24 text-lg font-black border-none text-slate-400 bg-slate-100 rounded-2xl cursor-not-allowed flex flex-col items-center justify-center gap-2"
+            disabled
+          >
+            <ImageIcon className="w-6 h-6 opacity-50" />
+            Artes para Carrosseis
+          </Button>
+          <span className="absolute top-3 right-3 px-2 py-1 bg-white text-slate-400 text-[9px] font-black rounded-lg tracking-widest border border-slate-200 shadow-sm uppercase">Em breve</span>
+        </div>
+
+        {/* Button 7: Gerador de Campanhas (Em breve) */}
+        <div className="relative group">
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="w-full h-24 text-lg font-black border-none text-slate-400 bg-slate-100 rounded-2xl cursor-not-allowed flex flex-col items-center justify-center gap-2"
+            disabled
+          >
+            <Sparkles className="w-6 h-6 opacity-50" />
+            Gerador de Campanhas
           </Button>
           <span className="absolute top-3 right-3 px-2 py-1 bg-white text-slate-400 text-[9px] font-black rounded-lg tracking-widest border border-slate-200 shadow-sm uppercase">Em breve</span>
         </div>

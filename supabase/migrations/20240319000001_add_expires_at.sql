@@ -9,10 +9,14 @@ begin
   set 
     is_paid = true,
     status = 'active',
-    credits = case when p_plan_type = 'yearly' then 1200 else 100 end,
+    credits = case 
+      when p_plan_type = 'yearly' then 120000 
+      when p_plan_type = 'basic' then 500
+      else 10000 
+    end,
     subscription_date = now(),
     expires_at = case 
-      when p_plan_type = 'yearly' then now() + interval '1 year'
+      when p_plan_type = 'yearly' or p_plan_type = 'basic' then now() + interval '1 year'
       else now() + interval '1 month'
     end
   where id = p_user_id;

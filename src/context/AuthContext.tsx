@@ -23,7 +23,7 @@ interface AuthContextType {
   updatePassword: (password: string) => Promise<{ success: boolean; error?: string }>;
   completePayment: (plan?: string) => Promise<void>;
   logout: () => Promise<void>;
-  consumeCredit: () => Promise<boolean>;
+  consumeCredit: (amount?: number) => Promise<boolean>;
   isAuthenticated: boolean;
   loading: boolean;
 }
@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             credits: data.credits || 0,
             isPaid: data.is_paid || false,
             subscriptionDate: data.subscription_date,
-            status: data.status || 'trial',
+            status: data.status || 'pending_payment',
             expires_at: data.expires_at
           };
           setUser(userData);
@@ -125,7 +125,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           credits: data.credits || 0,
           isPaid: data.is_paid || false,
           subscriptionDate: data.subscription_date,
-          status: data.status || 'trial',
+          status: data.status || 'pending_payment',
           expires_at: data.expires_at
         };
         checkSubscriptionStatus(userData);
@@ -143,7 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    if (userData.isPaid) {
+    if (userData.isPaid || userData.status === 'trial') {
       const now = new Date();
       let isExpired = false;
 
@@ -156,16 +156,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const subDate = new Date(userData.subscriptionDate);
         const diffTime = Math.abs(now.getTime() - subDate.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        isExpired = diffDays > 30;
+        isExpired = diffDays > (userData.status === 'trial' ? 7 : 30);
       }
 
       if (isExpired) {
-        // Subscription expired
-        const updatedUser = { ...userData, status: 'expired' as const };
+        // Subscription or trial expired
+        const newStatus = userData.status === 'trial' ? 'expired' : 'expired';
+        const updatedUser = { ...userData, status: newStatus as const };
         setUser(updatedUser);
         
         // Update in DB
-        await supabase.from('profiles').update({ status: 'expired' }).eq('id', userData.id);
+        await supabase.from('profiles').update({ status: newStatus }).eq('id', userData.id);
         return;
       }
     }
@@ -194,7 +195,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
        if (profile) {
            return { 
                success: true, 
-               status: profile.status,
+               status: profile.status || 'pending_payment',
                isPaid: profile.is_paid 
            };
        }
@@ -261,13 +262,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSession(null);
   };
 
-  const consumeCredit = async (): Promise<boolean> => {
+  const consumeCredit = async (amount: number = 100): Promise<boolean> => {
     if (!user) return false;
     if (user.isAdmin) return true;
     if (user.status !== 'active' && user.status !== 'trial') return false;
 
-    if (user.credits > 0) {
-      const newCredits = user.credits - 1;
+    if (user.credits >= amount) {
+      const newCredits = user.credits - amount;
       
       // Optimistic update
       setUser({ ...user, credits: newCredits });

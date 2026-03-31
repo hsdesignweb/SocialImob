@@ -13,6 +13,9 @@ import ResultsStep from "./pages/ResultsStep";
 import AdminDashboard from "./pages/AdminDashboard";
 import History from "./pages/History";
 import Planner from "./pages/Planner";
+import Lessons from "./pages/Lessons";
+import Store from "./pages/Store";
+import AdExamples from "./pages/AdExamples";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -43,8 +46,11 @@ const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.Re
 
   // If user is authenticated but is suspended, pending payment, or expired, redirect to payment
   // Unless they are already on the payment page or they are an admin
-  if (user && !user.isAdmin && (user.status === 'suspended' || user.status === 'pending_payment' || user.status === 'expired')) {
-      return <Navigate to={`/payment?reason=${user.status}`} replace />;
+  if (user && !user.isAdmin && (user.status === 'suspended' || user.status === 'pending_payment' || user.status === 'expired' || (!user.isPaid && user.status !== 'trial' && user.status !== 'active'))) {
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/payment') {
+          return <Navigate to={`/payment?reason=${user.status}`} replace />;
+      }
   }
 
   return <>{children}</>;
@@ -68,7 +74,7 @@ const PaymentRoute = ({ children }: { children: React.ReactNode }) => {
     
     // Allow users to stay on payment page if they are suspended, expired, or pending payment
     // even if isPaid is true (e.g., subscription expired but isPaid flag wasn't updated)
-    if (user?.isPaid && user?.status !== 'suspended' && user?.status !== 'expired' && user?.status !== 'pending_payment') {
+    if (user?.isPaid && user?.status !== 'suspended' && user?.status !== 'expired' && user?.status !== 'pending_payment' && user?.status !== 'trial') {
         return <Navigate to="/app" replace />;
     }
     
@@ -103,6 +109,9 @@ export default function App() {
               <Route path="results" element={<ResultsStep />} />
               <Route path="history" element={<History />} />
               <Route path="planner" element={<Planner />} />
+              <Route path="lessons" element={<Lessons />} />
+              <Route path="store" element={<Store />} />
+              <Route path="ad-examples" element={<AdExamples />} />
               <Route path="admin" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminDashboard />

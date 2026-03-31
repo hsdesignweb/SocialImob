@@ -12,7 +12,7 @@ export default function Payment() {
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
   const [couponError, setCouponError] = useState('');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
+  const [selectedPlan, setSelectedPlan] = useState<'basic_monthly' | 'basic_yearly' | 'pro_monthly' | 'pro_yearly' | 'premium_monthly' | 'premium_yearly'>('pro_yearly');
   const { completePayment, user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -155,9 +155,9 @@ export default function Payment() {
       } else {
         throw new Error('Link de pagamento não gerado');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Payment initiation failed", error);
-      setError("Erro ao conectar com Mercado Pago. Tente novamente.");
+      setError(error.message || "Erro ao conectar com Mercado Pago. Tente novamente.");
       setIsLoading(false);
     }
   };
@@ -176,9 +176,50 @@ export default function Payment() {
     );
   }
 
-  const monthlyPrice = 97;
-  const yearlyPrice = 698.40;
-  
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
+
+  const plans = {
+    basic: {
+      name: 'PLANO BASIC',
+      monthlyPrice: 29.90,
+      yearlyPrice: 197.00,
+      features: [
+        'Acesso completo ao planner',
+        'Aulas gratuitas',
+        '500 créditos para testar recursos avançados'
+      ],
+      monthlyId: 'basic_monthly',
+      yearlyId: 'basic_yearly'
+    },
+    pro: {
+      name: 'PLANO PRO',
+      monthlyPrice: 97.00,
+      yearlyPrice: 797.00,
+      features: [
+        'Acesso completo ao planner',
+        'Aulas gratuitas',
+        'Análise completa de perfil',
+        '10.000 créditos por mês'
+      ],
+      monthlyId: 'pro_monthly',
+      yearlyId: 'pro_yearly'
+    },
+    premium: {
+      name: 'PLANO PREMIUM',
+      monthlyPrice: 197.00,
+      yearlyPrice: 997.00,
+      features: [
+        'Acesso completo ao planner',
+        'Aulas gratuitas',
+        'Análise completa de perfil',
+        'Acesso a conteúdos mensais exclusivos ao vivo',
+        '50.000 créditos por mês'
+      ],
+      monthlyId: 'premium_monthly',
+      yearlyId: 'premium_yearly'
+    }
+  };
+
   const getDiscountedPrice = (price: number) => {
     if (!appliedCoupon) return price;
     return Math.round(price * (1 - appliedCoupon.discount / 100) * 100) / 100;
@@ -186,7 +227,7 @@ export default function Payment() {
 
   return (
     <div className="min-h-screen bg-brand-bg flex items-center justify-center p-4 py-12">
-      <div className="w-full max-w-xl bg-white border border-slate-100 rounded-[2.5rem] shadow-2xl overflow-hidden relative">
+      <div className="w-full max-w-5xl bg-white border border-slate-100 rounded-[2.5rem] shadow-2xl overflow-hidden relative">
         {/* Decorative background element */}
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-brand-primary/5 blur-[80px] rounded-full" />
         
@@ -197,6 +238,39 @@ export default function Payment() {
           <p className="text-slate-500 font-medium text-sm">
             {user?.status === 'suspended' ? 'Sua conta foi suspensa pelo administrador.' : 'Libere seu acesso ao SocialImob Pro'}
           </p>
+          
+          {user?.status !== 'suspended' && (
+            <div className="flex justify-center mt-8">
+              <div className="bg-slate-200 p-1 rounded-full flex items-center relative">
+                <div 
+                  className={`absolute inset-y-1 left-1 w-[calc(50%-4px)] bg-white rounded-full shadow-sm transition-transform duration-300 ease-in-out ${billingCycle === 'yearly' ? 'translate-x-full' : 'translate-x-0'}`}
+                />
+                <button
+                  onClick={() => {
+                    setBillingCycle('monthly');
+                    if (selectedPlan.includes('yearly')) {
+                      setSelectedPlan(selectedPlan.replace('yearly', 'monthly') as any);
+                    }
+                  }}
+                  className={`relative z-10 px-6 py-2 text-sm font-bold transition-colors rounded-full ${billingCycle === 'monthly' ? 'text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Mensal
+                </button>
+                <button
+                  onClick={() => {
+                    setBillingCycle('yearly');
+                    if (selectedPlan.includes('monthly')) {
+                      setSelectedPlan(selectedPlan.replace('monthly', 'yearly') as any);
+                    }
+                  }}
+                  className={`relative z-10 px-6 py-2 text-sm font-bold transition-colors rounded-full flex items-center gap-2 ${billingCycle === 'yearly' ? 'text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Anual
+                  <span className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-widest">Economize</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="p-8 space-y-8 relative z-10">
@@ -224,119 +298,144 @@ export default function Payment() {
             </div>
           ) : (
             <>
-              <div className="space-y-4">
-                {/* Yearly Plan (Highlighted) */}
-              <div 
-                onClick={() => setSelectedPlan('yearly')}
-              className={`relative cursor-pointer transition-all duration-200 rounded-3xl border-2 p-6 ${
-                selectedPlan === 'yearly' 
-                  ? 'border-emerald-500 bg-emerald-50/30 shadow-lg shadow-emerald-500/10' 
-                  : 'border-slate-100 bg-slate-50 hover:border-emerald-200'
-              }`}
-            >
-              <div className="absolute -top-3 right-6 bg-emerald-500 text-white text-[10px] font-black tracking-widest uppercase px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
-                <Sparkles className="w-3 h-3" />
-                Economize 40%
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className={`font-black tracking-widest text-sm ${selectedPlan === 'yearly' ? 'text-emerald-700' : 'text-slate-900'}`}>
-                    PLANO ANUAL
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1">Acesso por 1 ano inteiro</p>
-                  <p className="text-[10px] text-emerald-600 font-bold mt-2 bg-emerald-50 inline-block px-2 py-1 rounded-md">
-                    Simulação: 12x de R$ {(getDiscountedPrice(yearlyPrice) * 1.15 / 12).toFixed(2).replace('.', ',')}
-                  </p>
-                </div>
-                <div className="text-right">
-                  {appliedCoupon ? (
-                    <>
-                      <span className="text-sm font-black text-slate-400 line-through block">R$ {yearlyPrice.toFixed(2).replace('.', ',')}</span>
-                      <span className="text-3xl font-black text-emerald-600 tracking-tighter">
-                        R$ {getDiscountedPrice(yearlyPrice).toFixed(2).replace('.', ',')}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-3xl font-black text-emerald-600 tracking-tighter">R$ 58,20</span>
-                  )}
-                  <span className="text-[10px] font-black text-slate-400 tracking-widest block">
-                    {appliedCoupon ? 'à vista ou parcelado' : '/mês (faturado R$ 698,40)'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Monthly Plan */}
-            <div 
-              onClick={() => setSelectedPlan('monthly')}
-              className={`cursor-pointer transition-all duration-200 rounded-3xl border-2 p-6 ${
-                selectedPlan === 'monthly' 
-                  ? 'border-brand-primary bg-brand-primary/5 shadow-lg shadow-brand-primary/10' 
-                  : 'border-slate-100 bg-slate-50 hover:border-slate-200'
-              }`}
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className={`font-black tracking-widest text-sm ${selectedPlan === 'monthly' ? 'text-brand-primary' : 'text-slate-900'}`}>
-                    PLANO MENSAL
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1">Acesso por 30 dias</p>
-                </div>
-                <div className="text-right">
-                  {appliedCoupon ? (
-                    <>
-                      <span className="text-sm font-black text-slate-400 line-through block">R$ {monthlyPrice}</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Basic Plan */}
+                <div 
+                  onClick={() => setSelectedPlan(billingCycle === 'monthly' ? plans.basic.monthlyId : plans.basic.yearlyId as any)}
+                  className={`cursor-pointer transition-all duration-200 rounded-3xl border-2 p-6 flex flex-col ${
+                    selectedPlan.includes('basic')
+                      ? 'border-brand-primary bg-brand-primary/5 shadow-lg shadow-brand-primary/10' 
+                      : 'border-slate-100 bg-slate-50 hover:border-slate-200'
+                  }`}
+                >
+                  <div className="mb-6">
+                    <h3 className={`font-black tracking-widest text-sm ${selectedPlan.includes('basic') ? 'text-brand-primary' : 'text-slate-900'}`}>
+                      {plans.basic.name}
+                    </h3>
+                    <div className="mt-4">
                       <span className="text-3xl font-black text-slate-900 tracking-tighter">
-                        R$ {getDiscountedPrice(monthlyPrice).toFixed(2).replace('.', ',')}
+                        R$ {getDiscountedPrice(billingCycle === 'monthly' ? plans.basic.monthlyPrice : plans.basic.yearlyPrice).toFixed(2).replace('.', ',')}
                       </span>
-                    </>
-                  ) : (
-                    <span className="text-3xl font-black text-slate-900 tracking-tighter">R$ 97</span>
-                  )}
-                  <span className="text-[10px] font-black text-slate-400 tracking-widest block">/mês</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Coupon Section */}
-            <div className="space-y-3 pt-4">
-              <label className="text-[10px] font-black tracking-widest text-slate-400 uppercase ml-4">Possui cupom de desconto?</label>
-              <div className="flex gap-2">
-                <div className="relative flex-1 group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Tag className="h-4 w-4 text-slate-400 group-focus-within:text-brand-primary transition-colors" />
+                      <span className="text-[10px] font-black text-slate-400 tracking-widest block mt-1">
+                        /{billingCycle === 'monthly' ? 'mês' : 'ano'}
+                      </span>
+                    </div>
                   </div>
-                  <input
-                    type="text"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                    placeholder="CÓDIGO"
-                    className="block w-full pl-10 pr-4 py-3 bg-slate-50 border-0 text-slate-900 rounded-2xl ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-brand-primary sm:text-sm font-black tracking-widest transition-all uppercase"
-                    disabled={!!appliedCoupon || isApplyingCoupon}
-                  />
+                  <ul className="space-y-3 mb-8 flex-1">
+                    {plans.basic.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-slate-600 font-medium">
+                        <CheckCircle className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                {!appliedCoupon ? (
-                  <Button 
-                    onClick={handleApplyCoupon}
-                    disabled={!couponCode.trim() || isApplyingCoupon}
-                    className="bg-slate-900 hover:bg-slate-800 text-white rounded-2xl px-6 font-black tracking-widest text-xs"
-                  >
-                    {isApplyingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Aplicar'}
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={() => setAppliedCoupon(null)}
-                    className="bg-red-50 hover:bg-red-100 text-red-600 rounded-2xl px-6 font-black tracking-widest text-xs"
-                  >
-                    Remover
-                  </Button>
-                )}
+
+                {/* Pro Plan */}
+                <div 
+                  onClick={() => setSelectedPlan(billingCycle === 'monthly' ? plans.pro.monthlyId : plans.pro.yearlyId as any)}
+                  className={`relative cursor-pointer transition-all duration-200 rounded-3xl border-2 p-6 flex flex-col ${
+                    selectedPlan.includes('pro')
+                      ? 'border-emerald-500 bg-emerald-50/30 shadow-lg shadow-emerald-500/10' 
+                      : 'border-slate-100 bg-slate-50 hover:border-emerald-200'
+                  }`}
+                >
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-black tracking-widest uppercase px-4 py-1 rounded-full shadow-sm whitespace-nowrap">
+                    Mais Popular
+                  </div>
+                  <div className="mb-6">
+                    <h3 className={`font-black tracking-widest text-sm ${selectedPlan.includes('pro') ? 'text-emerald-700' : 'text-slate-900'}`}>
+                      {plans.pro.name}
+                    </h3>
+                    <div className="mt-4">
+                      <span className="text-3xl font-black text-emerald-600 tracking-tighter">
+                        R$ {getDiscountedPrice(billingCycle === 'monthly' ? plans.pro.monthlyPrice : plans.pro.yearlyPrice).toFixed(2).replace('.', ',')}
+                      </span>
+                      <span className="text-[10px] font-black text-slate-400 tracking-widest block mt-1">
+                        /{billingCycle === 'monthly' ? 'mês' : 'ano'}
+                      </span>
+                    </div>
+                  </div>
+                  <ul className="space-y-3 mb-8 flex-1">
+                    {plans.pro.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-slate-600 font-medium">
+                        <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Premium Plan */}
+                <div 
+                  onClick={() => setSelectedPlan(billingCycle === 'monthly' ? plans.premium.monthlyId : plans.premium.yearlyId as any)}
+                  className={`cursor-pointer transition-all duration-200 rounded-3xl border-2 p-6 flex flex-col ${
+                    selectedPlan.includes('premium')
+                      ? 'border-purple-500 bg-purple-50/30 shadow-lg shadow-purple-500/10' 
+                      : 'border-slate-100 bg-slate-50 hover:border-purple-200'
+                  }`}
+                >
+                  <div className="mb-6">
+                    <h3 className={`font-black tracking-widest text-sm ${selectedPlan.includes('premium') ? 'text-purple-700' : 'text-slate-900'}`}>
+                      {plans.premium.name}
+                    </h3>
+                    <div className="mt-4">
+                      <span className="text-3xl font-black text-purple-600 tracking-tighter">
+                        R$ {getDiscountedPrice(billingCycle === 'monthly' ? plans.premium.monthlyPrice : plans.premium.yearlyPrice).toFixed(2).replace('.', ',')}
+                      </span>
+                      <span className="text-[10px] font-black text-slate-400 tracking-widest block mt-1">
+                        /{billingCycle === 'monthly' ? 'mês' : 'ano'}
+                      </span>
+                    </div>
+                  </div>
+                  <ul className="space-y-3 mb-8 flex-1">
+                    {plans.premium.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-slate-600 font-medium">
+                        <CheckCircle className="w-4 h-4 text-purple-500 shrink-0 mt-0.5" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-              {couponError && <p className="text-xs text-red-500 font-bold ml-4">{couponError}</p>}
-              {appliedCoupon && <p className="text-xs text-emerald-500 font-bold ml-4">Cupom de {appliedCoupon.discount}% aplicado!</p>}
-            </div>
-          </div>
+
+              {/* Coupon Section */}
+              <div className="space-y-3 pt-4 max-w-md mx-auto">
+                <label className="text-[10px] font-black tracking-widest text-slate-400 uppercase ml-4">Possui cupom de desconto?</label>
+                <div className="flex gap-2">
+                  <div className="relative flex-1 group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Tag className="h-4 w-4 text-slate-400 group-focus-within:text-brand-primary transition-colors" />
+                    </div>
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      placeholder="CÓDIGO"
+                      className="block w-full pl-10 pr-4 py-3 bg-slate-50 border-0 text-slate-900 rounded-2xl ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-brand-primary sm:text-sm font-black tracking-widest transition-all uppercase"
+                      disabled={!!appliedCoupon || isApplyingCoupon}
+                    />
+                  </div>
+                  {!appliedCoupon ? (
+                    <Button 
+                      onClick={handleApplyCoupon}
+                      disabled={!couponCode.trim() || isApplyingCoupon}
+                      className="bg-slate-900 hover:bg-slate-800 text-white rounded-2xl px-6 font-black tracking-widest text-xs"
+                    >
+                      {isApplyingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Aplicar'}
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={() => setAppliedCoupon(null)}
+                      className="bg-red-50 hover:bg-red-100 text-red-600 rounded-2xl px-6 font-black tracking-widest text-xs"
+                    >
+                      Remover
+                    </Button>
+                  )}
+                </div>
+                {couponError && <p className="text-xs text-red-500 font-bold ml-4">{couponError}</p>}
+                {appliedCoupon && <p className="text-xs text-emerald-500 font-bold ml-4">Cupom de {appliedCoupon.discount}% aplicado!</p>}
+              </div>
 
           <div className="pt-6 border-t border-slate-100">
             <Button 

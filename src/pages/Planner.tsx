@@ -24,7 +24,10 @@ import {
   Circle,
   Camera,
   LogOut,
-  Clock
+  Clock,
+  AlignLeft,
+  Image as ImageIcon,
+  ExternalLink
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/Button";
@@ -50,7 +53,8 @@ export default function Planner() {
   const [editingPost, setEditingPost] = useState<Partial<PlannerPost> | null>(null);
   const [postToDelete, setPostToDelete] = useState<string | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const { consumeCredit } = useAuth();
 
   const formatText = (text: string | undefined | null) => {
     if (!text) return "";
@@ -142,11 +146,6 @@ export default function Planner() {
     return posts.filter(p => p.date === selectedDate);
   }, [posts, selectedDate]);
 
-  const selectedImportantDate = useMemo(() => {
-    const [y, m, d] = selectedDate.split('-').map(Number);
-    return importantDates.find(id => id.month === m - 1 && id.day === d.toString().padStart(2, '0'));
-  }, [importantDates, selectedDate]);
-
   const filteredImportantDates = useMemo(() => {
     const monthDates = importantDates.filter(id => id.month === currentDate.getMonth());
     // Remove duplicates by label and day
@@ -157,10 +156,6 @@ export default function Planner() {
     });
     return Array.from(unique.values()).sort((a, b) => Number(a.day) - Number(b.day));
   }, [importantDates, currentDate]);
-
-  const completedPostsCount = useMemo(() => {
-    return posts.filter(p => p.completed).length;
-  }, [posts]);
 
   const goToToday = () => {
     const today = new Date();
@@ -217,6 +212,71 @@ export default function Planner() {
     setTimeout(() => setCopiedField(null), 2000);
   };
 
+  const toggleCompleted = async (post: PlannerPost) => {
+    try {
+      const newCompletedState = post.completed === 1 ? 0 : 1;
+      const { error } = await supabase
+        .from('posts')
+        .update({ completed: newCompletedState })
+        .eq('id', post.id);
+      
+      if (error) throw error;
+      fetchData();
+    } catch (error) {
+      console.error('Error toggling post status:', error);
+    }
+  };
+
+  const handleGenerateImage = async (post: PlannerPost) => {
+    if (!user) return;
+    
+    if (user.credits < 50) {
+      alert("Você precisa de pelo menos 50 créditos para gerar uma imagem.");
+      return;
+    }
+
+    setIsGeneratingImage(true);
+    try {
+      const prompt = `Crie uma imagem de fundo minimalista e profissional, formato 4:5, para um post de rede social de uma imobiliária. O tema do post é: "${post.title}". A imagem deve ter espaço vazio suficiente para adicionar texto por cima. Estilo moderno, elegante, iluminação suave.`;
+      
+      const response = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate image');
+      }
+
+      const data = await response.json();
+      
+      if (data.imageUrl) {
+        // Consume credits
+        await consumeCredit(50);
+        
+        // Update post with new image link
+        const newMediaLink = post.media_link ? `${post.media_link}\n${data.imageUrl}` : data.imageUrl;
+        
+        const { error } = await supabase
+          .from('posts')
+          .update({ media_link: newMediaLink })
+          .eq('id', post.id);
+          
+        if (error) throw error;
+        
+        fetchData();
+      }
+    } catch (error) {
+      console.error('Error generating image:', error);
+      alert("Houve um erro ao gerar a imagem. Tente novamente mais tarde.");
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
+
   if (loading && posts.length === 0) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -229,33 +289,21 @@ export default function Planner() {
     <div className="flex-1 flex flex-col md:overflow-hidden">
       <div className="flex-1 flex flex-col md:flex-row md:overflow-hidden">
         {/* Sidebar */}
-        <aside className="w-full md:w-[300px] md:shrink-0 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col bg-white md:overflow-y-auto">
+        <aside className="w-full md:w-[320px] md:shrink-0 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col bg-white md:overflow-y-auto">
           <div className="p-6 space-y-8">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input 
-                type="text"
-                placeholder="Buscar posts..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-11 pl-11 pr-4 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all font-medium text-sm"
-              />
-            </div>
-
             {/* Calendar */}
             <div className="space-y-6">
               <div className="flex items-center justify-between px-1">
                 <button onClick={prevMonth} className="p-1 hover:bg-slate-50 rounded-lg transition-colors text-slate-400"><ChevronLeft className="w-5 h-5" /></button>
-                <h3 className="font-black text-slate-900 text-xs tracking-[0.15em]">
+                <h3 className="font-black text-slate-900 text-sm tracking-wider">
                   {monthName} DE {yearName}
                 </h3>
                 <button onClick={nextMonth} className="p-1 hover:bg-slate-50 rounded-lg transition-colors text-slate-400"><ChevronRight className="w-5 h-5" /></button>
               </div>
 
-              <div className="grid grid-cols-7 gap-1 text-center">
+              <div className="grid grid-cols-7 gap-y-2 gap-x-1 text-center">
                 {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, idx) => (
-                  <span key={`${d}-${idx}`} className="text-[10px] font-black text-slate-300 uppercase tracking-widest py-2">{d}</span>
+                  <span key={`${d}-${idx}`} className="text-[10px] font-black text-slate-400 uppercase tracking-widest py-2">{d}</span>
                 ))}
                 {daysInMonth.map((day, i) => {
                   if (!day) return <div key={`pad-${i}`} />;
@@ -264,24 +312,36 @@ export default function Planner() {
                   const dayPosts = posts.filter(p => p.date === dateStr);
                   const isSelected = selectedDate === dateStr;
                   const isToday = new Date().toISOString().split('T')[0] === dateStr;
+                  const isCompleted = dayPosts.some(p => p.completed === 1);
+                  const hasPlanned = dayPosts.some(p => p.completed === 0);
+
+                  let bgColor = 'hover:bg-slate-50 text-slate-600';
+                  let dotColor = '';
+
+                  if (isSelected) {
+                    bgColor = 'bg-slate-900 text-white shadow-md';
+                  } else if (isCompleted) {
+                    bgColor = 'bg-green-100 text-green-700 hover:bg-green-200';
+                    dotColor = 'bg-green-500';
+                  } else if (hasPlanned) {
+                    bgColor = 'bg-blue-100 text-blue-700 hover:bg-blue-200';
+                    dotColor = 'bg-blue-500';
+                  } else if (isToday) {
+                    bgColor = 'border-2 border-brand-primary text-brand-primary';
+                  }
 
                   return (
                     <button
                       key={dateStr}
                       onClick={() => setSelectedDate(dateStr)}
                       className={`
-                        aspect-square rounded-full flex items-center justify-center text-xs font-black transition-all relative
-                        ${isSelected ? 'bg-slate-900 text-white' : 'hover:bg-slate-50 text-slate-600'}
-                        ${isToday && !isSelected ? 'text-brand-primary' : ''}
+                        relative aspect-square rounded-full flex items-center justify-center text-sm font-bold transition-all mx-auto w-10 h-10
+                        ${bgColor}
                       `}
                     >
                       {day.getDate()}
-                      {dayPosts.length > 0 && (
-                        <div className="absolute -top-1 left-1/2 -translate-x-1/2 flex gap-0.5">
-                          {dayPosts.slice(0, 2).map((_, idx) => (
-                            <div key={idx} className={`w-1.5 h-1.5 rounded-full bg-blue-500`} />
-                          ))}
-                        </div>
+                      {dotColor && !isSelected && (
+                        <div className={`absolute top-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${dotColor}`} />
                       )}
                     </button>
                   );
@@ -290,31 +350,52 @@ export default function Planner() {
             </div>
 
             {/* Important Dates */}
-            <div className="space-y-4 pt-4">
+            <div className="space-y-4 pt-6 border-t border-slate-100">
               <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">
                 <Star className="w-3 h-3" />
                 Datas Importantes
               </div>
-              <div className="space-y-1">
+              <div className="space-y-2">
                 {filteredImportantDates.map((id) => (
                   <div 
                     key={id.id} 
                     className="flex items-center gap-3 p-3 bg-slate-50/50 rounded-xl border border-transparent hover:border-slate-100 hover:bg-white transition-all cursor-pointer group"
                     onClick={() => setSelectedDate(`${yearName}-${(id.month + 1).toString().padStart(2, '0')}-${id.day}`)}
                   >
-                    <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-[10px] font-black text-blue-600">
+                    <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-xs font-black text-blue-600">
                       {id.day}
                     </div>
-                    <span className="text-xs font-bold text-slate-600 group-hover:text-slate-900 transition-colors">{id.label}</span>
+                    <span className="text-sm font-medium text-slate-600 group-hover:text-slate-900 transition-colors">{id.label}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Legenda */}
+            <div className="space-y-4 pt-6 border-t border-slate-100">
+              <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">
+                Legenda
+              </div>
+              <div className="space-y-3 px-1">
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 rounded-full bg-blue-100 border border-blue-200" />
+                  <span className="text-sm font-medium text-slate-600">Planejado</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 rounded-full bg-green-100 border border-green-200" />
+                  <span className="text-sm font-medium text-slate-600">Publicado</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 rounded-full bg-slate-900" />
+                  <span className="text-sm font-medium text-slate-600">Selecionado</span>
+                </div>
               </div>
             </div>
           </div>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 md:overflow-y-auto bg-white p-6 md:p-12">
+        <main className="flex-1 md:overflow-y-auto bg-slate-50/30 p-6 md:p-12">
           <div className="max-w-5xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div
@@ -328,125 +409,156 @@ export default function Planner() {
                   <div className="space-y-16">
                     {selectedPosts.map((post, index) => (
                       <div key={post.id} className="space-y-8">
-                        {/* Post Header */}
-                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                          <div className="space-y-4 w-full">
-                            {index === 0 && (
-                              <div className="text-sm font-black text-blue-600 tracking-wider">
-                                {new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                              </div>
-                            )}
-                            <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-[1.1] max-w-2xl">
+                        {/* Header */}
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                          <div>
+                            <div className="text-blue-600 font-bold text-sm mb-2">
+                              {new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                            </div>
+                            <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">
                               {post.title}
                             </h2>
-                            
-                            {/* Discrete Info Bar */}
-                            <div className="flex flex-wrap items-center gap-3 pt-2">
-                              <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg">
-                                <CalendarIcon className="w-4 h-4 text-slate-400" />
-                                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Formato: {post.format}</span>
-                              </div>
-                              
-                              {post.media_link ? (
-                                <div className="flex flex-wrap gap-2">
-                                  {post.media_link.split('\n').filter(link => link.trim() !== '').map((link, idx) => (
-                                    <a 
-                                      key={idx}
-                                      href={link.trim()}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors"
-                                    >
-                                      <Camera className="w-4 h-4" />
-                                      Acessar Mídia {idx + 1}
-                                    </a>
-                                  ))}
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg">
-                                  <Camera className="w-4 h-4 text-slate-400" />
-                                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Utilize fotos do seu acervo</span>
-                                </div>
-                              )}
-                            </div>
                           </div>
-
-                          {isAdmin && (
-                            <div className="flex gap-2 shrink-0">
-                              <Button 
-                                variant="outline"
-                                onClick={() => { setEditingPost(post); setIsEditing(true); }}
-                                className="h-10 px-4 border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50"
-                              >
-                                <Edit2 className="w-4 h-4 mr-2" /> Editar
-                              </Button>
-                              <Button 
-                                variant="outline"
-                                onClick={() => handleDeletePost(post.id)}
-                                className="h-10 w-10 p-0 border-slate-200 text-red-400 hover:text-red-600 hover:bg-red-50 font-bold rounded-xl flex items-center justify-center"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          )}
+                          <div className="flex items-center gap-3 shrink-0">
+                            {isAdmin && (
+                              <>
+                                <Button variant="outline" onClick={() => { setEditingPost(post); setIsEditing(true); }} className="h-12 px-4 rounded-full border-slate-200 text-slate-600 hover:bg-slate-50">
+                                  <Edit2 className="w-4 h-4" />
+                                </Button>
+                                <Button variant="outline" onClick={() => handleDeletePost(post.id)} className="h-12 px-4 rounded-full border-slate-200 text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-100">
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </>
+                            )}
+                            <Button 
+                              onClick={() => toggleCompleted(post)}
+                              className={`h-12 px-6 rounded-full font-bold text-sm transition-all flex items-center gap-2 shadow-sm ${post.completed === 1 ? 'bg-slate-900 hover:bg-slate-800 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}
+                            >
+                              {post.completed === 1 ? <CheckCircle className="w-5 h-5 text-green-400" /> : <Circle className="w-5 h-5" />}
+                              {post.completed === 1 ? 'Feito' : 'Marcar como Feito'}
+                            </Button>
+                          </div>
                         </div>
 
-                        <div className="space-y-8 pt-4">
-                          {/* Caption Card */}
-                          <Card className="border-slate-100 shadow-sm rounded-[2rem] overflow-hidden">
-                            <CardHeader className="p-5 md:p-8 border-b border-slate-50 flex flex-row items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <MessageCircle className="w-5 h-5 text-blue-500" />
-                                <CardTitle className="text-lg font-black text-slate-900">Legenda do Post</CardTitle>
-                              </div>
-                              <div 
-                                onClick={() => copyToClipboard(formatText(post.caption), 'caption')}
-                                className="flex items-center text-slate-400 font-bold text-xs gap-2 cursor-pointer hover:text-slate-600 transition-colors"
-                              >
-                                {copiedField === 'caption' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                                Copiar
-                              </div>
-                            </CardHeader>
-                            <CardContent className="p-5 md:p-6 pt-0">
-                              <div className="p-5 md:p-8 bg-slate-50/80 rounded-2xl md:rounded-3xl border border-slate-100 text-slate-900 font-medium leading-relaxed whitespace-pre-wrap text-sm">
-                                {formatText(post.caption)}
-                              </div>
-                            </CardContent>
-                          </Card>
+                        <hr className="border-slate-200" />
 
-                          {/* Visual Direction Card */}
-                          <Card className="border-slate-100 shadow-sm rounded-[2rem] overflow-hidden">
-                            <CardHeader className="p-5 md:p-8 border-b border-slate-50 flex flex-row items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <Lightbulb className="w-5 h-5 text-amber-500" />
-                                <CardTitle className="text-lg font-black text-slate-900">Direcionamento Visual</CardTitle>
-                              </div>
-                              <div 
-                                onClick={() => copyToClipboard(formatText(post.script), 'script')}
-                                className="flex items-center text-slate-400 font-bold text-xs gap-2 cursor-pointer hover:text-slate-600 transition-colors"
-                              >
-                                {copiedField === 'script' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                                Copiar
-                              </div>
-                            </CardHeader>
-                            <CardContent className="p-5 md:p-6 pt-0">
-                              <div className="p-5 md:p-8 bg-yellow-50/50 rounded-2xl md:rounded-3xl border border-yellow-100/50 text-slate-900 font-medium text-sm leading-relaxed whitespace-pre-wrap">
-                                {formatText(post.script)}
-                              </div>
-                            </CardContent>
-                          </Card>
+                        {/* Grid Layout */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                          {/* Left Column (Legenda & Dica) */}
+                          <div className="lg:col-span-2 space-y-6 min-w-0">
+                            <Card className="border-slate-200 shadow-sm rounded-3xl overflow-hidden bg-white">
+                              <CardHeader className="p-6 md:p-8 border-b border-slate-100 flex flex-row items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <AlignLeft className="w-6 h-6 text-blue-500" />
+                                  <CardTitle className="text-xl font-black text-slate-900">Legenda do Post</CardTitle>
+                                </div>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => copyToClipboard(formatText(post.caption), 'caption')}
+                                  className="h-10 px-4 rounded-xl text-slate-500 font-bold text-sm border-slate-200 hover:bg-slate-50 shrink-0"
+                                >
+                                  {copiedField === 'caption' ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
+                                  Copiar
+                                </Button>
+                              </CardHeader>
+                              <CardContent className="p-6 md:p-8 space-y-6">
+                                <div className="p-6 md:p-8 bg-slate-50 rounded-2xl text-slate-700 font-medium leading-relaxed whitespace-pre-wrap break-words text-base">
+                                  {formatText(post.caption)}
+                                </div>
+                                
+                                {post.script && (
+                                  <div className="p-5 md:p-6 bg-yellow-50/80 border border-yellow-100 rounded-2xl flex gap-4 text-sm text-yellow-800 font-medium">
+                                    <Lightbulb className="w-6 h-6 text-yellow-600 shrink-0" />
+                                    <div className="min-w-0 break-words">
+                                      <strong className="font-bold text-yellow-900 block mb-1">Dica: </strong>
+                                      {formatText(post.script)}
+                                    </div>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          </div>
+
+                          {/* Right Column (Arte do dia) */}
+                          <div className="space-y-6 min-w-0">
+                            {/* Caixa 1: Imagem Pronta */}
+                            <Card className="bg-slate-900 border-none shadow-xl rounded-3xl overflow-hidden text-white">
+                              <CardContent className="p-6 md:p-8 space-y-6">
+                                <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Opção 1</div>
+                                <p className="text-base font-medium text-slate-300 leading-relaxed">
+                                  Baixe uma imagem pronta para usar em suas redes sociais.
+                                </p>
+                                
+                                {post.media_link ? (
+                                  <div className="space-y-3">
+                                    {post.media_link.split('\n').filter(link => link.trim() !== '').map((link, idx) => (
+                                      <a 
+                                        key={idx}
+                                        href={link.trim()}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-full h-14 bg-white text-slate-900 hover:bg-slate-50 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-sm px-4"
+                                      >
+                                        <Sparkles className="w-5 h-5 text-brand-secondary shrink-0" />
+                                        <span className="truncate">Baixar Imagem Pronta</span>
+                                        <ExternalLink className="w-4 h-4 text-slate-400 ml-1 shrink-0" />
+                                      </a>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="w-full h-14 bg-slate-800 text-slate-400 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 px-4">
+                                    <Camera className="w-5 h-5 shrink-0" />
+                                    <span className="truncate">Nenhuma imagem pronta disponível</span>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+
+                            {/* Caixa 2: Gerar Imagem Personalizada */}
+                            <Card className="bg-white border border-slate-200 shadow-sm rounded-3xl overflow-hidden">
+                              <CardContent className="p-6 md:p-8 space-y-6">
+                                <div className="text-[11px] font-black text-brand-primary uppercase tracking-widest">Opção 2</div>
+                                <p className="text-base font-medium text-slate-700 leading-relaxed">
+                                  Gere uma imagem exclusiva com IA baseada neste post.
+                                </p>
+                                
+                                <Button 
+                                  onClick={() => handleGenerateImage(post)}
+                                  disabled={isGeneratingImage}
+                                  className="w-full h-16 bg-gradient-to-r from-brand-primary to-brand-secondary hover:opacity-90 text-white rounded-2xl font-black text-sm shadow-lg shadow-brand-primary/20 transition-all flex flex-col items-center justify-center gap-1 disabled:opacity-50"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    {isGeneratingImage ? (
+                                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    ) : (
+                                      <ImageIcon className="w-5 h-5 shrink-0" />
+                                    )}
+                                    <span className="truncate">
+                                      {isGeneratingImage ? 'Gerando Imagem...' : 'Gerar Imagem Personalizada'}
+                                    </span>
+                                  </div>
+                                  {!isGeneratingImage && (
+                                    <span className="text-[10px] font-medium opacity-80 uppercase tracking-wider">
+                                      Consome 50 créditos
+                                    </span>
+                                  )}
+                                </Button>
+                              </CardContent>
+                            </Card>
+                          </div>
                         </div>
                       </div>
                     ))}
                     
                     {isAdmin && selectedPosts.length < 2 && (
-                      <div className="pt-8 border-t border-slate-100 flex justify-center">
+                      <div className="pt-8 border-t border-slate-200 flex justify-center">
                         <Button 
                           onClick={() => {
                             setEditingPost({ title: '', format: 'Stories', script: '', caption: '', date: selectedDate, media_link: '' });
                             setIsEditing(true);
                           }}
-                          className="bg-slate-900 hover:bg-slate-800 text-white px-8 h-14 rounded-2xl font-black shadow-xl"
+                          className="bg-slate-900 hover:bg-slate-800 text-white px-8 h-14 rounded-full font-black shadow-xl"
                         >
                           <Plus className="w-5 h-5 mr-2" /> Adicionar outra opção para este dia
                         </Button>
@@ -455,12 +567,12 @@ export default function Planner() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-32 text-center space-y-8">
-                    <div className="w-28 h-28 bg-slate-50 rounded-full flex items-center justify-center">
-                      <CalendarIcon className="w-12 h-12 text-slate-200" />
+                    <div className="w-28 h-28 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100">
+                      <CalendarIcon className="w-12 h-12 text-slate-300" />
                     </div>
                     <div className="space-y-3">
                       <h3 className="text-3xl font-black text-slate-900">Nenhum post planejado</h3>
-                      <p className="text-slate-400 font-medium max-w-sm mx-auto text-lg leading-relaxed">
+                      <p className="text-slate-500 font-medium max-w-sm mx-auto text-lg leading-relaxed">
                         Aproveite para criar um conteúdo autoral ou descansar!
                       </p>
                     </div>
@@ -470,7 +582,7 @@ export default function Planner() {
                           setEditingPost({ title: '', format: 'Stories', script: '', caption: '' });
                           setIsEditing(true);
                         }}
-                        className="bg-brand-primary hover:bg-blue-700 text-white px-10 h-16 rounded-2xl font-black shadow-xl shadow-brand-primary/20"
+                        className="bg-brand-primary hover:bg-blue-700 text-white px-10 h-16 rounded-full font-black shadow-xl shadow-brand-primary/20"
                       >
                         <Plus className="w-6 h-6 mr-3" /> Criar post para este dia
                       </Button>
@@ -556,12 +668,12 @@ export default function Planner() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Roteiro / Sugestão</label>
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Dica / Direcionamento</label>
                   <textarea 
                     value={editingPost?.script || ''}
                     onChange={e => setEditingPost({ ...editingPost, script: e.target.value })}
                     className="w-full h-32 p-4 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none transition-all font-medium resize-none"
-                    placeholder="O que o corretor deve fazer ou falar?"
+                    placeholder="Dica ou direcionamento visual para o post..."
                   />
                 </div>
 
