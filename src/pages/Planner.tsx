@@ -27,7 +27,9 @@ import {
   Clock,
   AlignLeft,
   Image as ImageIcon,
-  ExternalLink
+  ExternalLink,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/Button";
@@ -212,21 +214,6 @@ export default function Planner() {
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const toggleCompleted = async (post: PlannerPost) => {
-    try {
-      const newCompletedState = post.completed === 1 ? 0 : 1;
-      const { error } = await supabase
-        .from('posts')
-        .update({ completed: newCompletedState })
-        .eq('id', post.id);
-      
-      if (error) throw error;
-      fetchData();
-    } catch (error) {
-      console.error('Error toggling post status:', error);
-    }
-  };
-
   const handleGenerateImage = async (post: PlannerPost) => {
     if (!user) return;
     
@@ -287,10 +274,10 @@ export default function Planner() {
 
   return (
     <div className="flex-1 flex flex-col md:overflow-hidden">
-      <div className="flex-1 flex flex-col md:flex-row md:overflow-hidden">
+      <div className="flex-1 flex flex-col md:flex-row md:overflow-hidden relative">
         {/* Sidebar */}
         <aside className="w-full md:w-[320px] md:shrink-0 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col bg-white md:overflow-y-auto">
-          <div className="p-6 space-y-8">
+          <div className="p-6 space-y-8 w-full md:w-[320px]">
             {/* Calendar */}
             <div className="space-y-6">
               <div className="flex items-center justify-between px-1">
@@ -312,17 +299,13 @@ export default function Planner() {
                   const dayPosts = posts.filter(p => p.date === dateStr);
                   const isSelected = selectedDate === dateStr;
                   const isToday = new Date().toISOString().split('T')[0] === dateStr;
-                  const isCompleted = dayPosts.some(p => p.completed === 1);
-                  const hasPlanned = dayPosts.some(p => p.completed === 0);
+                  const hasPlanned = dayPosts.length > 0;
 
                   let bgColor = 'hover:bg-slate-50 text-slate-600';
                   let dotColor = '';
 
                   if (isSelected) {
                     bgColor = 'bg-slate-900 text-white shadow-md';
-                  } else if (isCompleted) {
-                    bgColor = 'bg-green-100 text-green-700 hover:bg-green-200';
-                    dotColor = 'bg-green-500';
                   } else if (hasPlanned) {
                     bgColor = 'bg-blue-100 text-blue-700 hover:bg-blue-200';
                     dotColor = 'bg-blue-500';
@@ -382,10 +365,6 @@ export default function Planner() {
                   <span className="text-sm font-medium text-slate-600">Planejado</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-green-100 border border-green-200" />
-                  <span className="text-sm font-medium text-slate-600">Publicado</span>
-                </div>
-                <div className="flex items-center gap-3">
                   <div className="w-5 h-5 rounded-full bg-slate-900" />
                   <span className="text-sm font-medium text-slate-600">Selecionado</span>
                 </div>
@@ -395,8 +374,9 @@ export default function Planner() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 md:overflow-y-auto bg-slate-50/30 p-6 md:p-12">
-          <div className="max-w-5xl mx-auto">
+        <main className="flex-1 md:overflow-y-auto bg-slate-50/30 p-6 md:p-12 relative">
+
+          <div className="max-w-5xl mx-auto md:pt-12">
             <AnimatePresence mode="wait">
               <motion.div
                 key={selectedDate}
@@ -410,142 +390,115 @@ export default function Planner() {
                     {selectedPosts.map((post, index) => (
                       <div key={post.id} className="space-y-8">
                         {/* Header */}
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                           <div>
-                            <div className="text-blue-600 font-bold text-sm mb-2">
-                              {new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                            <div className="text-slate-500 font-medium text-sm mb-1 uppercase tracking-wider">
+                              {new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
                             </div>
-                            <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
                               {post.title}
                             </h2>
                           </div>
                           <div className="flex items-center gap-3 shrink-0">
                             {isAdmin && (
                               <>
-                                <Button variant="outline" onClick={() => { setEditingPost(post); setIsEditing(true); }} className="h-12 px-4 rounded-full border-slate-200 text-slate-600 hover:bg-slate-50">
+                                <Button variant="outline" onClick={() => { setEditingPost(post); setIsEditing(true); }} className="h-10 px-4 rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50">
                                   <Edit2 className="w-4 h-4" />
                                 </Button>
-                                <Button variant="outline" onClick={() => handleDeletePost(post.id)} className="h-12 px-4 rounded-full border-slate-200 text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-100">
+                                <Button variant="outline" onClick={() => handleDeletePost(post.id)} className="h-10 px-4 rounded-xl border-slate-200 text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-100">
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
                               </>
                             )}
-                            <Button 
-                              onClick={() => toggleCompleted(post)}
-                              className={`h-12 px-6 rounded-full font-bold text-sm transition-all flex items-center gap-2 shadow-sm ${post.completed === 1 ? 'bg-slate-900 hover:bg-slate-800 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}
-                            >
-                              {post.completed === 1 ? <CheckCircle className="w-5 h-5 text-green-400" /> : <Circle className="w-5 h-5" />}
-                              {post.completed === 1 ? 'Feito' : 'Marcar como Feito'}
-                            </Button>
                           </div>
                         </div>
-
-                        <hr className="border-slate-200" />
 
                         {/* Grid Layout */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                           {/* Left Column (Legenda & Dica) */}
                           <div className="lg:col-span-2 space-y-6 min-w-0">
-                            <Card className="border-slate-200 shadow-sm rounded-3xl overflow-hidden bg-white">
-                              <CardHeader className="p-6 md:p-8 border-b border-slate-100 flex flex-row items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <AlignLeft className="w-6 h-6 text-blue-500" />
-                                  <CardTitle className="text-xl font-black text-slate-900">Legenda do Post</CardTitle>
-                                </div>
+                            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
+                              <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                  <AlignLeft className="w-5 h-5 text-blue-500" />
+                                  Legenda do Post
+                                </h3>
                                 <Button 
-                                  variant="outline" 
+                                  variant="ghost" 
                                   size="sm"
                                   onClick={() => copyToClipboard(formatText(post.caption), 'caption')}
-                                  className="h-10 px-4 rounded-xl text-slate-500 font-bold text-sm border-slate-200 hover:bg-slate-50 shrink-0"
+                                  className="text-slate-500 hover:text-slate-900"
                                 >
                                   {copiedField === 'caption' ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
                                   Copiar
                                 </Button>
-                              </CardHeader>
-                              <CardContent className="p-6 md:p-8 space-y-6">
-                                <div className="p-6 md:p-8 bg-slate-50 rounded-2xl text-slate-700 font-medium leading-relaxed whitespace-pre-wrap break-words text-base">
-                                  {formatText(post.caption)}
-                                </div>
-                                
-                                {post.script && (
-                                  <div className="p-5 md:p-6 bg-yellow-50/80 border border-yellow-100 rounded-2xl flex gap-4 text-sm text-yellow-800 font-medium">
-                                    <Lightbulb className="w-6 h-6 text-yellow-600 shrink-0" />
-                                    <div className="min-w-0 break-words">
-                                      <strong className="font-bold text-yellow-900 block mb-1">Dica: </strong>
-                                      {formatText(post.script)}
-                                    </div>
+                              </div>
+                              <div className="text-slate-700 leading-relaxed whitespace-pre-wrap break-words text-base">
+                                {formatText(post.caption)}
+                              </div>
+                              
+                              {post.script && (
+                                <div className="mt-8 p-5 bg-yellow-50 rounded-2xl flex gap-4 text-sm text-yellow-800">
+                                  <Lightbulb className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
+                                  <div className="min-w-0 break-words">
+                                    <strong className="font-bold text-yellow-900 block mb-1">Dica: </strong>
+                                    {formatText(post.script)}
                                   </div>
-                                )}
-                              </CardContent>
-                            </Card>
+                                </div>
+                              )}
+                            </div>
                           </div>
 
                           {/* Right Column (Arte do dia) */}
                           <div className="space-y-6 min-w-0">
-                            {/* Caixa 1: Imagem Pronta */}
-                            <Card className="bg-slate-900 border-none shadow-xl rounded-3xl overflow-hidden text-white">
-                              <CardContent className="p-6 md:p-8 space-y-6">
-                                <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Opção 1</div>
-                                <p className="text-base font-medium text-slate-300 leading-relaxed">
-                                  Baixe uma imagem pronta para usar em suas redes sociais.
-                                </p>
-                                
-                                {post.media_link ? (
-                                  <div className="space-y-3">
-                                    {post.media_link.split('\n').filter(link => link.trim() !== '').map((link, idx) => (
-                                      <a 
-                                        key={idx}
-                                        href={link.trim()}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="w-full h-14 bg-white text-slate-900 hover:bg-slate-50 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-sm px-4"
-                                      >
-                                        <Sparkles className="w-5 h-5 text-brand-secondary shrink-0" />
-                                        <span className="truncate">Baixar Imagem Pronta</span>
-                                        <ExternalLink className="w-4 h-4 text-slate-400 ml-1 shrink-0" />
-                                      </a>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <div className="w-full h-14 bg-slate-800 text-slate-400 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 px-4">
-                                    <Camera className="w-5 h-5 shrink-0" />
-                                    <span className="truncate">Nenhuma imagem pronta disponível</span>
-                                  </div>
-                                )}
-                              </CardContent>
-                            </Card>
+                            <div className="bg-slate-900 rounded-3xl p-6 md:p-8 text-white shadow-xl">
+                              <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
+                                <ImageIcon className="w-5 h-5 text-slate-400" />
+                                Arte do Post
+                              </h3>
+                              
+                              <div className="space-y-6">
+                                <div>
+                                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Opção 1: Pronta</div>
+                                  {post.media_link ? (
+                                    <div className="space-y-2">
+                                      {post.media_link.split('\n').filter(link => link.trim() !== '').map((link, idx) => (
+                                        <a 
+                                          key={idx}
+                                          href={link.trim()}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="w-full h-12 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-colors"
+                                        >
+                                          <ExternalLink className="w-4 h-4 shrink-0" />
+                                          <span className="truncate">Baixar Imagem</span>
+                                        </a>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="text-sm text-slate-400 italic">Nenhuma imagem pronta.</div>
+                                  )}
+                                </div>
 
-                            {/* Caixa 2: Gerar Imagem Personalizada */}
-                            <Card className="bg-white border border-slate-200 shadow-sm rounded-3xl overflow-hidden">
-                              <CardContent className="p-6 md:p-8 space-y-6">
-                                <div className="text-[11px] font-black text-brand-primary uppercase tracking-widest">Opção 2</div>
-                                <p className="text-base font-medium text-slate-700 leading-relaxed">
-                                  Gere uma imagem exclusiva com IA baseada neste post.
-                                </p>
-                                
-                                <Button 
-                                  onClick={() => handleGenerateImage(post)}
-                                  disabled={isGeneratingImage}
-                                  className="w-full h-16 bg-gradient-to-r from-brand-primary to-brand-secondary hover:opacity-90 text-white rounded-2xl font-black text-sm shadow-lg shadow-brand-primary/20 transition-all flex flex-col items-center justify-center gap-1 disabled:opacity-50"
-                                >
-                                  <div className="flex items-center gap-2">
+                                <div className="pt-6 border-t border-slate-800">
+                                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Opção 2: IA</div>
+                                  <Button 
+                                    onClick={() => handleGenerateImage(post)}
+                                    disabled={isGeneratingImage}
+                                    className="w-full h-12 bg-brand-primary hover:bg-brand-primary/90 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                  >
                                     {isGeneratingImage ? (
-                                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                                     ) : (
-                                      <ImageIcon className="w-5 h-5 shrink-0" />
+                                      <Sparkles className="w-4 h-4 shrink-0" />
                                     )}
                                     <span className="truncate">
-                                      {isGeneratingImage ? 'Gerando Imagem...' : 'Gerar Imagem Personalizada'}
+                                      {isGeneratingImage ? 'Gerando...' : 'Gerar com IA (-50 créd)'}
                                     </span>
-                                  </div>
-                                  {!isGeneratingImage && (
-                                    <span className="text-[10px] font-medium opacity-80 uppercase tracking-wider">
-                                      Consome 50 créditos
-                                    </span>
-                                  )}
-                                </Button>
-                              </CardContent>
-                            </Card>
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>

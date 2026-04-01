@@ -161,12 +161,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (isExpired) {
         // Subscription or trial expired
-        const newStatus = userData.status === 'trial' ? 'expired' : 'expired';
-        const updatedUser = { ...userData, status: newStatus as const };
+        const updatedUser = { ...userData, status: 'expired' as const };
         setUser(updatedUser);
         
         // Update in DB
-        await supabase.from('profiles').update({ status: newStatus }).eq('id', userData.id);
+        await supabase.from('profiles').update({ status: 'expired' }).eq('id', userData.id);
         return;
       }
     }

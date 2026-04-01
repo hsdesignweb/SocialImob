@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, Loader2, LogOut, Coins, MessageCircle, Target, Sparkles, Home as HomeIcon, Rocket, History, Calendar, Settings, Clock, X, GraduationCap, Camera, Megaphone, Image as ImageIcon, FileText, Users } from 'lucide-react';
+import { Menu, Loader2, LogOut, Coins, MessageCircle, Target, Sparkles, Home as HomeIcon, Rocket, History, Calendar, Settings, Clock, X, GraduationCap, Camera, Megaphone, Image as ImageIcon, FileText, Users, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { useAppStore } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
@@ -10,35 +10,12 @@ export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const { isLoading } = useAppStore();
   const { user, logout } = useAuth();
   const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
-  const [completedPosts, setCompletedPosts] = useState(0);
 
   const isPlanner = location.pathname === '/app/planner';
-
-  // Fetch planner stats if on planner page
-  useEffect(() => {
-    if (isPlanner) {
-      const fetchStats = async () => {
-        const { count } = await supabase
-          .from('posts')
-          .select('*', { count: 'exact', head: true })
-          .eq('completed', 1);
-        setCompletedPosts(count || 0);
-      };
-      fetchStats();
-
-      const channel = supabase
-        .channel('planner_stats')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => {
-          fetchStats();
-        })
-        .subscribe();
-
-      return () => { supabase.removeChannel(channel); };
-    }
-  }, [isPlanner]);
 
   const loadingPhrases = [
     "Vender imóveis não é obra do acaso, é aplicar a verdadeira engenharia de vendas em cada atendimento.",
@@ -105,67 +82,101 @@ export default function Layout() {
       <>
         <button 
           onClick={() => { navigate('/app/lessons'); onClick?.(); }}
-          className="w-full text-left px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-primary rounded-xl flex items-center gap-3 transition-colors font-bold"
+          className={`w-full text-left py-3 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-primary rounded-xl flex items-center transition-colors font-bold ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4 gap-3'}`}
+          title={isSidebarCollapsed ? "Sim Academy" : undefined}
         >
-          <GraduationCap className="w-5 h-5 text-brand-secondary" />
-          Sim Academy
+          <GraduationCap className="w-5 h-5 text-brand-secondary shrink-0" />
+          {!isSidebarCollapsed && <span>Sim Academy</span>}
         </button>
         <button 
           onClick={() => { navigate('/app/planner'); onClick?.(); }}
-          className="w-full text-left px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-primary rounded-xl flex items-center gap-3 transition-colors font-bold"
+          className={`w-full text-left py-3 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-primary rounded-xl flex items-center transition-colors font-bold ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4 gap-3'}`}
+          title={isSidebarCollapsed ? "Planner Imobiliário" : undefined}
         >
-          <Calendar className="w-5 h-5 text-brand-primary" />
-          Planner Imobiliário
+          <Calendar className="w-5 h-5 text-brand-primary shrink-0" />
+          {!isSidebarCollapsed && <span>Planner Imobiliário</span>}
         </button>
         <button 
           onClick={handleNewCampaign}
-          className="w-full text-left px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-primary rounded-xl flex items-center gap-3 transition-colors font-bold"
+          className={`w-full text-left py-3 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-primary rounded-xl flex items-center transition-colors font-bold ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4 gap-3'}`}
+          title={isSidebarCollapsed ? "Estrategista de Conteúdo" : undefined}
         >
-          <Rocket className="w-5 h-5 text-brand-primary" />
-          Estrategista de Conteúdo <span className="text-[10px] font-black text-brand-secondary uppercase tracking-wider ml-auto">Beta</span>
+          <Rocket className="w-5 h-5 text-brand-primary shrink-0" />
+          {!isSidebarCollapsed && (
+            <>
+              <span>Estrategista de Conteúdo</span>
+              <span className="text-[10px] font-black text-brand-secondary uppercase tracking-wider ml-auto">Beta</span>
+            </>
+          )}
         </button>
         <button 
           onClick={() => { navigate('/app/ad-examples'); onClick?.(); }}
-          className="w-full text-left px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-primary rounded-xl flex items-center gap-3 transition-colors font-bold"
+          className={`w-full text-left py-3 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-primary rounded-xl flex items-center transition-colors font-bold ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4 gap-3'}`}
+          title={isSidebarCollapsed ? "Exemplos de anúncios" : undefined}
         >
-          <FileText className="w-5 h-5 text-emerald-500" />
-          Exemplos de anúncios
+          <FileText className="w-5 h-5 text-emerald-500 shrink-0" />
+          {!isSidebarCollapsed && <span>Exemplos de anúncios</span>}
         </button>
         <button 
-          className="w-full text-left px-4 py-3 text-sm text-slate-400 rounded-xl flex items-center gap-3 font-bold cursor-not-allowed"
+          className={`w-full text-left py-3 text-sm text-slate-400 rounded-xl flex items-center font-bold cursor-not-allowed ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4 gap-3'}`}
           disabled
+          title={isSidebarCollapsed ? "CRM" : undefined}
         >
-          <Users className="w-5 h-5 opacity-50" />
-          CRM <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider ml-auto">Em breve</span>
+          <Users className="w-5 h-5 opacity-50 shrink-0" />
+          {!isSidebarCollapsed && (
+            <>
+              <span>CRM</span>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider ml-auto">Em breve</span>
+            </>
+          )}
         </button>
         <button 
-          className="w-full text-left px-4 py-3 text-sm text-slate-400 rounded-xl flex items-center gap-3 font-bold cursor-not-allowed"
+          className={`w-full text-left py-3 text-sm text-slate-400 rounded-xl flex items-center font-bold cursor-not-allowed ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4 gap-3'}`}
           disabled
+          title={isSidebarCollapsed ? "Social Ads" : undefined}
         >
-          <Megaphone className="w-5 h-5 opacity-50" />
-          Social Ads <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider ml-auto">Em breve</span>
+          <Megaphone className="w-5 h-5 opacity-50 shrink-0" />
+          {!isSidebarCollapsed && (
+            <>
+              <span>Social Ads</span>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider ml-auto">Em breve</span>
+            </>
+          )}
         </button>
         <button 
-          className="w-full text-left px-4 py-3 text-sm text-slate-400 rounded-xl flex items-center gap-3 font-bold cursor-not-allowed"
+          className={`w-full text-left py-3 text-sm text-slate-400 rounded-xl flex items-center font-bold cursor-not-allowed ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4 gap-3'}`}
           disabled
+          title={isSidebarCollapsed ? "Fotos Profissionais" : undefined}
         >
-          <Camera className="w-5 h-5 opacity-50" />
-          Fotos Profissionais <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider ml-auto">Em breve</span>
+          <Camera className="w-5 h-5 opacity-50 shrink-0" />
+          {!isSidebarCollapsed && (
+            <>
+              <span>Fotos Profissionais</span>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider ml-auto">Em breve</span>
+            </>
+          )}
         </button>
         <button 
-          className="w-full text-left px-4 py-3 text-sm text-slate-400 rounded-xl flex items-center gap-3 font-bold cursor-not-allowed"
+          className={`w-full text-left py-3 text-sm text-slate-400 rounded-xl flex items-center font-bold cursor-not-allowed ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4 gap-3'}`}
           disabled
+          title={isSidebarCollapsed ? "Gerador de carrosséis" : undefined}
         >
-          <ImageIcon className="w-5 h-5 opacity-50" />
-          Gerador de carrosséis <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider ml-auto">Em breve</span>
+          <ImageIcon className="w-5 h-5 opacity-50 shrink-0" />
+          {!isSidebarCollapsed && (
+            <>
+              <span>Gerador de carrosséis</span>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider ml-auto">Em breve</span>
+            </>
+          )}
         </button>
         {user?.isAdmin && (
           <button 
             onClick={() => { navigate('/app/admin'); onClick?.(); }}
-            className="w-full text-left px-4 py-3 text-sm text-brand-primary font-bold hover:bg-slate-50 rounded-xl flex items-center gap-3 transition-colors"
+            className={`w-full text-left py-3 text-sm text-brand-primary font-bold hover:bg-slate-50 rounded-xl flex items-center transition-colors ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4 gap-3'}`}
+            title={isSidebarCollapsed ? "Painel Administrativo" : undefined}
           >
-            <Target className="w-5 h-5" />
-            Painel Administrativo
+            <Target className="w-5 h-5 shrink-0" />
+            {!isSidebarCollapsed && <span>Painel Administrativo</span>}
           </button>
         )}
       </>
@@ -232,53 +243,74 @@ export default function Layout() {
       )}
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-100 fixed inset-y-0 left-0 z-50">
-        <div className="h-20 flex items-center px-6 border-b border-slate-100 cursor-pointer" onClick={() => navigate('/app')}>
-          <img 
-            src="https://hebertsilva.com/wp-content/uploads/2026/03/logo-social-imob.png" 
-            alt="SocialImob Logo" 
-            className="h-8 object-contain"
-            referrerPolicy="no-referrer"
-          />
+      <aside className={`hidden md:flex flex-col bg-white border-r border-slate-100 fixed inset-y-0 left-0 z-50 transition-all duration-300 ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
+        <div className="h-20 flex items-center justify-between px-6 border-b border-slate-100">
+          {!isSidebarCollapsed && (
+            <img 
+              src="https://hebertsilva.com/wp-content/uploads/2026/03/logo-social-imob.png" 
+              alt="SocialImob Logo" 
+              className="h-8 object-contain cursor-pointer"
+              onClick={() => navigate('/app')}
+              referrerPolicy="no-referrer"
+            />
+          )}
+          <button 
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className={`p-2 text-slate-400 hover:text-brand-primary hover:bg-slate-50 rounded-lg transition-colors ${isSidebarCollapsed ? 'mx-auto' : ''}`}
+            title={isSidebarCollapsed ? "Expandir menu" : "Recolher menu"}
+          >
+            {isSidebarCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+          </button>
         </div>
         
-        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+        <div className={`flex-1 overflow-y-auto py-6 space-y-1 ${isSidebarCollapsed ? 'px-2' : 'px-4'}`}>
           <NavLinks />
         </div>
 
-        <div className="p-4 border-t border-slate-100 space-y-1">
+        <div className={`p-4 border-t border-slate-100 space-y-1 ${isSidebarCollapsed ? 'px-2' : 'px-4'}`}>
           {user?.status === 'trial' && (
             <button 
               onClick={() => navigate('/payment')}
-              className="w-full text-left px-4 py-3 text-sm text-white bg-brand-primary hover:bg-brand-primary/90 rounded-xl flex items-center gap-3 transition-colors font-bold mb-2 shadow-lg shadow-brand-primary/20"
+              className={`w-full text-left py-3 text-sm text-white bg-brand-primary hover:bg-brand-primary/90 rounded-xl flex items-center transition-colors font-bold mb-2 shadow-lg shadow-brand-primary/20 ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4 gap-3'}`}
+              title={isSidebarCollapsed ? "Assinar Agora" : undefined}
             >
-              <Sparkles className="w-5 h-5" />
-              Assinar Agora
+              <Sparkles className="w-5 h-5 shrink-0" />
+              {!isSidebarCollapsed && <span>Assinar Agora</span>}
             </button>
           )}
-          <div className="px-4 py-3 mb-2 bg-slate-50 rounded-xl border border-slate-100">
-            <p className="text-xs font-bold text-slate-900 truncate">{user?.name}</p>
-            <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
-          </div>
+          {!isSidebarCollapsed ? (
+            <div className="px-4 py-3 mb-2 bg-slate-50 rounded-xl border border-slate-100">
+              <p className="text-xs font-bold text-slate-900 truncate">{user?.name}</p>
+              <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
+            </div>
+          ) : (
+            <div className="py-3 mb-2 flex justify-center">
+              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xs uppercase" title={user?.name}>
+                {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
+              </div>
+            </div>
+          )}
           <button 
             onClick={() => navigate('/app/store')}
-            className="w-full text-left px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-primary rounded-xl flex items-center gap-3 transition-colors font-bold"
+            className={`w-full text-left py-3 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-primary rounded-xl flex items-center transition-colors font-bold ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4 gap-3'}`}
+            title={isSidebarCollapsed ? "Meus Créditos" : undefined}
           >
-            <Coins className="w-5 h-5 text-emerald-500" />
-            Meus Créditos
+            <Coins className="w-5 h-5 text-emerald-500 shrink-0" />
+            {!isSidebarCollapsed && <span>Meus Créditos</span>}
           </button>
           <button 
             onClick={handleLogout}
-            className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 rounded-xl flex items-center gap-3 transition-colors font-bold"
+            className={`w-full text-left py-3 text-sm text-red-500 hover:bg-red-50 rounded-xl flex items-center transition-colors font-bold ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4 gap-3'}`}
+            title={isSidebarCollapsed ? "Sair do Sistema" : undefined}
           >
-            <LogOut className="w-5 h-5" />
-            Sair do Sistema
+            <LogOut className="w-5 h-5 shrink-0" />
+            {!isSidebarCollapsed && <span>Sair do Sistema</span>}
           </button>
         </div>
       </aside>
 
       {/* Main Content Wrapper */}
-      <div className="flex-1 flex flex-col md:ml-64 min-w-0">
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
         {/* Header */}
         <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100">
           <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between md:justify-end">
@@ -312,10 +344,6 @@ export default function Layout() {
                     <Clock className="w-4 h-4" />
                     Hoje
                   </button>
-                  <div className="hidden md:flex flex-col items-end">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Progresso Anual</span>
-                    <span className="text-sm font-black text-slate-900">{completedPosts} / 725 Posts</span>
-                  </div>
                 </div>
               ) : !user?.isAdmin && (
                 <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-200">
