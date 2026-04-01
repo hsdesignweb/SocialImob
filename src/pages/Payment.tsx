@@ -248,7 +248,7 @@ export default function Payment() {
                 <button
                   onClick={() => {
                     setBillingCycle('monthly');
-                    if (selectedPlan.includes('yearly')) {
+                    if (selectedPlan.includes('yearly') && !selectedPlan.includes('basic')) {
                       setSelectedPlan(selectedPlan.replace('yearly', 'monthly') as any);
                     }
                   }}
@@ -259,7 +259,7 @@ export default function Payment() {
                 <button
                   onClick={() => {
                     setBillingCycle('yearly');
-                    if (selectedPlan.includes('monthly')) {
+                    if (selectedPlan.includes('monthly') && !selectedPlan.includes('basic')) {
                       setSelectedPlan(selectedPlan.replace('monthly', 'yearly') as any);
                     }
                   }}
@@ -301,23 +301,29 @@ export default function Payment() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Basic Plan */}
                 <div 
-                  onClick={() => setSelectedPlan(billingCycle === 'monthly' ? plans.basic.monthlyId : plans.basic.yearlyId as any)}
+                  onClick={() => setSelectedPlan(plans.basic.yearlyId as any)}
                   className={`cursor-pointer transition-all duration-200 rounded-3xl border-2 p-6 flex flex-col ${
-                    selectedPlan.includes('basic')
+                    selectedPlan === plans.basic.yearlyId
                       ? 'border-brand-primary bg-brand-primary/5 shadow-lg shadow-brand-primary/10' 
                       : 'border-slate-100 bg-slate-50 hover:border-slate-200'
                   }`}
                 >
                   <div className="mb-6">
-                    <h3 className={`font-black tracking-widest text-sm ${selectedPlan.includes('basic') ? 'text-brand-primary' : 'text-slate-900'}`}>
-                      {plans.basic.name}
-                    </h3>
+                    <div className="flex justify-between items-start">
+                      <h3 className={`font-black tracking-widest text-sm ${selectedPlan === plans.basic.yearlyId ? 'text-brand-primary' : 'text-slate-900'}`}>
+                        {plans.basic.name}
+                      </h3>
+                      <span className="bg-slate-200 text-slate-600 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-widest font-bold">Apenas Anual</span>
+                    </div>
                     <div className="mt-4">
                       <span className="text-3xl font-black text-slate-900 tracking-tighter">
-                        R$ {getDiscountedPrice(billingCycle === 'monthly' ? plans.basic.monthlyPrice : plans.basic.yearlyPrice).toFixed(2).replace('.', ',')}
+                        12x R$ {(getDiscountedPrice(plans.basic.yearlyPrice) / 12).toFixed(2).replace('.', ',')}
                       </span>
                       <span className="text-[10px] font-black text-slate-400 tracking-widest block mt-1">
-                        /{billingCycle === 'monthly' ? 'mês' : 'ano'}
+                        /mês (cobrado anualmente)
+                      </span>
+                      <span className="text-xs font-bold text-slate-500 block mt-2">
+                        ou R$ {getDiscountedPrice(plans.basic.yearlyPrice).toFixed(2).replace('.', ',')} à vista
                       </span>
                     </div>
                   </div>
