@@ -434,7 +434,7 @@ export default function Planner() {
                             </div>
                           )}
 
-                          {/* Sugestão de Legenda (Removido temporariamente)
+                          {/* Sugestão de Legenda */}
                           <div className="bg-white border border-slate-100 shadow-sm rounded-3xl p-6 md:p-8 flex flex-col">
                             <div className="flex items-center justify-between mb-4">
                               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -455,7 +455,6 @@ export default function Planner() {
                               {formatText(post.caption) || "Nenhuma legenda sugerida."}
                             </div>
                           </div>
-                          */}
 
                           {/* Imagem Complementar (Opção 1) */}
                           <div className="bg-white border border-slate-100 shadow-sm rounded-3xl p-6 md:p-8 flex flex-col">
@@ -487,7 +486,7 @@ export default function Planner() {
                             </div>
                           </div>
 
-                          {/* Gere sua própria imagem (Opção 2) */}
+                          {/* Gere sua própria imagem (Opção 2)
                           <div className="bg-white border border-slate-100 shadow-sm rounded-3xl p-6 md:p-8 flex flex-col">
                             <div className="flex items-center justify-between mb-4">
                               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -512,6 +511,7 @@ export default function Planner() {
                               </Button>
                             </div>
                           </div>
+                          */}
                         </div>
                       </div>
                     ))}
@@ -652,7 +652,6 @@ export default function Planner() {
                   />
                 </div>
 
-                {/* Legenda Sugerida (Removido temporariamente)
                 <div className="space-y-2">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Legenda Sugerida</label>
                   <textarea 
@@ -662,7 +661,6 @@ export default function Planner() {
                     placeholder="Escreva a legenda persuasiva aqui..."
                   />
                 </div>
-                */}
 
                 <div className="space-y-2">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Prompt para Geração de Imagem (Opcional)</label>
