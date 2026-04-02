@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, Loader2, LogOut, Coins, MessageCircle, Target, Sparkles, Home as HomeIcon, Rocket, History, Calendar, Settings, Clock, X, GraduationCap, Camera, Megaphone, Image as ImageIcon, FileText, Users, PanelLeftClose, PanelLeftOpen, AlignLeft } from 'lucide-react';
+import { Menu, Loader2, LogOut, Coins, MessageCircle, Target, Sparkles, Home as HomeIcon, Rocket, History, Calendar, Settings, Clock, X, GraduationCap, Camera, Megaphone, Image as ImageIcon, FileText, Users, PanelLeftClose, PanelLeftOpen, AlignLeft, LayoutList } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { useAppStore } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
@@ -95,6 +95,14 @@ export default function Layout() {
         >
           <Calendar className="w-5 h-5 text-brand-primary shrink-0" />
           {!isSidebarCollapsed && <span>Planner Imobiliário</span>}
+        </button>
+        <button 
+          onClick={() => { navigate('/app/scripts'); onClick?.(); }}
+          className={`w-full text-left py-3 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-primary rounded-xl flex items-center transition-colors font-bold ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4 gap-3'}`}
+          title={isSidebarCollapsed ? "Roteiros" : undefined}
+        >
+          <LayoutList className="w-5 h-5 text-brand-primary shrink-0" />
+          {!isSidebarCollapsed && <span>Roteiros</span>}
         </button>
         <button 
           onClick={handleNewCampaign}

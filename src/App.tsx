@@ -13,6 +13,7 @@ import ResultsStep from "./pages/ResultsStep";
 import AdminDashboard from "./pages/AdminDashboard";
 import History from "./pages/History";
 import Planner from "./pages/Planner";
+import Scripts from "./pages/Scripts";
 import Lessons from "./pages/Lessons";
 import Store from "./pages/Store";
 import AdExamples from "./pages/AdExamples";
@@ -110,6 +111,7 @@ export default function App() {
               <Route path="results" element={<ResultsStep />} />
               <Route path="history" element={<History />} />
               <Route path="planner" element={<Planner />} />
+              <Route path="scripts" element={<Scripts />} />
               <Route path="lessons" element={<Lessons />} />
               <Route path="store" element={<Store />} />
               <Route path="ad-examples" element={<AdExamples />} />
