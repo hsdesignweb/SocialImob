@@ -16,6 +16,7 @@ import Planner from "./pages/Planner";
 import Lessons from "./pages/Lessons";
 import Store from "./pages/Store";
 import AdExamples from "./pages/AdExamples";
+import DescriptionGenerator from "./pages/DescriptionGenerator";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -112,6 +113,7 @@ export default function App() {
               <Route path="lessons" element={<Lessons />} />
               <Route path="store" element={<Store />} />
               <Route path="ad-examples" element={<AdExamples />} />
+              <Route path="description-generator" element={<DescriptionGenerator />} />
               <Route path="admin" element={
                 <ProtectedRoute requireAdmin={true}>
                   <AdminDashboard />

@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, Loader2, LogOut, Coins, MessageCircle, Target, Sparkles, Home as HomeIcon, Rocket, History, Calendar, Settings, Clock, X, GraduationCap, Camera, Megaphone, Image as ImageIcon, FileText, Users, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Menu, Loader2, LogOut, Coins, MessageCircle, Target, Sparkles, Home as HomeIcon, Rocket, History, Calendar, Settings, Clock, X, GraduationCap, Camera, Megaphone, Image as ImageIcon, FileText, Users, PanelLeftClose, PanelLeftOpen, AlignLeft } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { useAppStore } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
@@ -108,6 +108,14 @@ export default function Layout() {
               <span className="text-[10px] font-black text-brand-secondary uppercase tracking-wider ml-auto">Beta</span>
             </>
           )}
+        </button>
+        <button 
+          onClick={() => { navigate('/app/description-generator'); onClick?.(); }}
+          className={`w-full text-left py-3 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand-primary rounded-xl flex items-center transition-colors font-bold ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4 gap-3'}`}
+          title={isSidebarCollapsed ? "Gerador de Descrições" : undefined}
+        >
+          <AlignLeft className="w-5 h-5 text-brand-primary shrink-0" />
+          {!isSidebarCollapsed && <span>Gerador de Descrições</span>}
         </button>
         <button 
           onClick={() => { navigate('/app/ad-examples'); onClick?.(); }}
@@ -328,15 +336,6 @@ export default function Layout() {
             <div className="flex items-center gap-4">
               {isPlanner ? (
                 <div className="flex items-center gap-2 md:gap-6">
-                  {user?.isAdmin && (
-                    <button 
-                      onClick={() => window.dispatchEvent(new CustomEvent('open-planner-panel'))}
-                      className="hidden md:flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-brand-primary transition-colors"
-                    >
-                      <Settings className="w-4 h-4 text-brand-primary" />
-                      Painel
-                    </button>
-                  )}
                   <button 
                     onClick={() => window.dispatchEvent(new CustomEvent('go-to-today'))}
                     className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 bg-blue-50 text-brand-primary rounded-full text-xs md:text-sm font-bold hover:bg-blue-100 transition-colors"

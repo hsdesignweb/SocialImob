@@ -140,11 +140,24 @@ export const seedPlannerData = async () => {
     },
     {
       date: '2026-04-06',
-      title: 'Q2: O segundo trimestre começou',
-      format: 'Feed',
+      title: 'QUEBRANDO UM MITO (Os Juros vs. Valorização)',
+      format: 'Educativo / Diálogo (Two Characters)',
       media_link: '',
-      script: 'Imagem de uma agenda de couro aberta marcando "Abril" e uma xícara de café fumegante. Texto marcante no topo: "O Ano Está Voando. E a Sua Meta?". Aspect ratio: 1080:1350.',
-      caption: 'Acabou o chocolate, a Páscoa passou e o segundo trimestre de 2026 já está correndo! Lembra daquela promessa de ano novo de "sair do aluguel" ou "fazer um upgrade de imóvel"? Um quarto do ano já se foi. A melhor hora para agir e garantir as melhores taxas de financiamento é agora. Vamos tomar um café esta semana? ☕📈',
+      script: `**Por que funciona:** Elimina a principal trava de quem está adiando a compra por causa da taxa de juros.
+
+**Ganchos (Hooks):**
+• Você ainda acredita que esperar os juros caírem é a melhor estratégia agora?
+• O que ninguém te conta sobre a relação entre taxa Selic e preço dos imóveis.
+• Por que você está perdendo dinheiro ao adiar sua compra para o ano que vem.
+
+**Roteiro de Cenas:**
+• Cena 1: Você interpretando o Comprador Duvidoso. "Eu vou esperar a taxa de juros cair mais um pouco para financiar meu apartamento, assim a parcela fica menor."
+• Cena 2: Você interpretando o Consultor Especialista. "Enquanto você espera a parcela cair 200 reais, o valor final do imóvel sobe 50 mil por causa da demanda e do custo de construção. A conta simplesmente não fecha."
+• Cena 3: Mostre você apontando para dados em um tablet ou tela. "O segredo é imobilizar o preço do imóvel hoje e fazer a portabilidade do seu financiamento quando os juros baixarem no futuro."
+• Cena 4: Você olhando firme para a lente. "Quem entende de mercado compra o ativo pelo valor de agora e refina o crédito depois. O lucro está no timing."`,
+      caption: `O mercado imobiliário não espera. A valorização real sempre supera a pequena economia que você acha que fará esperando os juros baixarem. Proteja seu patrimônio comprando no valor atual.
+
+CTA: Digite MATEMÁTICA e eu te envio uma simulação comparativa entre comprar agora e esperar 12 meses.`,
       completed: 0
     },
     {

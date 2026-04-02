@@ -224,7 +224,9 @@ export default function Planner() {
 
     setIsGeneratingImage(true);
     try {
-      const prompt = `Crie uma imagem de fundo minimalista e profissional, formato 4:5, para um post de rede social de uma imobiliária. O tema do post é: "${post.title}". A imagem deve ter espaço vazio suficiente para adicionar texto por cima. Estilo moderno, elegante, iluminação suave.`;
+      const prompt = post.image_prompt 
+        ? post.image_prompt 
+        : `Crie uma imagem de fundo minimalista e profissional, formato 4:5, para um post de rede social de uma imobiliária. O tema do post é: "${post.title}". A imagem deve ter espaço vazio suficiente para adicionar texto por cima. Estilo moderno, elegante, iluminação suave.`;
       
       const response = await fetch('/api/generate-image', {
         method: 'POST',
@@ -374,9 +376,9 @@ export default function Planner() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 md:overflow-y-auto bg-slate-50/30 p-6 md:p-12 relative">
+        <main className="flex-1 md:overflow-y-auto bg-slate-50/30 p-6 relative">
 
-          <div className="max-w-5xl mx-auto md:pt-12">
+          <div className="max-w-5xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div
                 key={selectedDate}
@@ -392,12 +394,12 @@ export default function Planner() {
                         {/* Header */}
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                           <div>
-                            <div className="text-slate-500 font-medium text-sm mb-1 uppercase tracking-wider">
-                              {new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
-                            </div>
-                            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
+                            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight mb-1">
                               {post.title}
                             </h2>
+                            <div className="text-slate-500 font-medium text-sm uppercase tracking-wider">
+                              {new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
+                            </div>
                           </div>
                           <div className="flex items-center gap-3 shrink-0">
                             {isAdmin && (
@@ -413,91 +415,101 @@ export default function Planner() {
                           </div>
                         </div>
 
-                        {/* Grid Layout */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                          {/* Left Column (Legenda & Dica) */}
-                          <div className="lg:col-span-2 space-y-6 min-w-0">
-                            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200">
-                              <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                  <AlignLeft className="w-5 h-5 text-blue-500" />
-                                  Legenda do Post
-                                </h3>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => copyToClipboard(formatText(post.caption), 'caption')}
-                                  className="text-slate-500 hover:text-slate-900"
-                                >
-                                  {copiedField === 'caption' ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
-                                  Copiar
-                                </Button>
+                        {/* Stacked Layout */}
+                        <div className="flex flex-col gap-6">
+                          {/* Entrega Principal (Formato/Script) */}
+                          <div className="bg-white border border-slate-100 shadow-sm rounded-3xl p-6 md:p-8 flex flex-col">
+                            <div className="text-slate-700 leading-relaxed whitespace-pre-wrap break-words text-base">
+                              {formatText(post.script) || "Nenhuma entrega principal definida."}
+                            </div>
+                          </div>
+
+                          {/* Bônus / Sugestão de Captação (Optional) */}
+                          {post.bonus && (
+                            <div className="bg-emerald-50 border border-emerald-100 rounded-3xl p-6 md:p-8 flex flex-col">
+                              <div className="text-emerald-800 leading-relaxed whitespace-pre-wrap break-words text-base">
+                                <strong className="text-emerald-900 block mb-2">Bônus:</strong>
+                                {formatText(post.bonus)}
                               </div>
-                              <div className="text-slate-700 leading-relaxed whitespace-pre-wrap break-words text-base">
-                                {formatText(post.caption)}
-                              </div>
-                              
-                              {post.script && (
-                                <div className="mt-8 p-5 bg-yellow-50 rounded-2xl flex gap-4 text-sm text-yellow-800">
-                                  <Lightbulb className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
-                                  <div className="min-w-0 break-words">
-                                    <strong className="font-bold text-yellow-900 block mb-1">Dica: </strong>
-                                    {formatText(post.script)}
-                                  </div>
+                            </div>
+                          )}
+
+                          {/* Sugestão de Legenda (Removido temporariamente)
+                          <div className="bg-white border border-slate-100 shadow-sm rounded-3xl p-6 md:p-8 flex flex-col">
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                <AlignLeft className="w-5 h-5 text-brand-primary" />
+                                Sugestão de legenda
+                              </h3>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => copyToClipboard(formatText(post.caption), 'caption')}
+                                className="text-slate-500 hover:text-slate-900 bg-slate-50 hover:bg-slate-100"
+                              >
+                                {copiedField === 'caption' ? <Check className="w-4 h-4 mr-2 text-emerald-500" /> : <Copy className="w-4 h-4 mr-2" />}
+                                Copiar
+                              </Button>
+                            </div>
+                            <div className="text-slate-700 leading-relaxed whitespace-pre-wrap break-words text-base">
+                              {formatText(post.caption) || "Nenhuma legenda sugerida."}
+                            </div>
+                          </div>
+                          */}
+
+                          {/* Imagem Complementar (Opção 1) */}
+                          <div className="bg-white border border-slate-100 shadow-sm rounded-3xl p-6 md:p-8 flex flex-col">
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                <ImageIcon className="w-5 h-5 text-brand-primary" />
+                                Imagem Complementar
+                              </h3>
+                            </div>
+                            <div className="flex flex-col gap-3 items-start">
+                              {post.media_link ? (
+                                post.media_link.split('\n').filter(link => link.trim() !== '').map((link, idx) => (
+                                  <a 
+                                    key={idx}
+                                    href={link.trim()}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-full md:w-auto inline-flex h-12 px-6 bg-brand-primary hover:bg-brand-primary/90 text-white rounded-xl font-bold text-base items-center justify-center gap-2 transition-colors shadow-sm"
+                                  >
+                                    <ExternalLink className="w-4 h-4 shrink-0" />
+                                    <span>Acessar Imagem</span>
+                                  </a>
+                                ))
+                              ) : (
+                                <div className="text-slate-500 text-base">
+                                  Nenhuma imagem complementar disponível.
                                 </div>
                               )}
                             </div>
                           </div>
 
-                          {/* Right Column (Arte do dia) */}
-                          <div className="space-y-6 min-w-0">
-                            <div className="bg-slate-900 rounded-3xl p-6 md:p-8 text-white shadow-xl">
-                              <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-                                <ImageIcon className="w-5 h-5 text-slate-400" />
-                                Arte do Post
+                          {/* Gere sua própria imagem (Opção 2) */}
+                          <div className="bg-white border border-slate-100 shadow-sm rounded-3xl p-6 md:p-8 flex flex-col">
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                <Sparkles className="w-5 h-5 text-brand-secondary" />
+                                Gere sua própria imagem com IA
                               </h3>
-                              
-                              <div className="space-y-6">
-                                <div>
-                                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Opção 1: Pronta</div>
-                                  {post.media_link ? (
-                                    <div className="space-y-2">
-                                      {post.media_link.split('\n').filter(link => link.trim() !== '').map((link, idx) => (
-                                        <a 
-                                          key={idx}
-                                          href={link.trim()}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="w-full h-12 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-colors"
-                                        >
-                                          <ExternalLink className="w-4 h-4 shrink-0" />
-                                          <span className="truncate">Baixar Imagem</span>
-                                        </a>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <div className="text-sm text-slate-400 italic">Nenhuma imagem pronta.</div>
-                                  )}
-                                </div>
-
-                                <div className="pt-6 border-t border-slate-800">
-                                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Opção 2: IA</div>
-                                  <Button 
-                                    onClick={() => handleGenerateImage(post)}
-                                    disabled={isGeneratingImage}
-                                    className="w-full h-12 bg-brand-primary hover:bg-brand-primary/90 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                                  >
-                                    {isGeneratingImage ? (
-                                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                    ) : (
-                                      <Sparkles className="w-4 h-4 shrink-0" />
-                                    )}
-                                    <span className="truncate">
-                                      {isGeneratingImage ? 'Gerando...' : 'Gerar com IA (-50 créd)'}
-                                    </span>
-                                  </Button>
-                                </div>
-                              </div>
+                            </div>
+                            <div className="flex flex-col gap-3 items-start">
+                              <Button 
+                                onClick={() => handleGenerateImage(post)}
+                                disabled={isGeneratingImage}
+                                className="w-full md:w-auto inline-flex h-12 px-6 bg-brand-secondary hover:bg-brand-secondary/90 text-white rounded-xl font-bold text-base items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-50"
+                              >
+                                {isGeneratingImage ? (
+                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                  <Sparkles className="w-4 h-4 shrink-0" />
+                                )}
+                                <span>
+                                  {isGeneratingImage ? 'Gerando...' : 'Gerar Imagem (-50 créditos)'}
+                                </span>
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -508,7 +520,7 @@ export default function Planner() {
                       <div className="pt-8 border-t border-slate-200 flex justify-center">
                         <Button 
                           onClick={() => {
-                            setEditingPost({ title: '', format: 'Stories', script: '', caption: '', date: selectedDate, media_link: '' });
+                            setEditingPost({ title: '', format: 'Stories', script: '', caption: '', date: selectedDate, media_link: '', bonus: '', image_prompt: '' });
                             setIsEditing(true);
                           }}
                           className="bg-slate-900 hover:bg-slate-800 text-white px-8 h-14 rounded-full font-black shadow-xl"
@@ -532,7 +544,7 @@ export default function Planner() {
                     {isAdmin && (
                       <Button 
                         onClick={() => {
-                          setEditingPost({ title: '', format: 'Stories', script: '', caption: '' });
+                          setEditingPost({ title: '', format: 'Stories', script: '', caption: '', bonus: '', image_prompt: '' });
                           setIsEditing(true);
                         }}
                         className="bg-brand-primary hover:bg-blue-700 text-white px-10 h-16 rounded-full font-black shadow-xl shadow-brand-primary/20"
@@ -621,15 +633,26 @@ export default function Planner() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Dica / Direcionamento</label>
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Entrega do Conteúdo Principal (Roteiro, Dica, etc)</label>
                   <textarea 
                     value={editingPost?.script || ''}
                     onChange={e => setEditingPost({ ...editingPost, script: e.target.value })}
                     className="w-full h-32 p-4 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none transition-all font-medium resize-none"
-                    placeholder="Dica ou direcionamento visual para o post..."
+                    placeholder="Escreva aqui o roteiro do reels, o conteúdo do carrossel, a dica principal..."
                   />
                 </div>
 
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Bônus / Padrão de Produção</label>
+                  <textarea 
+                    value={editingPost?.bonus || ''}
+                    onChange={e => setEditingPost({ ...editingPost, bonus: e.target.value })}
+                    className="w-full h-24 p-4 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none transition-all font-medium resize-none"
+                    placeholder="Uma espécie de bônus, padrão para a pessoa produzir esse conteúdo..."
+                  />
+                </div>
+
+                {/* Legenda Sugerida (Removido temporariamente)
                 <div className="space-y-2">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Legenda Sugerida</label>
                   <textarea 
@@ -637,6 +660,17 @@ export default function Planner() {
                     onChange={e => setEditingPost({ ...editingPost, caption: e.target.value })}
                     className="w-full h-48 p-4 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none transition-all font-medium resize-none"
                     placeholder="Escreva a legenda persuasiva aqui..."
+                  />
+                </div>
+                */}
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Prompt para Geração de Imagem (Opcional)</label>
+                  <textarea 
+                    value={editingPost?.image_prompt || ''}
+                    onChange={e => setEditingPost({ ...editingPost, image_prompt: e.target.value })}
+                    className="w-full h-24 p-4 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary outline-none transition-all font-medium resize-none"
+                    placeholder="Descreva a imagem que a IA deve gerar para este post (ex: 'Uma sala de estar moderna com luz natural...')"
                   />
                 </div>
               </div>

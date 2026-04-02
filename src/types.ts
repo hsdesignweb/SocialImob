@@ -6,6 +6,8 @@ export interface PlannerPost {
   media_link: string;
   script: string;
   caption: string;
+  bonus?: string;
+  image_prompt?: string;
   completed: number;
 }
 
