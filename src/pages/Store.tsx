@@ -35,6 +35,19 @@ export default function Store() {
 
         const data = await response.json();
         if (data.success) {
+          // Track Purchase
+          if (typeof window !== 'undefined' && (window as any).fbq) {
+            let price = 0;
+            if (data.plan === 'credits_100') price = 29.90;
+            else if (data.plan === 'credits_500') price = 97.00;
+            else if (data.plan === 'credits_2000') price = 297.00;
+            
+            (window as any).fbq('track', 'Purchase', {
+              value: price > 0 ? price : 97.00, // fallback
+              currency: 'BRL'
+            });
+          }
+
           await completePayment(data.plan);
           setSuccess('Pagamento aprovado! Seus créditos foram adicionados com sucesso.');
         } else {
@@ -64,6 +77,14 @@ export default function Store() {
     setIsLoading(true);
     setError(null);
     try {
+      // Track InitiateCheckout
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'InitiateCheckout', {
+          value: price,
+          currency: 'BRL'
+        });
+      }
+
       // Call our backend to create a preference for credits
       const response = await fetch('/api/create-preference', {
         method: 'POST',

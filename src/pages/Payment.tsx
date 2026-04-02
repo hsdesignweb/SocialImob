@@ -63,6 +63,22 @@ export default function Payment() {
       const data = await response.json();
       
       if (data.success) {
+        // Track Purchase
+        if (typeof window !== 'undefined' && (window as any).fbq) {
+          let price = 0;
+          if (data.plan === 'basic_monthly') price = 29.90;
+          else if (data.plan === 'basic_yearly') price = 197.00;
+          else if (data.plan === 'pro_monthly') price = 97.00;
+          else if (data.plan === 'pro_yearly') price = 797.00;
+          else if (data.plan === 'premium_monthly') price = 197.00;
+          else if (data.plan === 'premium_yearly') price = 997.00;
+
+          (window as any).fbq('track', 'Purchase', {
+            value: price,
+            currency: 'BRL'
+          });
+        }
+
         // Refresh user profile to get updated credits and status
         await completePayment(data.plan);
         
@@ -128,6 +144,22 @@ export default function Payment() {
     setIsLoading(true);
     setError(null);
     try {
+      // Track InitiateCheckout
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        let price = 0;
+        if (selectedPlan === 'basic_monthly') price = 29.90;
+        else if (selectedPlan === 'basic_yearly') price = 197.00;
+        else if (selectedPlan === 'pro_monthly') price = 97.00;
+        else if (selectedPlan === 'pro_yearly') price = 797.00;
+        else if (selectedPlan === 'premium_monthly') price = 197.00;
+        else if (selectedPlan === 'premium_yearly') price = 997.00;
+
+        (window as any).fbq('track', 'InitiateCheckout', {
+          value: price,
+          currency: 'BRL'
+        });
+      }
+
       // Call our backend to create a preference
       const response = await fetch('/api/create-preference', {
         method: 'POST',
